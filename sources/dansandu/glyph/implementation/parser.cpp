@@ -1,6 +1,8 @@
 #include "dansandu/glyph/implementation/parser.hpp"
 #include "dansandu/ballotin/exception.hpp"
 #include "dansandu/glyph/implementation/grammar.hpp"
+#include "dansandu/glyph/node.hpp"
+#include "dansandu/glyph/token.hpp"
 
 #include <iterator>
 #include <stdexcept>
@@ -10,47 +12,10 @@ using dansandu::glyph::implementation::grammar::endOfString;
 using dansandu::glyph::implementation::grammar::Rule;
 using dansandu::glyph::implementation::parsing_table::Action;
 using dansandu::glyph::implementation::parsing_table::ParsingTable;
-using dansandu::glyph::implementation::tokenization::Token;
+using dansandu::glyph::node::Node;
+using dansandu::glyph::token::Token;
 
 namespace dansandu::glyph::implementation::parser {
-
-Node::Node(Token token) : ruleIndex_{-1}, token_{std::move(token)} {}
-
-Node::Node(int ruleIndex, std::vector<Node> children)
-    : ruleIndex_{ruleIndex}, token_{"", 0, 0}, children_{std::move(children)} {}
-
-bool Node::isRule() const { return ruleIndex_ != -1; }
-
-bool Node::isToken() const { return !isRule(); }
-
-int Node::getRuleIndex() const {
-    if (isToken())
-        THROW(std::runtime_error, "node doesn't hold a rule");
-    return ruleIndex_;
-}
-
-const Token& Node::getToken() const {
-    if (isRule())
-        THROW(std::runtime_error, "node doesn't hold a token");
-    return token_;
-}
-
-const Node& Node::getChild(int index) const { return children_.at(index); }
-
-bool operator==(const Node& left, const Node& right) {
-    return left.ruleIndex_ == right.ruleIndex_ && left.token_ == right.token_ && left.children_ == right.children_;
-}
-
-bool operator!=(const Node& left, const Node& right) { return !(left == right); }
-
-std::ostream& operator<<(std::ostream& stream, const Node& node) {
-    if (node.isToken())
-        return stream << node.token_;
-    stream << "Node(" << node.ruleIndex_;
-    for (const auto& child : node.children_)
-        stream << ", " << child;
-    return stream << ")";
-}
 
 Node parse(std::vector<Token> tokens, const ParsingTable& parsingTable, const std::vector<Rule>& rules) {
     tokens.push_back({endOfString, -1, -1});
@@ -60,7 +25,7 @@ Node parse(std::vector<Token> tokens, const ParsingTable& parsingTable, const st
     const auto& table = parsingTable.table;
     while (!states.empty()) {
         auto state = states.back();
-        auto cell = table.at(token->identifier).at(state);
+        auto cell = table.at(token->getIdentifier()).at(state);
         if (cell.action == Action::shift) {
             states.push_back(cell.parameter);
             trees.emplace_back(*token);

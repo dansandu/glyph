@@ -3,6 +3,8 @@
 #include "dansandu/glyph/implementation/parser.hpp"
 #include "dansandu/glyph/implementation/parsing_table.hpp"
 #include "dansandu/glyph/implementation/tokenization.hpp"
+#include "dansandu/glyph/node.hpp"
+#include "dansandu/glyph/token.hpp"
 
 #include <map>
 #include <utility>
@@ -11,9 +13,7 @@
 using dansandu::ballotin::container::operator<<;
 using dansandu::glyph::implementation::automaton::operator<<;
 using dansandu::glyph::implementation::grammar::operator<<;
-using dansandu::glyph::implementation::parser::operator<<;
 using dansandu::glyph::implementation::parsing_table::operator<<;
-using dansandu::glyph::implementation::tokenization::operator<<;
 
 #include "catchorg/catch/catch.hpp"
 
@@ -22,11 +22,11 @@ using dansandu::glyph::implementation::grammar::getFirstTable;
 using dansandu::glyph::implementation::grammar::getFollowTable;
 using dansandu::glyph::implementation::grammar::getRules;
 using dansandu::glyph::implementation::grammar::getSymbols;
-using dansandu::glyph::implementation::parser::Node;
 using dansandu::glyph::implementation::parser::parse;
 using dansandu::glyph::implementation::parsing_table::getSimpleLeftToRightParsingTable;
-using dansandu::glyph::implementation::tokenization::Token;
 using dansandu::glyph::implementation::tokenization::tokenize;
+using dansandu::glyph::node::Node;
+using dansandu::glyph::token::Token;
 
 // clang-format off
 TEST_CASE("Parser") {

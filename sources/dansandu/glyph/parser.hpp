@@ -3,6 +3,7 @@
 #include "dansandu/glyph/implementation/grammar.hpp"
 #include "dansandu/glyph/implementation/parser.hpp"
 #include "dansandu/glyph/implementation/parsing_table.hpp"
+#include "dansandu/glyph/node.hpp"
 
 #include <string>
 #include <string_view>
@@ -12,11 +13,9 @@ namespace dansandu::glyph::parser {
 
 class Parser {
 public:
-    using Node = dansandu::glyph::implementation::parser::Node;
-
     Parser(std::string_view grammar, std::vector<std::pair<std::string, std::string>> terminals);
 
-    Node parse(std::string_view string, const std::vector<std::string>& discard = {}) const;
+    dansandu::glyph::node::Node parse(std::string_view string, const std::vector<std::string>& discard = {}) const;
 
 private:
     std::vector<std::pair<std::string, std::string>> terminals_;
