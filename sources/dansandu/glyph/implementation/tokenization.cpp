@@ -1,21 +1,14 @@
 #include "dansandu/glyph/implementation/tokenization.hpp"
 #include "dansandu/ballotin/exception.hpp"
+#include "dansandu/glyph/token.hpp"
 
 #include <algorithm>
 #include <regex>
 #include <sstream>
 
+using dansandu::glyph::token::Token;
+
 namespace dansandu::glyph::implementation::tokenization {
-
-bool operator==(const Token& left, const Token& right) {
-    return left.identifier == right.identifier && left.begin == right.begin && left.end == right.end;
-}
-
-bool operator!=(const Token& left, const Token& right) { return !(left == right); }
-
-std::ostream& operator<<(std::ostream& stream, const Token& token) {
-    return stream << "Token(" << token.identifier << ", " << token.begin << ", " << token.end << ")";
-}
 
 std::string getTerminalsPattern(const std::vector<std::pair<std::string, std::string>>& terminals) {
     std::stringstream stream;

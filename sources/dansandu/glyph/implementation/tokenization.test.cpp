@@ -1,19 +1,20 @@
 #include "dansandu/ballotin/container.hpp"
 #include "dansandu/glyph/implementation/tokenization.hpp"
+#include "dansandu/glyph/token.hpp"
 
 #include <string>
 #include <utility>
 #include <vector>
 
 using dansandu::ballotin::container::operator<<;
-using dansandu::glyph::implementation::tokenization::operator<<;
+using dansandu::glyph::token::operator<<;
 
 #include "catchorg/catch/catch.hpp"
 
 using dansandu::glyph::implementation::tokenization::getTerminalsPattern;
-using dansandu::glyph::implementation::tokenization::Token;
 using dansandu::glyph::implementation::tokenization::TokenizationError;
 using dansandu::glyph::implementation::tokenization::tokenize;
+using dansandu::glyph::token::Token;
 
 // clang-format off
 TEST_CASE("Tokenization") {

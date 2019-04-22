@@ -15,6 +15,7 @@ using dansandu::glyph::implementation::grammar::getRules;
 using dansandu::glyph::implementation::grammar::getSymbols;
 using dansandu::glyph::implementation::parsing_table::getSimpleLeftToRightParsingTable;
 using dansandu::glyph::implementation::tokenization::tokenize;
+using dansandu::glyph::node::Node;
 
 namespace dansandu::glyph::parser {
 
@@ -27,7 +28,7 @@ Parser::Parser(std::string_view grammar, std::vector<std::pair<std::string, std:
     parsingTable_ = getSimpleLeftToRightParsingTable(rules_, automaton, followTable, symbols.first);
 }
 
-Parser::Node Parser::parse(std::string_view string, const std::vector<std::string>& discard) const {
+Node Parser::parse(std::string_view string, const std::vector<std::string>& discard) const {
     auto tokens = tokenize(string, terminals_, discard);
     return dansandu::glyph::implementation::parser::parse(tokens, parsingTable_, rules_);
 }
