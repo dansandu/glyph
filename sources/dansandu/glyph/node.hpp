@@ -27,6 +27,8 @@ public:
 
     const Node& getChild(int index) const;
 
+    int getChildrenCount() const;
+
 private:
     int ruleIndex_;
     dansandu::glyph::token::Token token_;

@@ -30,6 +30,8 @@ const Token& Node::getToken() const {
 
 const Node& Node::getChild(int index) const { return children_.at(index); }
 
+int Node::getChildrenCount() const { return static_cast<int>(children_.size()); }
+
 bool operator==(const Node& left, const Node& right) {
     return left.ruleIndex_ == right.ruleIndex_ && left.token_ == right.token_ && left.children_ == right.children_;
 }
