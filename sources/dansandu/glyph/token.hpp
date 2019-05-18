@@ -5,6 +5,11 @@
 
 namespace dansandu::glyph::token {
 
+struct TokenDescriptor {
+    std::string identifier;
+    std::string pattern;
+};
+
 class Token {
 public:
     Token(std::string identifier, int begin, int end) : identifier_{std::move(identifier)}, begin_{begin}, end_{end} {}
