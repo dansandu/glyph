@@ -135,9 +135,9 @@ static void populateFollowSet(const std::string& symbol, const std::vector<Rule>
 
 SymbolTable getFollowTable(const std::vector<Rule>& rules, const SymbolTable& firstTable) {
     auto followTable = SymbolTable{{{startSymbol, {endOfString}}}};
-    for (const auto& [symbol, value] : firstTable)
-        if (!symbol.empty())
-            populateFollowSet(symbol, rules, firstTable, followTable);
+    for (const auto& row : firstTable)
+        if (!row.first.empty())
+            populateFollowSet(row.first, rules, firstTable, followTable);
     return followTable;
 }
 

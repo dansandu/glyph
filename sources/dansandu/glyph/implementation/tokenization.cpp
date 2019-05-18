@@ -7,24 +7,25 @@
 #include <sstream>
 
 using dansandu::glyph::token::Token;
+using dansandu::glyph::token::TokenDescriptor;
 
 namespace dansandu::glyph::implementation::tokenization {
 
-std::string getTerminalsPattern(const std::vector<std::pair<std::string, std::string>>& terminals) {
+std::string getTerminalsPattern(const std::vector<TokenDescriptor>& tokenDescriptors) {
     std::stringstream stream;
-    for (const auto& terminal : terminals)
-        stream << "(" << terminal.second << ")|";
+    for (const auto& tokenDescriptor : tokenDescriptors)
+        stream << "(" << tokenDescriptor.pattern << ")|";
     auto pattern = stream.str();
     if (!pattern.empty())
         pattern.pop_back();
     return pattern;
 }
 
-std::vector<Token> tokenize(std::string_view string, const std::vector<std::pair<std::string, std::string>>& terminals,
+std::vector<Token> tokenize(std::string_view string, const std::vector<TokenDescriptor>& tokenDescriptors,
                             const std::vector<std::string>& discard) {
     auto tokens = std::vector<Token>{};
     auto position = string.cbegin();
-    auto pattern = std::regex{getTerminalsPattern(terminals)};
+    auto pattern = std::regex{getTerminalsPattern(tokenDescriptors)};
     auto match = std::cmatch{};
     auto flags = std::regex_constants::match_continuous;
     for (; std::regex_search(position, string.cend(), match, pattern, flags); position += match.length())
@@ -33,13 +34,15 @@ std::vector<Token> tokenize(std::string_view string, const std::vector<std::pair
                 auto begin = static_cast<int>(match[group].first - string.cbegin());
                 auto end = static_cast<int>(match[group].second - string.cbegin());
                 if (!foundGroup) {
-                    if (std::find(discard.cbegin(), discard.cend(), terminals[group - 1].first) == discard.cend())
-                        tokens.push_back({terminals[group - 1].first, begin, end});
+                    if (std::find(discard.cbegin(), discard.cend(), tokenDescriptors[group - 1].identifier) ==
+                        discard.cend())
+                        tokens.push_back({tokenDescriptors[group - 1].identifier, begin, end});
                     foundGroup = group;
                 } else
                     THROW(TokenizationError, "ambiguous tokenization at position ", begin, ":\n", string, "\n",
                           std::string(begin, ' '), "^", std::string(begin - end - 1, '~'), "\nToken matches both '",
-                          terminals[foundGroup - 1].first, "' and '", terminals[group - 1].first, "' patterns");
+                          tokenDescriptors[foundGroup - 1].identifier, "' and '",
+                          tokenDescriptors[group - 1].identifier, "' patterns");
             }
     if (position != string.cend()) {
         auto index = position - string.cbegin();
