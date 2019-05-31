@@ -7,11 +7,11 @@
 
 namespace dansandu::glyph::implementation::grammar {
 
-using SymbolTable = std::map<std::string, std::vector<std::string>>;
-
 constexpr auto startSymbol = "Start";
 
 constexpr auto endOfString = "$";
+
+using SymbolTable = std::map<std::string, std::vector<std::string>>;
 
 class GrammarError : std::runtime_error {
     using runtime_error::runtime_error;
@@ -28,13 +28,25 @@ bool operator!=(const Rule& left, const Rule& right);
 
 std::ostream& operator<<(std::ostream& stream, const Rule& rule);
 
-std::vector<Rule> getRules(std::string_view grammar);
+class Grammar {
+public:
+    explicit Grammar(std::string grammar);
 
-std::pair<std::vector<std::string>, std::vector<std::string>> getSymbols(const std::vector<Rule>& rules);
+    const std::vector<Rule>& getRules() const { return rules_; }
 
-SymbolTable getFirstTable(std::vector<Rule> rules,
-                          const std::pair<std::vector<std::string>, std::vector<std::string>>& symbols);
+    const std::vector<std::string>& getNonterminals() const { return nonterminals_; }
 
-SymbolTable getFollowTable(const std::vector<Rule>& rules, const SymbolTable& firstTable);
+    const std::vector<std::string>& getTerminals() const { return terminals_; }
+
+    const std::string& asString() const { return asString_; }
+
+private:
+    std::string asString_;
+    std::vector<Rule> rules_;
+    std::vector<std::string> nonterminals_;
+    std::vector<std::string> terminals_;
+};
+
+SymbolTable getFirstTable(const Grammar& grammar);
 
 }

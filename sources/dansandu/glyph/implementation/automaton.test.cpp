@@ -2,6 +2,7 @@
 #include "dansandu/glyph/implementation/automaton.hpp"
 #include "dansandu/glyph/implementation/grammar.hpp"
 
+#include <iostream>
 #include <map>
 #include <string>
 #include <vector>
@@ -14,100 +15,158 @@ using dansandu::glyph::implementation::grammar::operator<<;
 
 using dansandu::glyph::implementation::automaton::getAutomaton;
 using dansandu::glyph::implementation::automaton::getClosure;
+using dansandu::glyph::implementation::automaton::getFollowSet;
 using dansandu::glyph::implementation::automaton::getStartRuleIndex;
 using dansandu::glyph::implementation::automaton::getTransitions;
 using dansandu::glyph::implementation::automaton::isFinalState;
 using dansandu::glyph::implementation::automaton::Item;
 using dansandu::glyph::implementation::automaton::Transition;
-using dansandu::glyph::implementation::grammar::getRules;
+using dansandu::glyph::implementation::grammar::endOfString;
+using dansandu::glyph::implementation::grammar::Grammar;
 using dansandu::glyph::implementation::grammar::GrammarError;
 using dansandu::glyph::implementation::grammar::Rule;
 
+using Items = std::vector<Item>;
+using Transitions = std::map<std::string, std::vector<Item>>;
+
 // clang-format off
 TEST_CASE("Automaton") {
-    constexpr auto grammar = "Start -> Sums                        \n"
-                             "Sums -> Sums add Products            \n"
-                             "Sums -> Products                     \n"
-                             "Products -> Products multiply number \n"
-                             "Products -> number";
     constexpr auto startRuleIndex = 0;
-    const auto rules = getRules(grammar);
+    auto grammar = Grammar{"Start -> Sums                        \n"
+                           "Sums -> Sums add Products            \n"
+                           "Sums -> Products                     \n"
+                           "Products -> Products multiply number \n"
+                           "Products -> number"};    
+    const auto& rules = grammar.getRules();
+    auto firstTable = getFirstTable(grammar);
 
-    SECTION("start item") {
+    SECTION("follow set") {
+        REQUIRE(getFollowSet({1, 0, endOfString}, rules, firstTable) == std::vector<std::string>{"add"});
+
+        REQUIRE(getFollowSet({2, 0, endOfString}, rules, firstTable) == std::vector<std::string>{endOfString});
+
+        REQUIRE(getFollowSet({4, 1, "multiply"}, rules, firstTable) == std::vector<std::string>{"multiply"});
+    }
+
+    SECTION("start rule index") {
         REQUIRE(getStartRuleIndex(rules) == startRuleIndex);
         
-        REQUIRE_THROWS_AS(getStartRuleIndex(getRules("Start -> number \n Start -> identifier")), GrammarError);
+        auto multipleStartRulesGrammar = Grammar{"Start -> number \n Start -> identifier"};
+        REQUIRE_THROWS_AS(getStartRuleIndex(multipleStartRulesGrammar.getRules()), GrammarError);
 
-        REQUIRE_THROWS_AS(getStartRuleIndex(getRules("S -> number \n S -> identifier")), GrammarError);
+        auto noStartRuleGrammar = Grammar{"S -> number \n S -> identifier"};
+        REQUIRE_THROWS_AS(getStartRuleIndex(noStartRuleGrammar.getRules()), GrammarError);
     }
 
     SECTION("closure") {
-        using Items = std::vector<Item>;
+        REQUIRE(getClosure({}, rules, firstTable).empty());
 
-        REQUIRE(getClosure({}, rules).empty());
+        REQUIRE(getClosure({ {0, 0, endOfString} }, rules, firstTable) == Items{{
+            Item{0, 0, "$"},
+            Item{1, 0, "$"},
+            Item{1, 0, "add"},
+            Item{2, 0, "$"},
+            Item{2, 0, "add"},
+            Item{3, 0, "$"},
+            Item{3, 0, "add"},
+            Item{3, 0, "multiply"},
+            Item{4, 0, "$"},
+            Item{4, 0, "add"},
+            Item{4, 0, "multiply"}}
+        });
 
-        REQUIRE(getClosure({ {0, 0} }, rules) == Items{{ {0, 0}, {1, 0}, {2, 0}, {3, 0}, {4, 0} }});
+        REQUIRE(getClosure({ {0, 1, endOfString} }, rules, firstTable) == Items{{ {0, 1, endOfString} }});
 
-        REQUIRE(getClosure({ {0, 1} }, rules) == Items{{ {0, 1} }});
-
-        REQUIRE(getClosure({ {1, 1} }, rules) == Items{{ {1, 1} }});
-
-        REQUIRE(getClosure({ {1, 2} }, rules) == Items{{ {1, 2}, {3, 0}, {4, 0} }});
-
-        REQUIRE(getClosure({ {2, 0}, {4, 0} }, rules) == Items{{ {2, 0}, {3, 0}, {4, 0} }});
+        REQUIRE(getClosure({ {1, 1, endOfString} }, rules, firstTable) == Items{{ {1, 1, endOfString} }});
     }
 
     SECTION("transitions") {
-        using Transitions = std::map<std::string, std::vector<Item>>;
-        
         REQUIRE(getTransitions({}, rules).empty());
 
-        REQUIRE(getTransitions({ {0, 0}, {1, 0}, {2, 0}, {3, 0}, {4, 0} }, rules) == Transitions{{
-            {"Sums", { {0, 1}, {1, 1} }},
-            {"Products", { {2, 1}, {3, 1} }},
-            {"number", { {4, 1} }}
+        REQUIRE(getTransitions({ Item{0, 0, endOfString}, Item{1, 1, "multiply"}, Item{2, 0, "add"}, Item{3, 0, "add"} }, rules) == Transitions{{
+            {"add", { Item{1, 2, "multiply"} }},
+            {"Products", { Item{2, 1, "add"}, Item{3, 1, "add"} }},
+            {"Sums", { Item{0, 1, endOfString} }}
         }});
 
-        REQUIRE(getTransitions({ {0, 1}, {1, 1} }, rules) == Transitions{{
-            {"add", { {1, 2} } }
-        }});
+        REQUIRE(getTransitions({ Item{0, 1, endOfString} }, rules) == Transitions{});
     }
 
     SECTION("final state") {
-        REQUIRE(isFinalState({ {0, 1}, {1, 1} }, rules, startRuleIndex));
+        REQUIRE(isFinalState({ {0, 1, endOfString}, {1, 1, endOfString} }, rules, startRuleIndex));
 
-        REQUIRE(!isFinalState({ {0, 0}, {1, 1}, {2, 0} }, rules, startRuleIndex));
+        REQUIRE(!isFinalState({ {0, 0, endOfString}, {1, 1, endOfString}, {2, 0, endOfString} }, rules, startRuleIndex));
     }
 
     SECTION("generate automaton") {
-        auto automaton = getAutomaton(rules);
+        auto automaton = getAutomaton(grammar);
 
-        REQUIRE(automaton.states == std::vector<std::vector<Item>>{{
-            { {0, 0}, {1, 0}, {2, 0}, {3, 0}, {4, 0} },
-            { {2, 1}, {3, 1} },
-            { {0, 1}, {1, 1} },
-            { {4, 1} },
-            { {3, 2} },
-            { {1, 2}, {3, 0}, {4, 0} },
-            { {3, 3} },
-            { {1, 3}, {3, 1} }
+        REQUIRE(automaton.states == std::vector<Items>{{
+            Items{{Item{0, 0, "$"},
+                   Item{1, 0, "$"},
+                   Item{1, 0, "add"},
+                   Item{2, 0, "$"},
+                   Item{2, 0, "add"},
+                   Item{3, 0, "$"},
+                   Item{3, 0, "add"},
+                   Item{3, 0, "multiply"},
+                   Item{4, 0, "$"},
+                   Item{4, 0, "add"},
+                   Item{4, 0, "multiply"}}},
+
+            Items{{Item{2, 1, "$"},
+                   Item{2, 1, "add"},
+                   Item{3, 1, "$"},
+                   Item{3, 1, "add"},
+                   Item{3, 1, "multiply"}}},
+    
+            Items{{Item{0, 1, "$"},
+                   Item{1, 1, "$"},
+                   Item{1, 1, "add"}}},
+    
+            Items{{Item{4, 1, "$"},
+                   Item{4, 1, "add"},
+                   Item{4, 1, "multiply"}}},
+    
+            Items{{Item{3, 2, "$"},
+                   Item{3, 2, "add"},
+                   Item{3, 2, "multiply"}}},
+    
+            Items{{Item{1, 2, "$"},
+                   Item{1, 2, "add"},
+                   Item{3, 0, "$"},
+                   Item{3, 0, "add"},
+                   Item{3, 0, "multiply"},
+                   Item{4, 0, "$"},
+                   Item{4, 0, "add"},
+                   Item{4, 0, "multiply"}}},
+    
+            Items{{Item{3, 3, "$"},
+                   Item{3, 3, "add"},
+                   Item{3, 3, "multiply"}}},
+    
+            Items{{Item{1, 3, "$"},
+                   Item{1, 3, "add"},
+                   Item{3, 1, "$"},
+                   Item{3, 1, "add"},
+                   Item{3, 1, "multiply"}}}
         }});
 
         REQUIRE(automaton.transitions == std::vector<Transition>{{
-            {"Products", 0, 1},
-            {"Sums", 0, 2},
-            {"number", 0, 3},
-            {"multiply", 1, 4},
-            {"add", 2, 5},
-            {"number", 4, 6},
-            {"Products", 5, 7},
-            {"number", 5, 3},
-            {"multiply", 7, 4}
+            Transition{"Products", 0, 1},
+            Transition{"Sums", 0, 2},
+            Transition{"number", 0, 3},
+            Transition{"multiply", 1, 4},
+            Transition{"add", 2, 5},
+            Transition{"number", 4, 6},
+            Transition{"Products", 5, 7},
+            Transition{"number", 5, 3},
+            Transition{"multiply", 7, 4}
         }});
-
-        REQUIRE(automaton.startRuleIndex == startRuleIndex);
-        
-        REQUIRE(automaton.finalStateIndex == 2);
     }
+}
+
+TEST_CASE() {
+
 }
 // clang-format on
