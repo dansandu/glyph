@@ -1,5 +1,6 @@
 #include "dansandu/glyph/implementation/parser.hpp"
 #include "dansandu/ballotin/exception.hpp"
+#include "dansandu/ballotin/string.hpp"
 #include "dansandu/glyph/implementation/grammar.hpp"
 #include "dansandu/glyph/node.hpp"
 #include "dansandu/glyph/token.hpp"
@@ -8,6 +9,7 @@
 #include <stdexcept>
 #include <vector>
 
+using dansandu::ballotin::string::join;
 using dansandu::glyph::implementation::grammar::endOfString;
 using dansandu::glyph::implementation::grammar::Rule;
 using dansandu::glyph::implementation::parsing_table::Action;
@@ -25,7 +27,10 @@ Node parse(std::vector<Token> tokens, const ParsingTable& parsingTable, const st
     const auto& table = parsingTable.table;
     while (!states.empty()) {
         auto state = states.back();
-        auto cell = table.at(token->getIdentifier()).at(state);
+        auto row = table.find(token->getIdentifier());
+        if (row == table.cend())
+            THROW(SyntaxError, "unrecognized symbol '", token->getIdentifier(), "' at column ", token->begin());
+        auto cell = row->second.at(state);
         if (cell.action == Action::shift) {
             states.push_back(cell.parameter);
             trees.emplace_back(*token);
@@ -51,7 +56,12 @@ Node parse(std::vector<Token> tokens, const ParsingTable& parsingTable, const st
                 return newNode;
             }
         } else if (cell.action == Action::error) {
-            THROW(SyntaxError, "invalid syntax");
+            auto expectedSymbols = std::vector<std::string>{};
+            for (const auto& row : table)
+                if (row.second.at(state).action != Action::error)
+                    expectedSymbols.push_back(row.first);
+            THROW(SyntaxError, "invalid syntax at column ", token->begin(), " -- the following symbols were expected ",
+                  join(expectedSymbols, ", "));
         } else {
             THROW(std::runtime_error, "invalid state reached -- unrecognized cell action");
         }

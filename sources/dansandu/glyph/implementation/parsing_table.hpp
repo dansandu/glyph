@@ -1,5 +1,4 @@
 #pragma once
-
 #include "dansandu/glyph/implementation/automaton.hpp"
 #include "dansandu/glyph/implementation/grammar.hpp"
 
@@ -38,13 +37,8 @@ struct ParsingTable {
     std::map<std::string, std::vector<Cell>> table;
 };
 
-std::vector<int> getReductionRuleIndices(const std::vector<dansandu::glyph::implementation::automaton::Item>& items,
-                                         const std::vector<dansandu::glyph::implementation::grammar::Rule>& rules,
-                                         int startRuleIndex);
-
-ParsingTable getSimpleLeftToRightParsingTable(const std::vector<dansandu::glyph::implementation::grammar::Rule>& rules,
-                                              const dansandu::glyph::implementation::automaton::Automaton& automaton,
-                                              const dansandu::glyph::implementation::grammar::SymbolTable& followTable,
-                                              const std::vector<std::string>& nonterminals);
+ParsingTable
+getCanonicalLeftToRightParsingTable(const dansandu::glyph::implementation::grammar::Grammar& grammar,
+                                    const dansandu::glyph::implementation::automaton::Automaton& automaton);
 
 }

@@ -1,14 +1,12 @@
 #pragma once
 
 #include <ostream>
+#include <regex>
+#include <stdexcept>
 #include <string>
+#include <vector>
 
 namespace dansandu::glyph::token {
-
-struct TokenDescriptor {
-    std::string identifier;
-    std::string pattern;
-};
 
 class Token {
 public:
@@ -31,5 +29,26 @@ bool operator==(const Token& left, const Token& right);
 bool operator!=(const Token& left, const Token& right);
 
 std::ostream& operator<<(std::ostream& stream, const Token& token);
+
+class TokenizationError : public std::runtime_error {
+    using runtime_error::runtime_error;
+};
+
+class RegexTokenizer {
+public:
+    struct Descriptor {
+        std::string identifier;
+        std::string pattern;
+    };
+
+    explicit RegexTokenizer(std::vector<Descriptor> descriptors, std::vector<std::string> discarded = {});
+
+    std::vector<Token> operator()(std::string_view string) const;
+
+private:
+    std::vector<Descriptor> descriptors_;
+    std::vector<std::string> discarded_;
+    std::regex pattern_;
+};
 
 }
