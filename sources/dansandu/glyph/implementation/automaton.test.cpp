@@ -2,7 +2,6 @@
 #include "dansandu/glyph/implementation/automaton.hpp"
 #include "dansandu/glyph/implementation/grammar.hpp"
 
-#include <iostream>
 #include <map>
 #include <string>
 #include <vector>
@@ -164,9 +163,5 @@ TEST_CASE("Automaton") {
             Transition{"multiply", 7, 4}
         }});
     }
-}
-
-TEST_CASE() {
-
 }
 // clang-format on
