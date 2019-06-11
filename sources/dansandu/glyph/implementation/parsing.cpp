@@ -1,4 +1,4 @@
-#include "dansandu/glyph/implementation/parser.hpp"
+#include "dansandu/glyph/implementation/parsing.hpp"
 #include "dansandu/ballotin/exception.hpp"
 #include "dansandu/ballotin/string.hpp"
 #include "dansandu/glyph/implementation/grammar.hpp"
@@ -17,7 +17,7 @@ using dansandu::glyph::implementation::parsing_table::ParsingTable;
 using dansandu::glyph::node::Node;
 using dansandu::glyph::token::Token;
 
-namespace dansandu::glyph::implementation::parser {
+namespace dansandu::glyph::implementation::parsing {
 
 Node parse(std::vector<Token> tokens, const ParsingTable& parsingTable, const std::vector<Rule>& rules) {
     tokens.push_back({endOfString, -1, -1});

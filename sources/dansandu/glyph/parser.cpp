@@ -1,6 +1,6 @@
 #include "dansandu/glyph/parser.hpp"
 #include "dansandu/glyph/implementation/grammar.hpp"
-#include "dansandu/glyph/implementation/parser.hpp"
+#include "dansandu/glyph/implementation/parsing.hpp"
 #include "dansandu/glyph/implementation/parsing_table.hpp"
 
 #include <string>

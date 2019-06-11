@@ -1,6 +1,6 @@
 #include "dansandu/ballotin/container.hpp"
 #include "dansandu/glyph/implementation/grammar.hpp"
-#include "dansandu/glyph/implementation/parser.hpp"
+#include "dansandu/glyph/implementation/parsing.hpp"
 #include "dansandu/glyph/implementation/parsing_table.hpp"
 #include "dansandu/glyph/node.hpp"
 #include "dansandu/glyph/token.hpp"
@@ -18,14 +18,14 @@ using dansandu::glyph::implementation::parsing_table::operator<<;
 
 using dansandu::glyph::implementation::automaton::getAutomaton;
 using dansandu::glyph::implementation::grammar::Grammar;
-using dansandu::glyph::implementation::parser::parse;
+using dansandu::glyph::implementation::parsing::parse;
 using dansandu::glyph::implementation::parsing_table::getCanonicalLeftToRightParsingTable;
 using dansandu::glyph::node::Node;
 using dansandu::glyph::token::RegexTokenizer;
 using dansandu::glyph::token::Token;
 
 // clang-format off
-TEST_CASE("Parser") {
+TEST_CASE("Parsing") {
     auto tokenizer = RegexTokenizer{{{"identifier", "[a-z]\\w*"},
                                      {"number", "(?:[1-9]\\d*|0)(?:\\.\\d+)?"},
                                      {"add", "\\+"},

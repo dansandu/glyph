@@ -145,4 +145,4 @@ This should print something along the lines:
 ```
 2019-06-11 20:26:55,749 INFO praline.common.file_system 3 + 5 * 10 + 40 = 93
 ```
-And there you have it, a simple arithmetic formula parser. Feel free to extend it or even make your own C++ 2.0 compiler. Hopefully with no implicit conversions between booleans and integer types :wink:
+And there you have it, a simple arithmetic formula parser. Feel free to extend it or even make your own C++ 2.0 compiler. Hopefully with no implicit conversions between booleans and integer types :wink: Also, if you want the more compact version of this code without comments see `sources/dansandu/glyph/parser.test.cpp`.
