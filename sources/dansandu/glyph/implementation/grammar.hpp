@@ -5,7 +5,8 @@
 #include <string>
 #include <vector>
 
-namespace dansandu::glyph::implementation::grammar {
+namespace dansandu::glyph::implementation::grammar
+{
 
 constexpr auto startSymbol = "Start";
 
@@ -13,11 +14,13 @@ constexpr auto endOfString = "$";
 
 using SymbolTable = std::map<std::string, std::vector<std::string>>;
 
-class GrammarError : std::runtime_error {
+class GrammarError : std::runtime_error
+{
     using runtime_error::runtime_error;
 };
 
-struct Rule {
+struct Rule
+{
     std::string leftSide;
     std::vector<std::string> rightSide;
 };
@@ -28,17 +31,30 @@ bool operator!=(const Rule& left, const Rule& right);
 
 std::ostream& operator<<(std::ostream& stream, const Rule& rule);
 
-class Grammar {
+class Grammar
+{
 public:
     explicit Grammar(std::string grammar);
 
-    const std::vector<Rule>& getRules() const { return rules_; }
+    const std::vector<Rule>& getRules() const
+    {
+        return rules_;
+    }
 
-    const std::vector<std::string>& getNonterminals() const { return nonterminals_; }
+    const std::vector<std::string>& getNonterminals() const
+    {
+        return nonterminals_;
+    }
 
-    const std::vector<std::string>& getTerminals() const { return terminals_; }
+    const std::vector<std::string>& getTerminals() const
+    {
+        return terminals_;
+    }
 
-    const std::string& asString() const { return asString_; }
+    const std::string& asString() const
+    {
+        return asString_;
+    }
 
 private:
     std::string asString_;

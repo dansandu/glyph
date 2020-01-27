@@ -6,9 +6,11 @@
 #include <string>
 #include <vector>
 
-namespace dansandu::glyph::implementation::automaton {
+namespace dansandu::glyph::implementation::automaton
+{
 
-struct Item {
+struct Item
+{
     int ruleIndex;
     int position;
     std::string lookahead;
@@ -22,7 +24,8 @@ bool operator<(const Item& left, const Item& right);
 
 std::ostream& operator<<(std::ostream& stream, const Item& item);
 
-struct Transition {
+struct Transition
+{
     std::string symbol;
     int from;
     int to;
@@ -51,7 +54,8 @@ getTransitions(const std::vector<Item>& items,
 bool isFinalState(const std::vector<Item>& items,
                   const std::vector<dansandu::glyph::implementation::grammar::Rule>& rules, int startRuleIndex);
 
-struct Automaton {
+struct Automaton
+{
     int startRuleIndex;
     int finalStateIndex;
     std::vector<std::vector<Item>> states;

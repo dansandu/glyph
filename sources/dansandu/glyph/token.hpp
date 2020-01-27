@@ -6,17 +6,30 @@
 #include <string>
 #include <vector>
 
-namespace dansandu::glyph::token {
+namespace dansandu::glyph::token
+{
 
-class Token {
+class Token
+{
 public:
-    Token(std::string identifier, int begin, int end) : identifier_{std::move(identifier)}, begin_{begin}, end_{end} {}
+    Token(std::string identifier, int begin, int end) : identifier_{std::move(identifier)}, begin_{begin}, end_{end}
+    {
+    }
 
-    const std::string& getIdentifier() const { return identifier_; }
+    const std::string& getIdentifier() const
+    {
+        return identifier_;
+    }
 
-    int begin() const { return begin_; }
+    int begin() const
+    {
+        return begin_;
+    }
 
-    int end() const { return end_; }
+    int end() const
+    {
+        return end_;
+    }
 
 private:
     std::string identifier_;
@@ -30,13 +43,16 @@ bool operator!=(const Token& left, const Token& right);
 
 std::ostream& operator<<(std::ostream& stream, const Token& token);
 
-class TokenizationError : public std::runtime_error {
+class TokenizationError : public std::runtime_error
+{
     using runtime_error::runtime_error;
 };
 
-class RegexTokenizer {
+class RegexTokenizer
+{
 public:
-    struct Descriptor {
+    struct Descriptor
+    {
         std::string identifier;
         std::string pattern;
     };

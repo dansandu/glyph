@@ -9,9 +9,11 @@
 #include <string>
 #include <vector>
 
-namespace dansandu::glyph::implementation::parsing {
+namespace dansandu::glyph::implementation::parsing
+{
 
-class SyntaxError : public std::runtime_error {
+class SyntaxError : public std::runtime_error
+{
     using runtime_error::runtime_error;
 };
 

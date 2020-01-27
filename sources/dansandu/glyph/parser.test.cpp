@@ -8,20 +8,30 @@ using dansandu::glyph::node::Node;
 using dansandu::glyph::parser::Parser;
 using dansandu::glyph::token::RegexTokenizer;
 
-static double evaluate(std::string_view formula, const Node& node) {
+static double evaluate(std::string_view formula, const Node& node)
+{
     if (node.isToken())
         throw std::runtime_error{"oopsie -- ill-formed syntax tree, node should always be a production rule!"};
     auto ruleIndex = node.getRuleIndex();
-    if (ruleIndex == 0 || ruleIndex == 2 || ruleIndex == 4) {
+    if (ruleIndex == 0 || ruleIndex == 2 || ruleIndex == 4)
+    {
         return evaluate(formula, node.getChild(0));
-    } else if (ruleIndex == 1) {
+    }
+    else if (ruleIndex == 1)
+    {
         return evaluate(formula, node.getChild(0)) + evaluate(formula, node.getChild(2));
-    } else if (ruleIndex == 3) {
+    }
+    else if (ruleIndex == 3)
+    {
         return evaluate(formula, node.getChild(0)) * evaluate(formula, node.getChild(2));
-    } else if (ruleIndex == 5) {
+    }
+    else if (ruleIndex == 5)
+    {
         const auto& token = node.getChild(0).getToken();
         return std::stod(std::string{formula.cbegin() + token.begin(), formula.cbegin() + token.end()});
-    } else {
+    }
+    else
+    {
         throw std::runtime_error{"oopsie -- unrecognized production rule index!"};
     }
 }

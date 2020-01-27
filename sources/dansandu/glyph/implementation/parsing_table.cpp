@@ -14,10 +14,13 @@ using dansandu::glyph::implementation::automaton::Item;
 using dansandu::glyph::implementation::grammar::endOfString;
 using dansandu::glyph::implementation::grammar::Grammar;
 
-namespace dansandu::glyph::implementation::parsing_table {
+namespace dansandu::glyph::implementation::parsing_table
+{
 
-std::ostream& operator<<(std::ostream& stream, Action action) {
-    switch (action) {
+std::ostream& operator<<(std::ostream& stream, Action action)
+{
+    switch (action)
+    {
     case Action::shift:
         return stream << "shift";
     case Action::reduce:
@@ -33,18 +36,27 @@ std::ostream& operator<<(std::ostream& stream, Action action) {
     }
 }
 
-bool operator==(Cell left, Cell right) { return left.action == right.action && left.parameter == right.parameter; }
+bool operator==(Cell left, Cell right)
+{
+    return left.action == right.action && left.parameter == right.parameter;
+}
 
-bool operator!=(Cell left, Cell right) { return !(left == right); }
+bool operator!=(Cell left, Cell right)
+{
+    return !(left == right);
+}
 
-std::ostream& operator<<(std::ostream& stream, Cell cell) {
+std::ostream& operator<<(std::ostream& stream, Cell cell)
+{
     return stream << "Cell(" << cell.action << ", " << cell.parameter << ")";
 }
 
-ParsingTable getCanonicalLeftToRightParsingTable(const Grammar& grammar, const Automaton& automaton) {
+ParsingTable getCanonicalLeftToRightParsingTable(const Grammar& grammar, const Automaton& automaton)
+{
     auto table = std::map<std::string, std::vector<Cell>>{};
     auto stateCount = static_cast<int>(automaton.states.size());
-    for (const auto& transition : automaton.transitions) {
+    for (const auto& transition : automaton.transitions)
+    {
         auto rowPosition = table.find(transition.symbol);
         if (rowPosition == table.end())
             rowPosition = table.emplace(transition.symbol, std::vector<Cell>(stateCount)).first;
@@ -55,7 +67,8 @@ ParsingTable getCanonicalLeftToRightParsingTable(const Grammar& grammar, const A
     auto& endOfStringRow = table.emplace(endOfString, std::vector<Cell>(stateCount)).first->second;
     for (auto stateIndex = 0; stateIndex < stateCount; ++stateIndex)
         for (const auto& item : automaton.states[stateIndex])
-            if (item.position == static_cast<int>(grammar.getRules().at(item.ruleIndex).rightSide.size())) {
+            if (item.position == static_cast<int>(grammar.getRules().at(item.ruleIndex).rightSide.size()))
+            {
                 auto& cell = table.at(item.lookahead).at(stateIndex);
                 if (cell.action != Action::error)
                     THROW(ParsingError, "grammar cannot be parsed using a CLR(1) parser due to ", cell.action,

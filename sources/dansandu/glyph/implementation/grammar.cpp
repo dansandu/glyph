@@ -16,28 +16,36 @@ using dansandu::ballotin::string::join;
 using dansandu::ballotin::string::split;
 using dansandu::ballotin::string::trim;
 
-namespace dansandu::glyph::implementation::grammar {
+namespace dansandu::glyph::implementation::grammar
+{
 
 static const auto grammarValidator = std::regex{
     "(\\s*[a-zA-Z]+ *-> *(([a-zA-Z]+ +)*[a-zA-Z]+)?\\s*\\n)*\\s*[a-zA-Z]+ *-> *(([a-zA-Z]+ +)*[a-zA-Z]+)?\\s*"};
 
-bool operator==(const Rule& left, const Rule& right) {
+bool operator==(const Rule& left, const Rule& right)
+{
     return left.leftSide == right.leftSide && left.rightSide == right.rightSide;
 }
 
-bool operator!=(const Rule& left, const Rule& right) { return !(left == right); }
+bool operator!=(const Rule& left, const Rule& right)
+{
+    return !(left == right);
+}
 
-std::ostream& operator<<(std::ostream& stream, const Rule& rule) {
+std::ostream& operator<<(std::ostream& stream, const Rule& rule)
+{
     return stream << "'" << rule.leftSide << "'"
                   << " -> "
                   << "'" << join(rule.rightSide, "' '") << "'";
 }
 
-static std::vector<Rule> getRulesWork(std::string_view grammar) {
+static std::vector<Rule> getRulesWork(std::string_view grammar)
+{
     if (!std::regex_match(grammar.cbegin(), grammar.cend(), grammarValidator))
         THROW(GrammarError, "invalid grammar ", grammar);
     auto rules = std::vector<Rule>{};
-    for (const auto& line : split(grammar, "\n")) {
+    for (const auto& line : split(grammar, "\n"))
+    {
         auto rule = split(line, "->");
         if (rule.size() == 2)
             rules.push_back({trim(rule[0]), split(rule[1], " ")});
@@ -49,12 +57,14 @@ static std::vector<Rule> getRulesWork(std::string_view grammar) {
     return rules;
 }
 
-static std::pair<std::vector<std::string>, std::vector<std::string>> getSymbols(const std::vector<Rule>& rules) {
+static std::pair<std::vector<std::string>, std::vector<std::string>> getSymbols(const std::vector<Rule>& rules)
+{
     auto nonterminals = std::vector<std::string>{};
     for (const auto& rule : rules)
         setInsert(nonterminals, rule.leftSide);
     auto terminals = std::vector<std::string>{};
-    for (const auto& rule : rules) {
+    for (const auto& rule : rules)
+    {
         for (const auto& symbol : rule.rightSide)
             if (std::find(nonterminals.cbegin(), nonterminals.cend(), symbol) == nonterminals.cend())
                 setInsert(terminals, symbol);
@@ -64,31 +74,38 @@ static std::pair<std::vector<std::string>, std::vector<std::string>> getSymbols(
     return {std::move(nonterminals), std::move(terminals)};
 }
 
-Grammar::Grammar(std::string grammar) : asString_{std::move(grammar)}, rules_{getRulesWork(asString_)} {
+Grammar::Grammar(std::string grammar) : asString_{std::move(grammar)}, rules_{getRulesWork(asString_)}
+{
     auto symbols = getSymbols(rules_);
     nonterminals_ = std::move(symbols.first);
     terminals_ = std::move(symbols.second);
 }
 
-static void populateFirstOf(const std::string& symbol, const std::vector<Rule>& rules, SymbolTable& firstTable) {
+static void populateFirstOf(const std::string& symbol, const std::vector<Rule>& rules, SymbolTable& firstTable)
+{
     if (firstTable.find(symbol) != firstTable.end())
         return;
 
     auto& firstSet = firstTable[symbol];
     for (const auto& rule : rules)
-        if (symbol == rule.leftSide) {
+        if (symbol == rule.leftSide)
+        {
             if (rule.rightSide.empty())
                 setInsert(firstSet, "");
             auto allOfRightHasEmpty = true;
-            for (const auto& rightSymbol : rule.rightSide) {
+            for (const auto& rightSymbol : rule.rightSide)
+            {
                 populateFirstOf(rightSymbol, rules, firstTable);
                 const auto& firstOfRight = firstTable[rightSymbol];
                 auto emptyPosition = std::find(firstOfRight.cbegin(), firstOfRight.cend(), "");
-                if (emptyPosition != firstOfRight.cend()) {
+                if (emptyPosition != firstOfRight.cend())
+                {
                     auto copy = std::vector<std::string>{firstOfRight.cbegin(), emptyPosition};
                     copy.insert(copy.end(), emptyPosition + 1, firstOfRight.cend());
                     firstSet = setUnion(firstSet, copy);
-                } else {
+                }
+                else
+                {
                     firstSet = setUnion(firstSet, firstOfRight);
                     allOfRightHasEmpty = false;
                     break;
@@ -99,7 +116,8 @@ static void populateFirstOf(const std::string& symbol, const std::vector<Rule>& 
         }
 }
 
-SymbolTable getFirstTable(const Grammar& grammar) {
+SymbolTable getFirstTable(const Grammar& grammar)
+{
     auto firstTable = SymbolTable{};
     for (const auto& terminal : grammar.getTerminals())
         firstTable[terminal] = {terminal};

@@ -5,10 +5,12 @@
 using dansandu::glyph::node::Node;
 using dansandu::glyph::token::Token;
 
-TEST_CASE("Node") {
+TEST_CASE("Node")
+{
     auto token = Token{"number", 0, 1};
 
-    SECTION("with token") {
+    SECTION("with token")
+    {
         auto node = Node{token};
 
         REQUIRE(node.isToken());
@@ -20,7 +22,8 @@ TEST_CASE("Node") {
         REQUIRE(node.getToken() == token);
     }
 
-    SECTION("with production rule") {
+    SECTION("with production rule")
+    {
         auto anotherToken = Token{"add", 2, 3};
         constexpr auto ruleIndex = 23;
         auto node = Node{ruleIndex, {Node{token}, Node{anotherToken}}};

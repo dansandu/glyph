@@ -9,14 +9,17 @@
 #include <string_view>
 #include <vector>
 
-namespace dansandu::glyph::parser {
+namespace dansandu::glyph::parser
+{
 
-class Parser {
+class Parser
+{
 public:
     explicit Parser(std::string grammar);
 
     template<typename Tokenizer>
-    dansandu::glyph::node::Node parse(std::string_view string, Tokenizer&& tokenizer) const {
+    dansandu::glyph::node::Node parse(std::string_view string, Tokenizer&& tokenizer) const
+    {
         return dansandu::glyph::implementation::parsing::parse(tokenizer(string), parsingTable_, grammar_.getRules());
     }
 

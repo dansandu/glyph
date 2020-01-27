@@ -5,9 +5,11 @@
 #include <ostream>
 #include <vector>
 
-namespace dansandu::glyph::node {
+namespace dansandu::glyph::node
+{
 
-class Node {
+class Node
+{
     friend bool operator==(const Node& left, const Node& right);
 
     friend std::ostream& operator<<(std::ostream& stream, const Node& node);
