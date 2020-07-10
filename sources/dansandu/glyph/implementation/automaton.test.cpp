@@ -1,4 +1,5 @@
 #include "dansandu/ballotin/container.hpp"
+#include "dansandu/glyph/error.hpp"
 #include "dansandu/glyph/implementation/automaton.hpp"
 #include "dansandu/glyph/implementation/grammar.hpp"
 
@@ -12,6 +13,7 @@ using dansandu::glyph::implementation::grammar::operator<<;
 
 #include "catchorg/catch/catch.hpp"
 
+using dansandu::glyph::error::GrammarError;
 using dansandu::glyph::implementation::automaton::getAutomaton;
 using dansandu::glyph::implementation::automaton::getClosure;
 using dansandu::glyph::implementation::automaton::getFollowSet;
@@ -22,7 +24,6 @@ using dansandu::glyph::implementation::automaton::Item;
 using dansandu::glyph::implementation::automaton::Transition;
 using dansandu::glyph::implementation::grammar::endOfString;
 using dansandu::glyph::implementation::grammar::Grammar;
-using dansandu::glyph::implementation::grammar::GrammarError;
 using dansandu::glyph::implementation::grammar::Rule;
 
 using Items = std::vector<Item>;

@@ -11,11 +11,6 @@
 namespace dansandu::glyph::implementation::parsing_table
 {
 
-class ParsingError : public std::runtime_error
-{
-    using runtime_error::runtime_error;
-};
-
 enum class Action
 {
     error,

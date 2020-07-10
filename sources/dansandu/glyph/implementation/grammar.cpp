@@ -2,6 +2,7 @@
 #include "dansandu/ballotin/container.hpp"
 #include "dansandu/ballotin/exception.hpp"
 #include "dansandu/ballotin/string.hpp"
+#include "dansandu/glyph/error.hpp"
 
 #include <algorithm>
 #include <map>
@@ -15,6 +16,7 @@ using dansandu::ballotin::string::format;
 using dansandu::ballotin::string::join;
 using dansandu::ballotin::string::split;
 using dansandu::ballotin::string::trim;
+using dansandu::glyph::error::GrammarError;
 
 namespace dansandu::glyph::implementation::grammar
 {

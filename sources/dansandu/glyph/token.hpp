@@ -9,7 +9,7 @@
 namespace dansandu::glyph::token
 {
 
-class Token
+class PRALINE_EXPORT Token
 {
 public:
     Token(std::string identifier, int begin, int end) : identifier_{std::move(identifier)}, begin_{begin}, end_{end}
@@ -37,18 +37,13 @@ private:
     int end_;
 };
 
-bool operator==(const Token& left, const Token& right);
+PRALINE_EXPORT bool operator==(const Token& left, const Token& right);
 
-bool operator!=(const Token& left, const Token& right);
+PRALINE_EXPORT bool operator!=(const Token& left, const Token& right);
 
-std::ostream& operator<<(std::ostream& stream, const Token& token);
+PRALINE_EXPORT std::ostream& operator<<(std::ostream& stream, const Token& token);
 
-class TokenizationError : public std::runtime_error
-{
-    using runtime_error::runtime_error;
-};
-
-class RegexTokenizer
+class PRALINE_EXPORT RegexTokenizer
 {
 public:
     struct Descriptor

@@ -1,31 +1,28 @@
 #pragma once
 
-#include "dansandu/glyph/implementation/grammar.hpp"
-#include "dansandu/glyph/implementation/parsing.hpp"
-#include "dansandu/glyph/implementation/parsing_table.hpp"
 #include "dansandu/glyph/node.hpp"
+#include "dansandu/glyph/token.hpp"
 
+#include <memory>
 #include <string>
-#include <string_view>
 #include <vector>
 
 namespace dansandu::glyph::parser
 {
 
-class Parser
+struct ParserImplementation;
+
+class PRALINE_EXPORT Parser
 {
 public:
-    explicit Parser(std::string grammar);
+    explicit Parser(const std::string& grammar);
 
-    template<typename Tokenizer>
-    dansandu::glyph::node::Node parse(std::string_view string, Tokenizer&& tokenizer) const
-    {
-        return dansandu::glyph::implementation::parsing::parse(tokenizer(string), parsingTable_, grammar_.getRules());
-    }
+    ~Parser();
+
+    dansandu::glyph::node::Node parse(const std::vector<dansandu::glyph::token::Token>& tokens) const;
 
 private:
-    dansandu::glyph::implementation::grammar::Grammar grammar_;
-    dansandu::glyph::implementation::parsing_table::ParsingTable parsingTable_;
+    std::unique_ptr<ParserImplementation> implementation_;
 };
 
 }

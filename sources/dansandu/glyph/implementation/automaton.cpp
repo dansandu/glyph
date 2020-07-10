@@ -2,6 +2,7 @@
 #include "dansandu/ballotin/container.hpp"
 #include "dansandu/ballotin/exception.hpp"
 #include "dansandu/ballotin/string.hpp"
+#include "dansandu/glyph/error.hpp"
 #include "dansandu/glyph/implementation/grammar.hpp"
 
 #include <algorithm>
@@ -13,10 +14,10 @@
 using dansandu::ballotin::container::setInsert;
 using dansandu::ballotin::container::setUnion;
 using dansandu::ballotin::string::format;
+using dansandu::glyph::error::GrammarError;
 using dansandu::glyph::implementation::grammar::endOfString;
 using dansandu::glyph::implementation::grammar::getFirstTable;
 using dansandu::glyph::implementation::grammar::Grammar;
-using dansandu::glyph::implementation::grammar::GrammarError;
 using dansandu::glyph::implementation::grammar::Rule;
 using dansandu::glyph::implementation::grammar::startSymbol;
 using dansandu::glyph::implementation::grammar::SymbolTable;

@@ -1,11 +1,14 @@
 #include "dansandu/glyph/token.hpp"
 #include "dansandu/ballotin/exception.hpp"
+#include "dansandu/glyph/error.hpp"
 
 #include <ostream>
 #include <regex>
 #include <stdexcept>
 #include <string>
 #include <vector>
+
+using dansandu::glyph::error::TokenizationError;
 
 namespace dansandu::glyph::token
 {

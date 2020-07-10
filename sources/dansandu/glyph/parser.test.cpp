@@ -117,7 +117,8 @@ TEST_CASE("Parser")
 
     auto formula = "z + 20 * y ^ sin(x * pi) * log(1024)";
     auto parser = Parser{grammar};
-    auto tree = parser.parse(formula, regexTokenizer);
+    auto tokens = regexTokenizer(formula);
+    auto tree = parser.parse(tokens);
 
     REQUIRE(visitor(tree, formula, variables, functions) == Approx(7031.46320796));
 }

@@ -1,6 +1,7 @@
 #include "dansandu/glyph/implementation/parsing.hpp"
 #include "dansandu/ballotin/exception.hpp"
 #include "dansandu/ballotin/string.hpp"
+#include "dansandu/glyph/error.hpp"
 #include "dansandu/glyph/implementation/grammar.hpp"
 #include "dansandu/glyph/node.hpp"
 #include "dansandu/glyph/token.hpp"
@@ -10,6 +11,7 @@
 #include <vector>
 
 using dansandu::ballotin::string::join;
+using dansandu::glyph::error::SyntaxError;
 using dansandu::glyph::implementation::grammar::endOfString;
 using dansandu::glyph::implementation::grammar::Rule;
 using dansandu::glyph::implementation::parsing_table::Action;

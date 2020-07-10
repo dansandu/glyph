@@ -14,11 +14,6 @@ constexpr auto endOfString = "$";
 
 using SymbolTable = std::map<std::string, std::vector<std::string>>;
 
-class GrammarError : std::runtime_error
-{
-    using runtime_error::runtime_error;
-};
-
 struct Rule
 {
     std::string leftSide;

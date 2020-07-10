@@ -1,4 +1,5 @@
 #include "dansandu/ballotin/container.hpp"
+#include "dansandu/glyph/error.hpp"
 #include "dansandu/glyph/implementation/grammar.hpp"
 
 #include <map>
@@ -10,10 +11,10 @@ using dansandu::glyph::implementation::grammar::operator<<;
 
 #include "catchorg/catch/catch.hpp"
 
+using dansandu::glyph::error::GrammarError;
 using dansandu::glyph::implementation::grammar::endOfString;
 using dansandu::glyph::implementation::grammar::getFirstTable;
 using dansandu::glyph::implementation::grammar::Grammar;
-using dansandu::glyph::implementation::grammar::GrammarError;
 using dansandu::glyph::implementation::grammar::Rule;
 using dansandu::glyph::implementation::grammar::SymbolTable;
 

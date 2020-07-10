@@ -1,5 +1,6 @@
 #include "dansandu/glyph/implementation/parsing_table.hpp"
 #include "dansandu/ballotin/exception.hpp"
+#include "dansandu/glyph/error.hpp"
 #include "dansandu/glyph/implementation/automaton.hpp"
 #include "dansandu/glyph/implementation/grammar.hpp"
 
@@ -9,6 +10,7 @@
 #include <string>
 #include <vector>
 
+using dansandu::glyph::error::ParsingError;
 using dansandu::glyph::implementation::automaton::Automaton;
 using dansandu::glyph::implementation::automaton::Item;
 using dansandu::glyph::implementation::grammar::endOfString;

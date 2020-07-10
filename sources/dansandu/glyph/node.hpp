@@ -8,7 +8,7 @@
 namespace dansandu::glyph::node
 {
 
-class Node
+class PRALINE_EXPORT Node
 {
     friend bool operator==(const Node& left, const Node& right);
 
@@ -37,10 +37,10 @@ private:
     std::vector<Node> children_;
 };
 
-bool operator==(const Node& left, const Node& right);
+PRALINE_EXPORT bool operator==(const Node& left, const Node& right);
 
-bool operator!=(const Node& left, const Node& right);
+PRALINE_EXPORT bool operator!=(const Node& left, const Node& right);
 
-std::ostream& operator<<(std::ostream& stream, const Node& node);
+PRALINE_EXPORT std::ostream& operator<<(std::ostream& stream, const Node& node);
 
 }

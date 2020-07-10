@@ -1,9 +1,10 @@
 #include "catchorg/catch/catch.hpp"
+#include "dansandu/glyph/error.hpp"
 #include "dansandu/glyph/token.hpp"
 
+using dansandu::glyph::error::TokenizationError;
 using dansandu::glyph::token::RegexTokenizer;
 using dansandu::glyph::token::Token;
-using dansandu::glyph::token::TokenizationError;
 
 // clang-format off
 TEST_CASE("Token") {
