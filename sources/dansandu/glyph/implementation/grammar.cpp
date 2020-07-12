@@ -21,8 +21,7 @@ using dansandu::glyph::error::GrammarError;
 namespace dansandu::glyph::implementation::grammar
 {
 
-static const auto grammarValidator = std::regex{
-    "(\\s*[a-zA-Z]+ *-> *(([a-zA-Z]+ +)*[a-zA-Z]+)?\\s*\\n)*\\s*[a-zA-Z]+ *-> *(([a-zA-Z]+ +)*[a-zA-Z]+)?\\s*"};
+static const auto productionRulePattern = std::regex{R"( *[a-zA-Z]+ *-> *(?:(?:[a-zA-Z]+ +)*[a-zA-Z]+ *)?)"};
 
 bool operator==(const Rule& left, const Rule& right)
 {
@@ -43,11 +42,11 @@ std::ostream& operator<<(std::ostream& stream, const Rule& rule)
 
 static std::vector<Rule> getRulesWork(std::string_view grammar)
 {
-    if (!std::regex_match(grammar.cbegin(), grammar.cend(), grammarValidator))
-        THROW(GrammarError, "invalid grammar ", grammar);
     auto rules = std::vector<Rule>{};
     for (const auto& line : split(grammar, "\n"))
     {
+        if (!std::regex_match(line.cbegin(), line.cend(), productionRulePattern))
+            THROW(GrammarError, "invalid production rule: ", line);
         auto rule = split(line, "->");
         if (rule.size() == 2)
             rules.push_back({trim(rule[0]), split(rule[1], " ")});

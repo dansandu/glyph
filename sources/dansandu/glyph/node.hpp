@@ -10,10 +10,6 @@ namespace dansandu::glyph::node
 
 class PRALINE_EXPORT Node
 {
-    friend bool operator==(const Node& left, const Node& right);
-
-    friend std::ostream& operator<<(std::ostream& stream, const Node& node);
-
 public:
     explicit Node(dansandu::glyph::token::Token token);
 
@@ -30,6 +26,8 @@ public:
     const Node& getChild(int index) const;
 
     int getChildrenCount() const;
+
+    bool equals(const Node& node) const;
 
 private:
     int ruleIndex_;

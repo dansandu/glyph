@@ -51,23 +51,28 @@ int Node::getChildrenCount() const
     return static_cast<int>(children_.size());
 }
 
+bool Node::equals(const Node& node) const
+{
+    return ruleIndex_ == node.ruleIndex_ && token_ == node.token_ && children_ == node.children_;
+}
+
 bool operator==(const Node& left, const Node& right)
 {
-    return left.ruleIndex_ == right.ruleIndex_ && left.token_ == right.token_ && left.children_ == right.children_;
+    return left.equals(right);
 }
 
 bool operator!=(const Node& left, const Node& right)
 {
-    return !(left == right);
+    return !left.equals(right);
 }
 
 std::ostream& operator<<(std::ostream& stream, const Node& node)
 {
     if (node.isToken())
-        return stream << node.token_;
-    stream << "Node(" << node.ruleIndex_;
-    for (const auto& child : node.children_)
-        stream << ", " << child;
+        return stream << node.getToken();
+    stream << "Node(" << node.getRuleIndex();
+    for (auto i = 0; i < node.getChildrenCount(); ++i)
+        stream << ", " << node.getChild(i);
     return stream << ")";
 }
 

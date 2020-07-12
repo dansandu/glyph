@@ -44,7 +44,7 @@ std::vector<Token> RegexTokenizer::operator()(std::string_view string) const
 {
     auto tokens = std::vector<Token>{};
     auto position = string.cbegin();
-    auto match = std::cmatch{};
+    auto match = std::match_results<decltype(position)>{};
     auto flags = std::regex_constants::match_continuous;
     for (; std::regex_search(position, string.cend(), match, pattern_, flags); position += match.length())
         for (auto group = 1, foundGroup = 0; group < static_cast<int>(match.size()); ++group)
