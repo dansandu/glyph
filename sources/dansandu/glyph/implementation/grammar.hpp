@@ -8,56 +8,71 @@
 namespace dansandu::glyph::implementation::grammar
 {
 
-constexpr auto startSymbol = "Start";
+class Symbol
+{
+public:
+    explicit Symbol(int identifierIndex, bool terminal) : identifierIndex_{identifierIndex}, terminal_{terminal} { }
 
-constexpr auto endOfString = "$";
+    int getIdentifierIndex() const { return identifierIndex_; }
 
-using SymbolTable = std::map<std::string, std::vector<std::string>>;
+    bool isTerminal() const { return terminal_; }
+private:
+    int identifierIndex_;
+    bool terminal_;
+};
 
 struct Rule
 {
-    std::string leftSide;
-    std::vector<std::string> rightSide;
+    Symbol leftSide;
+    std::vector<Symbol> rightSide;
 };
-
-bool operator==(const Rule& left, const Rule& right);
-
-bool operator!=(const Rule& left, const Rule& right);
-
-std::ostream& operator<<(std::ostream& stream, const Rule& rule);
 
 class Grammar
 {
 public:
+    constexpr auto start = Symbol{0}:
+    constexpr auto end   = Symbol{1};
+
     explicit Grammar(std::string grammar);
+
+    const std::string& getIdentifier(Symbol symbol) const
+    {
+        return identifiers_.at(symbol.getIdentifierIndex());
+    }
 
     const std::vector<Rule>& getRules() const
     {
         return rules_;
     }
 
-    const std::vector<std::string>& getNonterminals() const
+    const std::string& toString() const
     {
-        return nonterminals_;
-    }
-
-    const std::vector<std::string>& getTerminals() const
-    {
-        return terminals_;
-    }
-
-    const std::string& asString() const
-    {
-        return asString_;
+        return grammar_;
     }
 
 private:
-    std::string asString_;
+    std::vector<std::string> identifiers_;
     std::vector<Rule> rules_;
-    std::vector<std::string> nonterminals_;
-    std::vector<std::string> terminals_;
+    std::string grammar_;
 };
 
-SymbolTable getFirstTable(const Grammar& grammar);
+std::vector<std::vector<Symbol>> getFirstTable(const Grammar& grammar);
+
+inline bool operator==(Symbol a, Symbol b) { return a.getIdentifierIndex() == b.getIdentifierIndex(); }
+
+inline bool operator!=(Symbol a, Symbol b) { return !(a == b); }
+
+inline std::ostream& operator<<(std::ostream& stream, Symbol symbol)
+{
+    stream << "Symbol(" << symbol.getIdentifierIndex() << ", "
+           << (symbol.isTerminal() ? "terminal": "nonterminal") << ")";
+    return stream;
+}
+
+bool operator==(const Rule& left, const Rule& right);
+
+bool operator!=(const Rule& left, const Rule& right);
+
+std::ostream& operator<<(std::ostream& stream, const Rule& rule);
 
 }
