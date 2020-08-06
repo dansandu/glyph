@@ -5,7 +5,7 @@
 namespace dansandu::glyph::error
 {
 
-class GrammarError : std::runtime_error
+class GrammarError : public std::runtime_error
 {
     using runtime_error::runtime_error;
 };

@@ -1,25 +1,15 @@
 #pragma once
-#include <map>
+
+#include "dansandu/glyph/implementation/symbol.hpp"
+
 #include <ostream>
-#include <stdexcept>
 #include <string>
 #include <vector>
 
 namespace dansandu::glyph::implementation::grammar
 {
 
-class Symbol
-{
-public:
-    explicit Symbol(int identifierIndex, bool terminal) : identifierIndex_{identifierIndex}, terminal_{terminal} { }
-
-    int getIdentifierIndex() const { return identifierIndex_; }
-
-    bool isTerminal() const { return terminal_; }
-private:
-    int identifierIndex_;
-    bool terminal_;
-};
+using dansandu::glyph::implementation::symbol::Symbol;
 
 struct Rule
 {
@@ -30,14 +20,41 @@ struct Rule
 class Grammar
 {
 public:
-    constexpr auto start = Symbol{0}:
-    constexpr auto end   = Symbol{1};
-
     explicit Grammar(std::string grammar);
+
+    Symbol getStartSymbol() const
+    {
+        return Symbol{0};
+    }
+
+    Symbol getEndOfStringSymbol() const
+    {
+        return Symbol{terminalBeginIndex_};
+    }
+
+    Symbol getEmptySymbol() const
+    {
+        return Symbol{terminalBeginIndex_ + 1};
+    }
+
+    const std::vector<Symbol>& getFirstSet(Symbol symbol) const
+    {
+        return firstTable_[symbol.getIdentifierIndex()];
+    }
 
     const std::string& getIdentifier(Symbol symbol) const
     {
-        return identifiers_.at(symbol.getIdentifierIndex());
+        return identifiers_[symbol.getIdentifierIndex()];
+    }
+
+    bool isTerminal(Symbol symbol) const
+    {
+        return symbol.getIdentifierIndex() >= terminalBeginIndex_;
+    }
+
+    bool isNonTerminal(Symbol symbol) const
+    {
+        return symbol.getIdentifierIndex() < terminalBeginIndex_;
     }
 
     const std::vector<Rule>& getRules() const
@@ -51,23 +68,14 @@ public:
     }
 
 private:
+    void generateFirstTable();
+
     std::vector<std::string> identifiers_;
     std::vector<Rule> rules_;
+    std::vector<std::vector<Symbol>> firstTable_;
     std::string grammar_;
+    int terminalBeginIndex_;
 };
-
-std::vector<std::vector<Symbol>> getFirstTable(const Grammar& grammar);
-
-inline bool operator==(Symbol a, Symbol b) { return a.getIdentifierIndex() == b.getIdentifierIndex(); }
-
-inline bool operator!=(Symbol a, Symbol b) { return !(a == b); }
-
-inline std::ostream& operator<<(std::ostream& stream, Symbol symbol)
-{
-    stream << "Symbol(" << symbol.getIdentifierIndex() << ", "
-           << (symbol.isTerminal() ? "terminal": "nonterminal") << ")";
-    return stream;
-}
 
 bool operator==(const Rule& left, const Rule& right);
 

@@ -1,142 +1,250 @@
 #include "dansandu/glyph/implementation/grammar.hpp"
-#include "dansandu/ballotin/container.hpp"
 #include "dansandu/ballotin/exception.hpp"
+#include "dansandu/ballotin/relation.hpp"
 #include "dansandu/ballotin/string.hpp"
 #include "dansandu/glyph/error.hpp"
+#include "dansandu/glyph/implementation/multimap.hpp"
 
 #include <algorithm>
-#include <map>
 #include <regex>
+#include <set>
 #include <string>
+#include <tuple>
 #include <vector>
 
-using dansandu::ballotin::container::setInsert;
-using dansandu::ballotin::container::setUnion;
+using dansandu::ballotin::relation::total_order;
 using dansandu::ballotin::string::format;
 using dansandu::ballotin::string::join;
 using dansandu::ballotin::string::split;
 using dansandu::ballotin::string::trim;
 using dansandu::glyph::error::GrammarError;
+using dansandu::glyph::implementation::multimap::Multimap;
 
 namespace dansandu::glyph::implementation::grammar
 {
 
-static const auto productionRulePattern = std::regex{R"( *[a-zA-Z]+ *-> *(?:(?:[a-zA-Z]+ +)*[a-zA-Z]+ *)?)"};
-
-static std::pair<std::vector<std::string>, std::vector<Rule>> getIdentifiersAndRules(std::string_view grammar)
+Grammar::Grammar(std::string grammar) : grammar_{std::move(grammar)}
 {
-    auto identifiers = std::vector<std::string>{"Start", "$"};
-    auto getSymbol   = [&identifiers](const std::string& identifier)
+    static const auto productionRulePattern = std::regex{R"( *[a-zA-Z]+ *-> *(?:(?:[a-zA-Z]+ +)*[a-zA-Z]+ *)?)"};
+
+    auto leftSideColumn = std::vector<std::string>{};
+    auto rightSideColumn = std::vector<std::vector<std::string>>{};
+
+    for (const auto& line : split(grammar_, "\n"))
     {
-        if (auto position = std::find(identifiers.cbegin(), identifiers.cend(), identifier); position == identifiers.cend())
+        auto trimmedLine = trim(line);
+        if (trimmedLine.empty())
         {
-            identifiers.push_back(identifier);
-            return Symbol{identifiers.size() - 1};
+            continue;
+        }
+        if (!std::regex_match(trimmedLine.cbegin(), trimmedLine.cend(), productionRulePattern))
+        {
+            THROW(GrammarError, "invalid production rule: ", trimmedLine);
+        }
+        auto ruleTokens = split(trimmedLine, "->");
+        if (ruleTokens.size() == 2)
+        {
+            leftSideColumn.push_back(trim(ruleTokens[0]));
+
+            auto rightSide = std::vector<std::string>{};
+            for (const auto& identifier : split(ruleTokens[1], " "))
+            {
+                rightSide.push_back(trim(identifier));
+            }
+            rightSideColumn.push_back(std::move(rightSide));
+        }
+        else if (ruleTokens.size() == 1)
+        {
+            leftSideColumn.push_back(trim(ruleTokens[0]));
+            rightSideColumn.push_back({""});
         }
         else
         {
-            return Symbol{position - identifiers.cbegin()};
+            THROW(GrammarError, "ill-formed right side of production rule ", trimmedLine);
         }
-    };
+    }
 
-    auto rules = std::vector<Rule>{};
-    for (const auto& line : split(grammar, "\n"))
+    if (leftSideColumn.empty() || leftSideColumn.front() != "Start")
     {
-        if (!std::regex_match(line.cbegin(), line.cend(), productionRulePattern))
+        THROW(GrammarError, "the first production rule must be the start rule");
+    }
+
+    for (auto i = 1U; i < leftSideColumn.size(); ++i)
+    {
+        if (leftSideColumn[i] == "Start")
         {
-            THROW(GrammarError, "invalid production rule: ", line);
+            THROW(GrammarError, "there can only be one start production rule");
         }
-        auto rule = split(line, "->");
-        if (rule.size() == 2)
+    }
+
+    // Insert nonterminals first.
+    identifiers_ = std::vector<std::string>{{"Start"}};
+    for (const auto& identifier : leftSideColumn)
+    {
+        if (std::find(identifiers_.cbegin(), identifiers_.cend(), identifier) == identifiers_.cend())
         {
-            rightSide = std::vector<Symbol>{};
-            for (const auto& identifier : split(rule[1], " "))
+            identifiers_.push_back(identifier);
+        }
+    }
+
+    // Insert terminals next and mark the beginning of the terminals (end of string identifier).
+    terminalBeginIndex_ = identifiers_.size();
+    identifiers_.push_back("$");
+    identifiers_.push_back("");
+    for (const auto& rightSide : rightSideColumn)
+    {
+        for (const auto& identifier : rightSide)
+        {
+            // Ensures two things in one search:
+            // 1. It's not a non-terminal (first part of the vector).
+            // 2. The terminal isn't a duplicate (second part of the vector).
+            if (std::find(identifiers_.cbegin(), identifiers_.cend(), identifier) == identifiers_.cend())
             {
-                rightSide.push_back(getSymbol(trim(identifier)));
+                identifiers_.push_back(identifier);
             }
-            rules.push_back({getSymbol(trim(rule[0])), std::move(rightSide)});
         }
-        else if (rule.size() == 1)
+    }
+
+    for (auto ruleIndex = 0U; ruleIndex < leftSideColumn.size(); ++ruleIndex)
+    {
+        int identifierIndex =
+            std::find(identifiers_.cbegin(), identifiers_.cend(), leftSideColumn[ruleIndex]) - identifiers_.cbegin();
+        auto leftSideSymbol = Symbol{identifierIndex};
+        auto rightSideSymbols = std::vector<Symbol>{};
+        for (const auto& identifier : rightSideColumn[ruleIndex])
         {
-            rules.push_back({getSymbol(trim(rule[0])), {}});
+            int identifierIndex =
+                std::find(identifiers_.cbegin(), identifiers_.cend(), identifier) - identifiers_.cbegin();
+            rightSideSymbols.push_back(Symbol{identifierIndex});
+        }
+        rules_.push_back({leftSideSymbol, std::move(rightSideSymbols)});
+    }
+
+    generateFirstTable();
+}
+
+struct PartialItem : total_order<PartialItem>
+{
+    PartialItem(int ruleIndex, int position) : ruleIndex{ruleIndex}, position{position}
+    {
+    }
+
+    int ruleIndex;
+    int position;
+};
+
+bool operator<(PartialItem a, PartialItem b)
+{
+    return std::tie(a.ruleIndex, a.position) < std::tie(b.ruleIndex, b.position);
+}
+
+void Grammar::generateFirstTable()
+{
+    auto partitions = Multimap{};
+
+    for (const auto& rule : rules_)
+    {
+        for (auto symbol : rule.rightSide)
+        {
+            if (isTerminal(symbol))
+            {
+                partitions[symbol] = {symbol};
+            }
+        }
+    }
+
+    auto blanks = std::vector<Symbol>{};
+    auto rulesIndicesPath = std::vector<int>{};
+    auto visitedRulesIndices = std::vector<int>{};
+    auto stack = std::vector<std::pair<PartialItem, int>>{};
+    stack.push_back({PartialItem{0, 0}, -1});
+
+    while (!stack.empty())
+    {
+        auto& currentItem = stack.back().first;
+        if (currentItem.position == static_cast<int>(rules_[currentItem.ruleIndex].rightSide.size()) ||
+            rules_[currentItem.ruleIndex].rightSide[currentItem.position] == getEmptySymbol())
+        {
+            if (std::find(blanks.cbegin(), blanks.cend(), rules_[currentItem.ruleIndex].leftSide) == blanks.cend())
+            {
+                blanks.push_back(rules_[currentItem.ruleIndex].leftSide);
+            }
+            stack.pop_back();
+            continue;
+        }
+
+        auto currentSymbol = rules_[currentItem.ruleIndex].rightSide[currentItem.position];
+        if (isTerminal(currentSymbol))
+        {
+            partitions[rules_[currentItem.ruleIndex].leftSide].insert(currentSymbol);
+            stack.pop_back();
+            continue;
+        }
+
+        auto parentRuleIndex = stack.back().second;
+        while (!rulesIndicesPath.empty() && rulesIndicesPath.back() != parentRuleIndex)
+        {
+            rulesIndicesPath.pop_back();
+        }
+        rulesIndicesPath.push_back(currentItem.ruleIndex);
+        for (auto i = 0U; i < rulesIndicesPath.size(); ++i)
+        {
+            if (rules_[rulesIndicesPath[i]].leftSide == currentSymbol)
+            {
+                auto cycle = std::set<Symbol>{};
+                for (auto j = i; j < rulesIndicesPath.size(); ++j)
+                {
+                    cycle.insert(rules_[rulesIndicesPath[j]].leftSide);
+                }
+                partitions.merge(cycle);
+            }
+        }
+
+        auto childrenRulesIndices = std::vector<int>{};
+        for (auto ruleIndex = 0U; ruleIndex < rules_.size(); ++ruleIndex)
+        {
+            if (rules_[ruleIndex].leftSide == currentSymbol &&
+                std::find(visitedRulesIndices.cbegin(), visitedRulesIndices.cend(), ruleIndex) ==
+                    visitedRulesIndices.cend())
+            {
+                childrenRulesIndices.push_back(ruleIndex);
+            }
+        }
+        if (!childrenRulesIndices.empty())
+        {
+            visitedRulesIndices.insert(visitedRulesIndices.cend(), childrenRulesIndices.cbegin(),
+                                       childrenRulesIndices.cend());
+            for (auto ruleIndex : childrenRulesIndices)
+            {
+                stack.push_back({PartialItem{ruleIndex, 0}, currentItem.ruleIndex});
+            }
         }
         else
-            THROW(GrammarError, "ill-formed right side of production rule ", line);
-    }
-    return rules;
-}
-
-static std::pair<std::vector<std::string>, std::vector<std::string>> getNonTerminalsAndTerminals(const std::vector<Rule>& rules)
-{
-    auto nonterminals = std::vector<std::string>{};
-    for (const auto& rule : rules)
-        setInsert(nonterminals, rule.leftSide);
-    auto terminals = std::vector<std::string>{};
-    for (const auto& rule : rules)
-    {
-        for (const auto& symbol : rule.rightSide)
-            if (std::find(nonterminals.cbegin(), nonterminals.cend(), symbol) == nonterminals.cend())
-                setInsert(terminals, symbol);
-        if (rule.rightSide.empty())
-            setInsert(terminals, "");
-    }
-    return {std::move(nonterminals), std::move(terminals)};
-}
-
-Grammar::Grammar(std::string grammar)
-{
-    auto identifiersAndRules = getIdentifiersAndRules(grammar);
-    identifiers_ = std::move(identifiersAndRules.first);
-    rules_ = std::move(identifiersAndRules.second);
-    auto symbols = getSymbols(rules_);
-    nonterminals_ = std::move(symbols.first);
-    terminals_ = std::move(symbols.second);
-    asString_ = grammar;
-}
-
-static void populateFirstOf(const std::string& symbol, const std::vector<Rule>& rules, SymbolTable& firstTable)
-{
-    if (firstTable.find(symbol) != firstTable.end())
-        return;
-
-    auto& firstSet = firstTable[symbol];
-    for (const auto& rule : rules)
-        if (symbol == rule.leftSide)
         {
-            if (rule.rightSide.empty())
-                setInsert(firstSet, "");
-            auto allOfRightHasEmpty = true;
-            for (const auto& rightSymbol : rule.rightSide)
+            const auto& firstSet = partitions[currentSymbol];
+            partitions[rules_[currentItem.ruleIndex].leftSide].insert(firstSet.cbegin(), firstSet.cend());
+            if (std::find(blanks.cbegin(), blanks.cend(), currentSymbol) != blanks.cend())
             {
-                populateFirstOf(rightSymbol, rules, firstTable);
-                const auto& firstOfRight = firstTable[rightSymbol];
-                auto emptyPosition = std::find(firstOfRight.cbegin(), firstOfRight.cend(), "");
-                if (emptyPosition != firstOfRight.cend())
-                {
-                    auto copy = std::vector<std::string>{firstOfRight.cbegin(), emptyPosition};
-                    copy.insert(copy.end(), emptyPosition + 1, firstOfRight.cend());
-                    firstSet = setUnion(firstSet, copy);
-                }
-                else
-                {
-                    firstSet = setUnion(firstSet, firstOfRight);
-                    allOfRightHasEmpty = false;
-                    break;
-                }
+                ++currentItem.position;
             }
-            if (allOfRightHasEmpty)
-                setInsert(firstSet, "");
+            else
+            {
+                stack.pop_back();
+            }
         }
-}
+    }
 
-SymbolTable getFirstTable(const Grammar& grammar)
-{
-    auto firstTable = SymbolTable{};
-    for (const auto& terminal : grammar.getTerminals())
-        firstTable[terminal] = {terminal};
-    for (const auto& nonterminal : grammar.getNonterminals())
-        populateFirstOf(nonterminal, grammar.getRules(), firstTable);
-    return firstTable;
+    firstTable_ = std::vector<std::vector<Symbol>>{identifiers_.size()};
+    partitions.forEach([this](const auto& partition, const auto& firstSet) {
+        for (auto symbol : partition)
+        {
+            firstTable_[symbol.getIdentifierIndex()] = std::vector<Symbol>{firstSet.cbegin(), firstSet.cend()};
+        }
+    });
+    for (auto symbol : blanks)
+    {
+        firstTable_[symbol.getIdentifierIndex()].push_back(getEmptySymbol());
+    }
 }
 
 bool operator==(const Rule& left, const Rule& right)
@@ -151,9 +259,7 @@ bool operator!=(const Rule& left, const Rule& right)
 
 std::ostream& operator<<(std::ostream& stream, const Rule& rule)
 {
-    return stream << "'" << rule.leftSide << "'"
-                  << " -> "
-                  << "'" << join(rule.rightSide, "' '") << "'";
+    return stream << rule.leftSide << " -> " << join(rule.rightSide, " ");
 }
 
 }
