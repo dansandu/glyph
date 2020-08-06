@@ -142,15 +142,9 @@ void Grammar::generateFirstTable()
 {
     auto partitions = Multimap{};
 
-    for (const auto& rule : rules_)
+    for (auto i = terminalBeginIndex_ + 1; i < static_cast<int>(identifiers_.size()); ++i)
     {
-        for (auto symbol : rule.rightSide)
-        {
-            if (isTerminal(symbol))
-            {
-                partitions[symbol] = {symbol};
-            }
-        }
+        partitions[Symbol{i}] = {Symbol{i}};
     }
 
     auto blanks = std::vector<Symbol>{};
