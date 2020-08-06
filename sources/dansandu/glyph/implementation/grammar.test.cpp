@@ -56,77 +56,95 @@ TEST_CASE("Grammar")
         auto number = Symbol{7};
         auto id     = Symbol{8};
         
-        auto rules = std::vector<Rule>{
-            Rule{start, {s}},
-            Rule{s,     {sum}},
-            Rule{s,     {empty}},
-            Rule{sum,   {sum, add, value}},
-            Rule{sum,   {value}},
-            Rule{value, {number}},
-            Rule{value, {id}}
-        };
-
         auto grammar = Grammar{text};
-
-        REQUIRE(grammar.getRules() == rules);
 
         REQUIRE(grammar.toString() == text);
 
-        REQUIRE(grammar.getStartSymbol() == start);
+        SECTION("rules")
+        {
+            auto rules = std::vector<Rule>{
+                Rule{start, {s}},
+                Rule{s,     {sum}},
+                Rule{s,     {empty}},
+                Rule{sum,   {sum, add, value}},
+                Rule{sum,   {value}},
+                Rule{value, {number}},
+                Rule{value, {id}}
+            };
 
-        REQUIRE(grammar.getEndOfStringSymbol() == end);
+            REQUIRE(grammar.getRules() == rules);
+        }
 
-        REQUIRE(grammar.getEmptySymbol() == empty);
+        SECTION("special symbols")
+        {
+            REQUIRE(grammar.getStartSymbol() == start);
 
-        REQUIRE(grammar.getIdentifier(start) == "Start");
+            REQUIRE(grammar.getEndOfStringSymbol() == end);
 
-        REQUIRE(grammar.getIdentifier(s) == "S");
+            REQUIRE(grammar.getEmptySymbol() == empty);
+        }
 
-        REQUIRE(grammar.getIdentifier(sum) == "Sum");
+        SECTION("identifiers")
+        {
+            REQUIRE(grammar.getIdentifier(start) == "Start");
 
-        REQUIRE(grammar.getIdentifier(add) == "add");
+            REQUIRE(grammar.getIdentifier(s) == "S");
 
-        REQUIRE(grammar.getIdentifier(value) == "Value");
+            REQUIRE(grammar.getIdentifier(sum) == "Sum");
 
-        REQUIRE(grammar.getIdentifier(number) == "number");
+            REQUIRE(grammar.getIdentifier(add) == "add");
 
-        REQUIRE(grammar.getIdentifier(id) == "id");
+            REQUIRE(grammar.getIdentifier(value) == "Value");
 
-        REQUIRE(grammar.getIdentifier(empty) == "");
+            REQUIRE(grammar.getIdentifier(number) == "number");
 
-        REQUIRE(grammar.getIdentifier(end) == "$");
+            REQUIRE(grammar.getIdentifier(id) == "id");
 
-        REQUIRE(grammar.isNonTerminal(start));
+            REQUIRE(grammar.getIdentifier(empty) == "");
 
-        REQUIRE(grammar.isNonTerminal(sum));
+            REQUIRE(grammar.getIdentifier(end) == "$");
+        }
 
-        REQUIRE(grammar.isNonTerminal(value));
+        SECTION("non-terminals")
+        {
+            REQUIRE(grammar.isNonTerminal(start));
 
-        REQUIRE(grammar.isNonTerminal(s));
+            REQUIRE(grammar.isNonTerminal(sum));
 
-        REQUIRE(grammar.isTerminal(add));
+            REQUIRE(grammar.isNonTerminal(value));
 
-        REQUIRE(grammar.isTerminal(number));
+            REQUIRE(grammar.isNonTerminal(s));
+        }
 
-        REQUIRE(grammar.isTerminal(id));
+        SECTION("terminals")
+        {
+            REQUIRE(grammar.isTerminal(add));
 
-        REQUIRE(grammar.isTerminal(end));
+            REQUIRE(grammar.isTerminal(number));
 
-        REQUIRE(grammar.isTerminal(empty));
+            REQUIRE(grammar.isTerminal(id));
 
-        REQUIRE(grammar.getFirstSet(start) == std::vector<Symbol>{number, id, empty});
+            REQUIRE(grammar.isTerminal(end));
 
-        REQUIRE(grammar.getFirstSet(s) == std::vector<Symbol>{number, id, empty});
+            REQUIRE(grammar.isTerminal(empty));
+        }
 
-        REQUIRE(grammar.getFirstSet(sum) == std::vector<Symbol>{number, id});
+        SECTION("first sets")
+        {
+            REQUIRE(grammar.getFirstSet(start) == std::vector<Symbol>{number, id, empty});
 
-        REQUIRE(grammar.getFirstSet(value) == std::vector<Symbol>{number, id});
+            REQUIRE(grammar.getFirstSet(s) == std::vector<Symbol>{number, id, empty});
 
-        REQUIRE(grammar.getFirstSet(number) == std::vector<Symbol>{number});
+            REQUIRE(grammar.getFirstSet(sum) == std::vector<Symbol>{number, id});
 
-        REQUIRE(grammar.getFirstSet(id) == std::vector<Symbol>{id});
+            REQUIRE(grammar.getFirstSet(value) == std::vector<Symbol>{number, id});
 
-        REQUIRE(grammar.getFirstSet(empty) == std::vector<Symbol>{empty});
+            REQUIRE(grammar.getFirstSet(number) == std::vector<Symbol>{number});
+
+            REQUIRE(grammar.getFirstSet(id) == std::vector<Symbol>{id});
+
+            REQUIRE(grammar.getFirstSet(empty) == std::vector<Symbol>{empty});
+        }
     }
 
     SECTION("grammar #2")
@@ -156,88 +174,112 @@ TEST_CASE("Grammar")
         auto c       = Symbol{9};
         auto d       = Symbol{10};
 
-        auto rules = std::vector<Rule>{
-            Rule{Start, {A, B, C, D}},
-            Rule{A,     {a}},
-            Rule{A,     {empty}},
-            Rule{B,     {C, D}},
-            Rule{B,     {b}},
-            Rule{C,     {c}},
-            Rule{C,     {empty}},
-            Rule{D,     {A, a}},
-            Rule{D,     {d}},
-            Rule{D,     {empty}}
-        };
-
         auto grammar = Grammar{text};
 
         REQUIRE(grammar.toString() == text);
 
-        REQUIRE(grammar.getRules() == rules);
+        SECTION("rules")
+        {
+            auto rules = std::vector<Rule>{
+                Rule{Start, {A, B, C, D}},
+                Rule{A,     {a}},
+                Rule{A,     {empty}},
+                Rule{B,     {C, D}},
+                Rule{B,     {b}},
+                Rule{C,     {c}},
+                Rule{C,     {empty}},
+                Rule{D,     {A, a}},
+                Rule{D,     {d}},
+                Rule{D,     {empty}}
+            };
 
-        REQUIRE(grammar.isNonTerminal(Start));
+            REQUIRE(grammar.getRules() == rules);
+        }
 
-        REQUIRE(grammar.isNonTerminal(A));
+        SECTION("special symbols")
+        {
+            REQUIRE(grammar.getStartSymbol() == Start);
 
-        REQUIRE(grammar.isNonTerminal(B));
+            REQUIRE(grammar.getEndOfStringSymbol() == end);
 
-        REQUIRE(grammar.isNonTerminal(C));
+            REQUIRE(grammar.getEmptySymbol() == empty);
+        }
 
-        REQUIRE(grammar.isNonTerminal(D));
+        SECTION("non-terminals")
+        {
+            REQUIRE(grammar.isNonTerminal(Start));
 
-        REQUIRE(grammar.isTerminal(end));
+            REQUIRE(grammar.isNonTerminal(A));
 
-        REQUIRE(grammar.isTerminal(empty));
+            REQUIRE(grammar.isNonTerminal(B));
 
-        REQUIRE(grammar.isTerminal(a));
+            REQUIRE(grammar.isNonTerminal(C));
 
-        REQUIRE(grammar.isTerminal(b));
+            REQUIRE(grammar.isNonTerminal(D));
+        }
 
-        REQUIRE(grammar.isTerminal(c));
+        SECTION("terminals")
+        {
+            REQUIRE(grammar.isTerminal(end));
 
-        REQUIRE(grammar.isTerminal(d));
+            REQUIRE(grammar.isTerminal(empty));
 
-        REQUIRE(grammar.getIdentifier(Start) == "Start");
+            REQUIRE(grammar.isTerminal(a));
 
-        REQUIRE(grammar.getIdentifier(A) == "A");
+            REQUIRE(grammar.isTerminal(b));
 
-        REQUIRE(grammar.getIdentifier(B) == "B");
+            REQUIRE(grammar.isTerminal(c));
 
-        REQUIRE(grammar.getIdentifier(C) == "C");
+            REQUIRE(grammar.isTerminal(d));
+        }
 
-        REQUIRE(grammar.getIdentifier(D) == "D");
+        SECTION("identifiers")
+        {
+            REQUIRE(grammar.getIdentifier(Start) == "Start");
 
-        REQUIRE(grammar.getIdentifier(end) == "$");
+            REQUIRE(grammar.getIdentifier(A) == "A");
 
-        REQUIRE(grammar.getIdentifier(empty) == "");
+            REQUIRE(grammar.getIdentifier(B) == "B");
 
-        REQUIRE(grammar.getIdentifier(a) == "a");
+            REQUIRE(grammar.getIdentifier(C) == "C");
 
-        REQUIRE(grammar.getIdentifier(b) == "b");
+            REQUIRE(grammar.getIdentifier(D) == "D");
 
-        REQUIRE(grammar.getIdentifier(c) == "c");
+            REQUIRE(grammar.getIdentifier(end) == "$");
 
-        REQUIRE(grammar.getIdentifier(d) == "d");
+            REQUIRE(grammar.getIdentifier(empty) == "");
 
-        REQUIRE(grammar.getFirstSet(Start) == std::vector<Symbol>{a, b, c, d, empty});
+            REQUIRE(grammar.getIdentifier(a) == "a");
 
-        REQUIRE(grammar.getFirstSet(A) == std::vector<Symbol>{a, empty});
+            REQUIRE(grammar.getIdentifier(b) == "b");
 
-        REQUIRE(grammar.getFirstSet(B) == std::vector<Symbol>{a, b, c, d, empty});
+            REQUIRE(grammar.getIdentifier(c) == "c");
 
-        REQUIRE(grammar.getFirstSet(C) == std::vector<Symbol>{c, empty});
+            REQUIRE(grammar.getIdentifier(d) == "d");
+        }
 
-        REQUIRE(grammar.getFirstSet(D) == std::vector<Symbol>{a, d, empty});
+        SECTION("first sets")
+        {
+            REQUIRE(grammar.getFirstSet(Start) == std::vector<Symbol>{a, b, c, d, empty});
 
-        REQUIRE(grammar.getFirstSet(a) == std::vector<Symbol>{a});
+            REQUIRE(grammar.getFirstSet(A) == std::vector<Symbol>{a, empty});
 
-        REQUIRE(grammar.getFirstSet(b) == std::vector<Symbol>{b});
+            REQUIRE(grammar.getFirstSet(B) == std::vector<Symbol>{a, b, c, d, empty});
 
-        REQUIRE(grammar.getFirstSet(c) == std::vector<Symbol>{c});
+            REQUIRE(grammar.getFirstSet(C) == std::vector<Symbol>{c, empty});
 
-        REQUIRE(grammar.getFirstSet(d) == std::vector<Symbol>{d});
+            REQUIRE(grammar.getFirstSet(D) == std::vector<Symbol>{a, d, empty});
 
-        REQUIRE(grammar.getFirstSet(empty) == std::vector<Symbol>{empty});
+            REQUIRE(grammar.getFirstSet(a) == std::vector<Symbol>{a});
+
+            REQUIRE(grammar.getFirstSet(b) == std::vector<Symbol>{b});
+
+            REQUIRE(grammar.getFirstSet(c) == std::vector<Symbol>{c});
+
+            REQUIRE(grammar.getFirstSet(d) == std::vector<Symbol>{d});
+
+            REQUIRE(grammar.getFirstSet(empty) == std::vector<Symbol>{empty});
+        }
     }
 }
 // clang-format on
