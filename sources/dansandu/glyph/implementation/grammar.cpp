@@ -165,7 +165,7 @@ void Grammar::generateFirstTable()
 
     while (!stack.empty())
     {
-        auto& currentItem = stack.back().first;
+        auto currentItem = stack.back().first;
         if (currentItem.position == static_cast<int>(rules_[currentItem.ruleIndex].rightSide.size()) ||
             rules_[currentItem.ruleIndex].rightSide[currentItem.position] == getEmptySymbol())
         {
@@ -219,16 +219,7 @@ void Grammar::generateFirstTable()
                 childrenRulesIndices.push_back(ruleIndex);
             }
         }
-        if (!childrenRulesIndices.empty())
-        {
-            visitedRulesIndices.insert(visitedRulesIndices.cend(), childrenRulesIndices.cbegin(),
-                                       childrenRulesIndices.cend());
-            for (auto ruleIndex : childrenRulesIndices)
-            {
-                stack.push_back({PartialItem{ruleIndex, 0}, currentItem.ruleIndex});
-            }
-        }
-        else
+        if (childrenRulesIndices.empty())
         {
             partitions[currentSymbol];
             partitions[rules_[currentItem.ruleIndex].leftSide];
@@ -243,11 +234,20 @@ void Grammar::generateFirstTable()
             }
             if (contains(blanks, currentSymbol))
             {
-                ++currentItem.position;
+                ++stack.back().first.position;
             }
             else
             {
                 stack.pop_back();
+            }
+        }
+        else
+        {
+            visitedRulesIndices.insert(visitedRulesIndices.cend(), childrenRulesIndices.cbegin(),
+                                       childrenRulesIndices.cend());
+            for (auto ruleIndex : childrenRulesIndices)
+            {
+                stack.push_back({PartialItem{ruleIndex, 0}, currentItem.ruleIndex});
             }
         }
     }
