@@ -4,6 +4,7 @@
 #include "dansandu/glyph/implementation/grammar.hpp"
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -11,6 +12,16 @@ using dansandu::glyph::error::GrammarError;
 using dansandu::glyph::implementation::grammar::Grammar;
 using dansandu::glyph::implementation::grammar::Rule;
 using dansandu::glyph::implementation::grammar::Symbol;
+
+static std::set<Symbol> set(const std::vector<Symbol>& l)
+{
+    return std::set<Symbol>{l.cbegin(), l.cend()};
+}
+
+static std::set<Symbol> set(std::initializer_list<Symbol> l)
+{
+    return std::set<Symbol>{l.begin(), l.end()};
+}
 
 // clang-format off
 TEST_CASE("Grammar")
@@ -131,19 +142,19 @@ TEST_CASE("Grammar")
 
         SECTION("first sets")
         {
-            REQUIRE(grammar.getFirstSet(start) == std::vector<Symbol>{id, number, empty});
+            REQUIRE(set(grammar.getFirstSet(start)) == set({id, number, empty}));
 
-            REQUIRE(grammar.getFirstSet(s) == std::vector<Symbol>{id, number, empty});
+            REQUIRE(set(grammar.getFirstSet(s)) == set({id, number, empty}));
 
-            REQUIRE(grammar.getFirstSet(sum) == std::vector<Symbol>{id, number});
+            REQUIRE(set(grammar.getFirstSet(sum)) == set({id, number}));
 
-            REQUIRE(grammar.getFirstSet(value) == std::vector<Symbol>{id, number});
+            REQUIRE(set(grammar.getFirstSet(value)) == set({id, number}));
 
-            REQUIRE(grammar.getFirstSet(number) == std::vector<Symbol>{number});
+            REQUIRE(set(grammar.getFirstSet(number)) == set({number}));
 
-            REQUIRE(grammar.getFirstSet(id) == std::vector<Symbol>{id});
+            REQUIRE(set(grammar.getFirstSet(id)) == set({id}));
 
-            REQUIRE(grammar.getFirstSet(empty) == std::vector<Symbol>{empty});
+            REQUIRE(set(grammar.getFirstSet(empty)) == set({empty}));
         }
     }
 
@@ -260,25 +271,25 @@ TEST_CASE("Grammar")
 
         SECTION("first sets")
         {
-            REQUIRE(grammar.getFirstSet(Start) == std::vector<Symbol>{a, b, c, d, empty});
+            REQUIRE(set(grammar.getFirstSet(Start)) == set({a, b, c, d, empty}));
 
-            REQUIRE(grammar.getFirstSet(A) == std::vector<Symbol>{a, empty});
+            REQUIRE(set(grammar.getFirstSet(A)) == set({a, empty}));
 
-            REQUIRE(grammar.getFirstSet(B) == std::vector<Symbol>{b, c, d, a, empty});
+            REQUIRE(set(grammar.getFirstSet(B)) == set({b, c, d, a, empty}));
 
-            REQUIRE(grammar.getFirstSet(C) == std::vector<Symbol>{c, empty});
+            REQUIRE(set(grammar.getFirstSet(C)) == set({c, empty}));
 
-            REQUIRE(grammar.getFirstSet(D) == std::vector<Symbol>{d, a, empty});
+            REQUIRE(set(grammar.getFirstSet(D)) == set({d, a, empty}));
 
-            REQUIRE(grammar.getFirstSet(a) == std::vector<Symbol>{a});
+            REQUIRE(set(grammar.getFirstSet(a)) == set({a}));
 
-            REQUIRE(grammar.getFirstSet(b) == std::vector<Symbol>{b});
+            REQUIRE(set(grammar.getFirstSet(b)) == set({b}));
 
-            REQUIRE(grammar.getFirstSet(c) == std::vector<Symbol>{c});
+            REQUIRE(set(grammar.getFirstSet(c)) == set({c}));
 
-            REQUIRE(grammar.getFirstSet(d) == std::vector<Symbol>{d});
+            REQUIRE(set(grammar.getFirstSet(d)) == set({d}));
 
-            REQUIRE(grammar.getFirstSet(empty) == std::vector<Symbol>{empty});
+            REQUIRE(set(grammar.getFirstSet(empty)) == set({empty}));
         }
     }
 
@@ -354,18 +365,137 @@ TEST_CASE("Grammar")
 
         SECTION("first sets")
         {
-            REQUIRE(grammar.getFirstSet(Start) == std::vector<Symbol>{b, a});
+            REQUIRE(set(grammar.getFirstSet(Start)) == set({b, a}));
         
-            REQUIRE(grammar.getFirstSet(A) == std::vector<Symbol>{b, a});
+            REQUIRE(set(grammar.getFirstSet(A)) == set({b, a}));
 
-            REQUIRE(grammar.getFirstSet(B) == std::vector<Symbol>{b, a, empty});
+            REQUIRE(set(grammar.getFirstSet(B)) == set({b, a, empty}));
 
-            REQUIRE(grammar.getFirstSet(a) == std::vector<Symbol>{a});
+            REQUIRE(set(grammar.getFirstSet(a)) == set({a}));
 
-            REQUIRE(grammar.getFirstSet(b) == std::vector<Symbol>{b});
+            REQUIRE(set(grammar.getFirstSet(b)) == set({b}));
 
-            REQUIRE(grammar.getFirstSet(empty) == std::vector<Symbol>{empty});
+            REQUIRE(set(grammar.getFirstSet(empty)) == set({empty}));
         }
+    }
+
+    SECTION("grammar #4")
+    {
+        auto text = R"(
+            Start -> X
+            X -> A1
+            X -> C1
+            A1 -> A2
+            A1 -> B1
+            A2 -> A3
+            A2 -> a
+            A3 -> A1
+            A3 -> E
+            B1 -> B2 B3
+            B2 -> B3
+            B2 -> b
+            B2 ->
+            B3 -> B4
+            B3 -> B1
+            B3 -> F
+            B4 -> B1
+            B4 -> D2
+            C1 -> C2
+            C1 -> c
+            C1 ->
+            C2 -> C1
+            C2 -> D1
+            D1 -> D2
+            D1 -> D3
+            D2 -> D1
+            D2 -> D3
+            D3 -> D1
+            D3 -> D2
+            D3 -> G
+            D3 -> d
+            E -> e
+            F -> f
+            G -> g
+        )";
+
+        auto grammar = Grammar{text};
+
+        auto Start = Symbol{0};
+        auto X     = Symbol{1};
+        auto A1    = Symbol{2};
+        auto A2    = Symbol{3};
+        auto A3    = Symbol{4};
+        auto B1    = Symbol{5};
+        auto B2    = Symbol{6};
+        auto B3    = Symbol{7};
+        auto B4    = Symbol{8};
+        auto C1    = Symbol{9};
+        auto C2    = Symbol{10};
+        auto D1    = Symbol{11};
+        auto D2    = Symbol{12};
+        auto D3    = Symbol{13};
+        auto E     = Symbol{14};
+        auto F     = Symbol{15};
+        auto G     = Symbol{16};
+        auto end   = Symbol{17};
+        auto empty = Symbol{18};
+        auto a     = Symbol{19};
+        auto b     = Symbol{20};
+        auto c     = Symbol{21};
+        auto d     = Symbol{22};
+        auto e     = Symbol{23};
+        auto f     = Symbol{24};
+        auto g     = Symbol{25};
+
+        REQUIRE(set(grammar.getFirstSet(Start)) == set({b, f, g, c, a, e, d, empty}));
+
+        REQUIRE(set(grammar.getFirstSet(G)) == set({g}));
+
+        REQUIRE(set(grammar.getFirstSet(D2)) == set({g, d}));
+
+        REQUIRE(set(grammar.getFirstSet(D3)) == set({g, d}));
+
+        REQUIRE(set(grammar.getFirstSet(D1)) == set({g, d}));
+
+        REQUIRE(set(grammar.getFirstSet(C2)) == set({c, empty, d, g}));
+
+        REQUIRE(set(grammar.getFirstSet(C1)) == set({c, empty, d, g}));
+
+        REQUIRE(set(grammar.getFirstSet(X)) == set({b, empty, f, g, c, a, e, d}));
+
+        REQUIRE(set(grammar.getFirstSet(F)) == set({f}));
+
+        REQUIRE(set(grammar.getFirstSet(B3)) == set({f, g, d, b}));
+
+        REQUIRE(set(grammar.getFirstSet(B1)) == set({f, g, d, b}));
+
+        REQUIRE(set(grammar.getFirstSet(B2)) == set({empty, f, d, b, g}));
+
+        REQUIRE(set(grammar.getFirstSet(B4)) == set({f, g, d, b}));
+
+        REQUIRE(set(grammar.getFirstSet(E)) == set({e}));
+
+        REQUIRE(set(grammar.getFirstSet(A3)) == set({b, d, f, a, e, g}));
+
+        REQUIRE(set(grammar.getFirstSet(A1)) == set({b, d, f, a, e, g}));
+
+        REQUIRE(set(grammar.getFirstSet(A2)) == set({b, d, f, a, e, g}));
+
+        REQUIRE(set(grammar.getFirstSet(a)) == set({a}));
+
+        REQUIRE(set(grammar.getFirstSet(b)) == set({b}));
+
+        REQUIRE(set(grammar.getFirstSet(c)) == set({c}));
+
+        REQUIRE(set(grammar.getFirstSet(d)) == set({d}));
+
+        REQUIRE(set(grammar.getFirstSet(e)) == set({e}));
+
+        REQUIRE(set(grammar.getFirstSet(f)) == set({f}));
+
+        REQUIRE(set(grammar.getFirstSet(g)) == set({g}));
+
+        REQUIRE(set(grammar.getFirstSet(empty)) == set({empty}));
     }
 }
 // clang-format on

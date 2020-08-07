@@ -37,7 +37,8 @@ auto contains(const std::vector<T>& container, const U& value)
 
 Grammar::Grammar(std::string grammar) : grammar_{std::move(grammar)}
 {
-    static const auto productionRulePattern = std::regex{R"( *[a-zA-Z]+ *-> *(?:(?:[a-zA-Z]+ +)*[a-zA-Z]+ *)?)"};
+    static const auto productionRulePattern =
+        std::regex{R"( *[a-zA-Z0-9]+ *-> *(?:(?:[a-zA-Z0-9]+ +)*[a-zA-Z0-9]+ *)?)"};
 
     auto leftSideColumn = std::vector<std::string>{};
     auto rightSideColumn = std::vector<std::vector<std::string>>{};
@@ -135,6 +136,11 @@ Grammar::Grammar(std::string grammar) : grammar_{std::move(grammar)}
 
 struct PartialItem : total_order<PartialItem>
 {
+    friend bool operator<(PartialItem a, PartialItem b)
+    {
+        return std::tie(a.ruleIndex, a.position) < std::tie(b.ruleIndex, b.position);
+    }
+
     PartialItem(int ruleIndex, int position) : ruleIndex{ruleIndex}, position{position}
     {
     }
@@ -142,11 +148,6 @@ struct PartialItem : total_order<PartialItem>
     int ruleIndex;
     int position;
 };
-
-bool operator<(PartialItem a, PartialItem b)
-{
-    return std::tie(a.ruleIndex, a.position) < std::tie(b.ruleIndex, b.position);
-}
 
 void Grammar::generateFirstTable()
 {
