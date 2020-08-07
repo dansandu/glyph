@@ -1,17 +1,25 @@
 #include "dansandu/glyph/implementation/multimap.hpp"
+#include "dansandu/ballotin/string.hpp"
 
 #include <algorithm>
 
+using dansandu::ballotin::string::join;
 using dansandu::glyph::implementation::symbol::Symbol;
 
 namespace dansandu::glyph::implementation::multimap
 {
 
-std::set<Symbol>& Multimap::operator[](Symbol key)
+template<typename T>
+auto find(const std::vector<T>& container, const T& value)
+{
+    return std::find(container.cbegin(), container.cend(), value);
+}
+
+std::vector<Symbol>& Multimap::operator[](Symbol key)
 {
     for (auto index = 0U; index < partitions_.size(); ++index)
     {
-        if (partitions_[index].count(key))
+        if (find(partitions_[index], key) != partitions_[index].cend())
         {
             return values_[index];
         }
@@ -21,17 +29,29 @@ std::set<Symbol>& Multimap::operator[](Symbol key)
     return values_.back();
 }
 
-void Multimap::merge(std::set<Symbol> partition)
+void Multimap::merge(std::vector<Symbol> partition)
 {
     auto index = 0U;
-    auto value = std::set<Symbol>{};
+    auto value = std::vector<Symbol>{};
     while (index < partitions_.size())
     {
         if (std::any_of(partitions_[index].cbegin(), partitions_[index].cend(),
-                        [&partition](const auto& element) { return partition.count(element); }))
+                        [&partition](auto symbol) { return find(partition, symbol) != partition.cend(); }))
         {
-            partition.merge(partitions_[index]);
-            value.merge(values_[index]);
+            for (auto symbol : partitions_[index])
+            {
+                if (find(partition, symbol) == partition.cend())
+                {
+                    partition.push_back(symbol);
+                }
+            }
+            for (auto symbol : values_[index])
+            {
+                if (find(value, symbol) == value.cend())
+                {
+                    value.push_back(symbol);
+                }
+            }
             partitions_.erase(partitions_.begin() + index);
             values_.erase(values_.begin() + index);
         }
@@ -42,6 +62,15 @@ void Multimap::merge(std::set<Symbol> partition)
     }
     partitions_.push_back(std::move(partition));
     values_.push_back(std::move(value));
+}
+
+std::ostream& operator<<(std::ostream& stream, const Multimap& multimap)
+{
+    auto parts = std::vector<std::string>{};
+    multimap.forEach([&parts](const auto& partition, const auto& values) {
+        parts.push_back("{" + join(partition, ", ") + "}: {" + join(values, ", ") + "}");
+    });
+    return stream << "{" << join(parts, ", ") << "}";
 }
 
 }

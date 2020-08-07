@@ -23,6 +23,18 @@ using dansandu::glyph::implementation::multimap::Multimap;
 namespace dansandu::glyph::implementation::grammar
 {
 
+template<typename T, typename U>
+auto find(const std::vector<T>& container, const U& value)
+{
+    return std::find(container.cbegin(), container.cend(), value);
+}
+
+template<typename T, typename U>
+auto contains(const std::vector<T>& container, const U& value)
+{
+    return std::find(container.cbegin(), container.cend(), value) != container.cend();
+}
+
 Grammar::Grammar(std::string grammar) : grammar_{std::move(grammar)}
 {
     static const auto productionRulePattern = std::regex{R"( *[a-zA-Z]+ *-> *(?:(?:[a-zA-Z]+ +)*[a-zA-Z]+ *)?)"};
@@ -81,7 +93,7 @@ Grammar::Grammar(std::string grammar) : grammar_{std::move(grammar)}
     identifiers_ = std::vector<std::string>{{"Start"}};
     for (const auto& identifier : leftSideColumn)
     {
-        if (std::find(identifiers_.cbegin(), identifiers_.cend(), identifier) == identifiers_.cend())
+        if (!contains(identifiers_, identifier))
         {
             identifiers_.push_back(identifier);
         }
@@ -98,7 +110,7 @@ Grammar::Grammar(std::string grammar) : grammar_{std::move(grammar)}
             // Ensures two things in one search:
             // 1. It's not a non-terminal (first part of the vector).
             // 2. The terminal isn't a duplicate (second part of the vector).
-            if (std::find(identifiers_.cbegin(), identifiers_.cend(), identifier) == identifiers_.cend())
+            if (!contains(identifiers_, identifier))
             {
                 identifiers_.push_back(identifier);
             }
@@ -107,14 +119,12 @@ Grammar::Grammar(std::string grammar) : grammar_{std::move(grammar)}
 
     for (auto ruleIndex = 0U; ruleIndex < leftSideColumn.size(); ++ruleIndex)
     {
-        int identifierIndex =
-            std::find(identifiers_.cbegin(), identifiers_.cend(), leftSideColumn[ruleIndex]) - identifiers_.cbegin();
+        int identifierIndex = find(identifiers_, leftSideColumn[ruleIndex]) - identifiers_.cbegin();
         auto leftSideSymbol = Symbol{identifierIndex};
         auto rightSideSymbols = std::vector<Symbol>{};
         for (const auto& identifier : rightSideColumn[ruleIndex])
         {
-            int identifierIndex =
-                std::find(identifiers_.cbegin(), identifiers_.cend(), identifier) - identifiers_.cbegin();
+            int identifierIndex = find(identifiers_, identifier) - identifiers_.cbegin();
             rightSideSymbols.push_back(Symbol{identifierIndex});
         }
         rules_.push_back({leftSideSymbol, std::move(rightSideSymbols)});
@@ -159,7 +169,7 @@ void Grammar::generateFirstTable()
         if (currentItem.position == static_cast<int>(rules_[currentItem.ruleIndex].rightSide.size()) ||
             rules_[currentItem.ruleIndex].rightSide[currentItem.position] == getEmptySymbol())
         {
-            if (std::find(blanks.cbegin(), blanks.cend(), rules_[currentItem.ruleIndex].leftSide) == blanks.cend())
+            if (!contains(blanks, rules_[currentItem.ruleIndex].leftSide))
             {
                 blanks.push_back(rules_[currentItem.ruleIndex].leftSide);
             }
@@ -170,7 +180,11 @@ void Grammar::generateFirstTable()
         auto currentSymbol = rules_[currentItem.ruleIndex].rightSide[currentItem.position];
         if (isTerminal(currentSymbol))
         {
-            partitions[rules_[currentItem.ruleIndex].leftSide].insert(currentSymbol);
+            auto& partition = partitions[rules_[currentItem.ruleIndex].leftSide];
+            if (!contains(partition, currentSymbol))
+            {
+                partition.push_back(currentSymbol);
+            }
             stack.pop_back();
             continue;
         }
@@ -185,10 +199,13 @@ void Grammar::generateFirstTable()
         {
             if (rules_[rulesIndicesPath[i]].leftSide == currentSymbol)
             {
-                auto cycle = std::set<Symbol>{};
+                auto cycle = std::vector<Symbol>{};
                 for (auto j = i; j < rulesIndicesPath.size(); ++j)
                 {
-                    cycle.insert(rules_[rulesIndicesPath[j]].leftSide);
+                    if (!contains(cycle, rules_[rulesIndicesPath[j]].leftSide))
+                    {
+                        cycle.push_back(rules_[rulesIndicesPath[j]].leftSide);
+                    }
                 }
                 partitions.merge(cycle);
             }
@@ -197,9 +214,7 @@ void Grammar::generateFirstTable()
         auto childrenRulesIndices = std::vector<int>{};
         for (auto ruleIndex = 0U; ruleIndex < rules_.size(); ++ruleIndex)
         {
-            if (rules_[ruleIndex].leftSide == currentSymbol &&
-                std::find(visitedRulesIndices.cbegin(), visitedRulesIndices.cend(), ruleIndex) ==
-                    visitedRulesIndices.cend())
+            if (rules_[ruleIndex].leftSide == currentSymbol && !contains(visitedRulesIndices, ruleIndex))
             {
                 childrenRulesIndices.push_back(ruleIndex);
             }
@@ -215,9 +230,18 @@ void Grammar::generateFirstTable()
         }
         else
         {
+            partitions[currentSymbol];
+            partitions[rules_[currentItem.ruleIndex].leftSide];
             const auto& firstSet = partitions[currentSymbol];
-            partitions[rules_[currentItem.ruleIndex].leftSide].insert(firstSet.cbegin(), firstSet.cend());
-            if (std::find(blanks.cbegin(), blanks.cend(), currentSymbol) != blanks.cend())
+            auto& target = partitions[rules_[currentItem.ruleIndex].leftSide];
+            for (auto symbol : firstSet)
+            {
+                if (!contains(target, symbol))
+                {
+                    target.push_back(symbol);
+                }
+            }
+            if (contains(blanks, currentSymbol))
             {
                 ++currentItem.position;
             }
