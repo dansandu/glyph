@@ -46,6 +46,11 @@ public:
         return identifiers_[symbol.getIdentifierIndex()];
     }
 
+    int getIdentifiersCount() const
+    {
+        return identifiers_.size();
+    }
+
     bool isTerminal(dansandu::glyph::implementation::symbol::Symbol symbol) const
     {
         return symbol.getIdentifierIndex() >= terminalBeginIndex_;
