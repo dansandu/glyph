@@ -7,7 +7,6 @@
 
 #include <algorithm>
 #include <regex>
-#include <set>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -163,7 +162,7 @@ void Grammar::generateFirstTable()
     auto rulesIndicesPath = std::vector<int>{};
     auto visitedRulesIndices = std::vector<int>{};
     auto stack = std::vector<std::pair<PartialItem, int>>{};
-    stack.push_back({PartialItem{0, 0}, -1});
+    stack.push_back({PartialItem{getStartRuleIndex(), 0}, -1});
 
     while (!stack.empty())
     {

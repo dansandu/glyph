@@ -15,6 +15,11 @@ class Grammar
 public:
     explicit Grammar(std::string grammar);
 
+    int getStartRuleIndex() const
+    {
+        return 0;
+    }
+
     dansandu::glyph::implementation::symbol::Symbol getStartSymbol() const
     {
         return dansandu::glyph::implementation::symbol::Symbol{0};
