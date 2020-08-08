@@ -1,5 +1,6 @@
 #pragma once
 
+#include "dansandu/glyph/implementation/rule.hpp"
 #include "dansandu/glyph/implementation/symbol.hpp"
 
 #include <ostream>
@@ -9,55 +10,48 @@
 namespace dansandu::glyph::implementation::grammar
 {
 
-using dansandu::glyph::implementation::symbol::Symbol;
-
-struct Rule
-{
-    Symbol leftSide;
-    std::vector<Symbol> rightSide;
-};
-
 class Grammar
 {
 public:
     explicit Grammar(std::string grammar);
 
-    Symbol getStartSymbol() const
+    dansandu::glyph::implementation::symbol::Symbol getStartSymbol() const
     {
-        return Symbol{0};
+        return dansandu::glyph::implementation::symbol::Symbol{0};
     }
 
-    Symbol getEndOfStringSymbol() const
+    dansandu::glyph::implementation::symbol::Symbol getEndOfStringSymbol() const
     {
-        return Symbol{terminalBeginIndex_};
+        return dansandu::glyph::implementation::symbol::Symbol{terminalBeginIndex_};
     }
 
-    Symbol getEmptySymbol() const
+    dansandu::glyph::implementation::symbol::Symbol getEmptySymbol() const
     {
-        return Symbol{terminalBeginIndex_ + 1};
+        return dansandu::glyph::implementation::symbol::Symbol{terminalBeginIndex_ + 1};
     }
 
-    const std::vector<Symbol>& getFirstSet(Symbol symbol) const
+    const std::vector<dansandu::glyph::implementation::symbol::Symbol>&
+    getFirstSet(dansandu::glyph::implementation::symbol::Symbol symbol) const
     {
         return firstTable_[symbol.getIdentifierIndex()];
     }
 
-    const std::string& getIdentifier(Symbol symbol) const
+    const std::string& getIdentifier(dansandu::glyph::implementation::symbol::Symbol symbol) const
     {
         return identifiers_[symbol.getIdentifierIndex()];
     }
 
-    bool isTerminal(Symbol symbol) const
+    bool isTerminal(dansandu::glyph::implementation::symbol::Symbol symbol) const
     {
         return symbol.getIdentifierIndex() >= terminalBeginIndex_;
     }
 
-    bool isNonTerminal(Symbol symbol) const
+    bool isNonTerminal(dansandu::glyph::implementation::symbol::Symbol symbol) const
     {
         return symbol.getIdentifierIndex() < terminalBeginIndex_;
     }
 
-    const std::vector<Rule>& getRules() const
+    const std::vector<dansandu::glyph::implementation::rule::Rule>& getRules() const
     {
         return rules_;
     }
@@ -71,16 +65,10 @@ private:
     void generateFirstTable();
 
     std::vector<std::string> identifiers_;
-    std::vector<Rule> rules_;
-    std::vector<std::vector<Symbol>> firstTable_;
+    std::vector<dansandu::glyph::implementation::rule::Rule> rules_;
+    std::vector<std::vector<dansandu::glyph::implementation::symbol::Symbol>> firstTable_;
     std::string grammar_;
     int terminalBeginIndex_;
 };
-
-bool operator==(const Rule& left, const Rule& right);
-
-bool operator!=(const Rule& left, const Rule& right);
-
-std::ostream& operator<<(std::ostream& stream, const Rule& rule);
 
 }

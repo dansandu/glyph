@@ -2,6 +2,7 @@
 #include "dansandu/ballotin/container.hpp"
 #include "dansandu/glyph/error.hpp"
 #include "dansandu/glyph/implementation/grammar.hpp"
+#include "dansandu/glyph/implementation/symbol.hpp"
 
 #include <map>
 #include <set>
@@ -10,8 +11,8 @@
 
 using dansandu::glyph::error::GrammarError;
 using dansandu::glyph::implementation::grammar::Grammar;
-using dansandu::glyph::implementation::grammar::Rule;
-using dansandu::glyph::implementation::grammar::Symbol;
+using dansandu::glyph::implementation::rule::Rule;
+using dansandu::glyph::implementation::symbol::Symbol;
 
 static std::set<Symbol> set(const std::vector<Symbol>& l)
 {

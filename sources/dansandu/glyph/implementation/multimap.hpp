@@ -11,11 +11,10 @@ namespace dansandu::glyph::implementation::multimap
 class Multimap
 {
 public:
-    using Symbol = dansandu::glyph::implementation::symbol::Symbol;
+    std::vector<dansandu::glyph::implementation::symbol::Symbol>&
+    operator[](dansandu::glyph::implementation::symbol::Symbol key);
 
-    std::vector<Symbol>& operator[](Symbol key);
-
-    void merge(std::vector<Symbol> partition);
+    void merge(std::vector<dansandu::glyph::implementation::symbol::Symbol> partition);
 
     template<typename Lambda>
     void forEach(Lambda&& lambda) const
@@ -27,8 +26,8 @@ public:
     }
 
 private:
-    std::vector<std::vector<Symbol>> partitions_;
-    std::vector<std::vector<Symbol>> values_;
+    std::vector<std::vector<dansandu::glyph::implementation::symbol::Symbol>> partitions_;
+    std::vector<std::vector<dansandu::glyph::implementation::symbol::Symbol>> values_;
 };
 
 std::ostream& operator<<(std::ostream& stream, const Multimap& multimap);

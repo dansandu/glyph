@@ -14,11 +14,12 @@
 
 using dansandu::ballotin::relation::total_order;
 using dansandu::ballotin::string::format;
-using dansandu::ballotin::string::join;
 using dansandu::ballotin::string::split;
 using dansandu::ballotin::string::trim;
 using dansandu::glyph::error::GrammarError;
 using dansandu::glyph::implementation::multimap::Multimap;
+using dansandu::glyph::implementation::rule::Rule;
+using dansandu::glyph::implementation::symbol::Symbol;
 
 namespace dansandu::glyph::implementation::grammar
 {
@@ -264,21 +265,6 @@ void Grammar::generateFirstTable()
     {
         firstTable_[symbol.getIdentifierIndex()].push_back(getEmptySymbol());
     }
-}
-
-bool operator==(const Rule& left, const Rule& right)
-{
-    return left.leftSide == right.leftSide && left.rightSide == right.rightSide;
-}
-
-bool operator!=(const Rule& left, const Rule& right)
-{
-    return !(left == right);
-}
-
-std::ostream& operator<<(std::ostream& stream, const Rule& rule)
-{
-    return stream << rule.leftSide << " -> " << join(rule.rightSide, " ");
 }
 
 }
