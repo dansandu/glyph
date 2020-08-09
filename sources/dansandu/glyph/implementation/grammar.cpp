@@ -13,6 +13,7 @@
 
 using dansandu::ballotin::relation::total_order;
 using dansandu::ballotin::string::format;
+using dansandu::ballotin::string::join;
 using dansandu::ballotin::string::split;
 using dansandu::ballotin::string::trim;
 using dansandu::glyph::error::GrammarError;
@@ -263,6 +264,19 @@ void Grammar::generateFirstTable()
     for (auto symbol : blanks)
     {
         firstTable_[symbol.getIdentifierIndex()].push_back(getEmptySymbol());
+    }
+}
+
+Symbol Grammar::getSymbol(std::string_view identifier) const
+{
+    if (auto position = find(identifiers_, identifier); position != identifiers_.cend())
+    {
+        return Symbol{static_cast<int>(position - identifiers_.cbegin())};
+    }
+    else
+    {
+        THROW(GrammarError, "identifier '", identifier,
+              "' does not match any identifiers in grammar: ", join(identifiers_, ", "));
     }
 }
 

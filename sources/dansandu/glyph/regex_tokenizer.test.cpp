@@ -21,7 +21,8 @@ TEST_CASE("RegexTokenizer")
                                                                {add, std::regex{"\\+"}},
                                                                {whitespace, std::regex{"\\s+"}}};
 
-    SECTION("without discard") {
+    SECTION("without discard")
+    {
         auto tokenizer = RegexTokenizer{descriptors};
 
         REQUIRE(tokenizer("") == std::vector<Token>{});
@@ -39,7 +40,8 @@ TEST_CASE("RegexTokenizer")
         REQUIRE_THROWS_AS(tokenizer("@a + 10"), TokenizationError);
     }
 
-    SECTION("with discard") {
+    SECTION("with discard")
+    {
         auto tokenizer = RegexTokenizer{descriptors, {whitespace}};
 
         REQUIRE(tokenizer("a   + 1000") == std::vector<Token>{{identifier, 0, 1},

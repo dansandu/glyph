@@ -42,15 +42,13 @@ TEST_CASE("Automaton")
         Products -> number
     )"};
 
-    auto Start    = Symbol{0};
-    auto Sums     = Symbol{1};
-    auto Products = Symbol{2};
-    auto end      = Symbol{3};
-    auto empty    = Symbol{4};
-    auto add      = Symbol{5};
-    auto multiply = Symbol{6};
-    auto number   = Symbol{7};
-    
+    auto Sums     = grammar.getSymbol("Sums");
+    auto Products = grammar.getSymbol("Products");
+    auto end      = grammar.getSymbol("$");
+    auto add      = grammar.getSymbol("add");
+    auto multiply = grammar.getSymbol("multiply");
+    auto number   = grammar.getSymbol("number");
+
     SECTION("follow set")
     {
         REQUIRE(set(getFollowSet(Item{0, 0, end}, grammar)) == set({end}));

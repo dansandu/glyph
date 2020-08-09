@@ -57,18 +57,18 @@ TEST_CASE("Grammar")
             Value -> number
             Value -> id
         )";
-
-        auto start  = Symbol{0};
-        auto s      = Symbol{1};
-        auto sum    = Symbol{2};
-        auto value  = Symbol{3};
-        auto end    = Symbol{4};
-        auto empty  = Symbol{5};
-        auto add    = Symbol{6};
-        auto number = Symbol{7};
-        auto id     = Symbol{8};
         
         auto grammar = Grammar{text};
+
+        auto start  = grammar.getSymbol("Start");
+        auto s      = grammar.getSymbol("S");
+        auto sum    = grammar.getSymbol("Sum");
+        auto value  = grammar.getSymbol("Value");
+        auto end    = grammar.getSymbol("$");
+        auto empty  = grammar.getSymbol("");
+        auto add    = grammar.getSymbol("add");
+        auto number = grammar.getSymbol("number");
+        auto id     = grammar.getSymbol("id");
 
         REQUIRE(grammar.toString() == text);
 
@@ -174,19 +174,19 @@ TEST_CASE("Grammar")
             D ->
         )";
 
-        auto Start   = Symbol{0};
-        auto A       = Symbol{1};
-        auto B       = Symbol{2};
-        auto C       = Symbol{3};
-        auto D       = Symbol{4};
-        auto end     = Symbol{5};
-        auto empty   = Symbol{6};
-        auto a       = Symbol{7};
-        auto b       = Symbol{8};
-        auto c       = Symbol{9};
-        auto d       = Symbol{10};
-
         auto grammar = Grammar{text};
+
+        auto Start   = grammar.getSymbol("Start");
+        auto A       = grammar.getSymbol("A");
+        auto B       = grammar.getSymbol("B");
+        auto C       = grammar.getSymbol("C");
+        auto D       = grammar.getSymbol("D");
+        auto end     = grammar.getSymbol("$");
+        auto empty   = grammar.getSymbol("");
+        auto a       = grammar.getSymbol("a");
+        auto b       = grammar.getSymbol("b");
+        auto c       = grammar.getSymbol("c");
+        auto d       = grammar.getSymbol("d");
 
         REQUIRE(grammar.toString() == text);
 
@@ -304,15 +304,15 @@ TEST_CASE("Grammar")
             B ->
         )";
 
-        auto Start = Symbol{0};
-        auto A     = Symbol{1};
-        auto B     = Symbol{2};
-        auto end   = Symbol{3};
-        auto empty = Symbol{4};
-        auto a     = Symbol{5};
-        auto b     = Symbol{6};
-
         auto grammar = Grammar{text};
+
+        auto Start = grammar.getSymbol("Start");
+        auto A     = grammar.getSymbol("A");
+        auto B     = grammar.getSymbol("B");
+        auto end   = grammar.getSymbol("$");
+        auto empty = grammar.getSymbol("");
+        auto a     = grammar.getSymbol("a");
+        auto b     = grammar.getSymbol("b");
 
         SECTION("rules")
         {
@@ -421,32 +421,31 @@ TEST_CASE("Grammar")
 
         auto grammar = Grammar{text};
 
-        auto Start = Symbol{0};
-        auto X     = Symbol{1};
-        auto A1    = Symbol{2};
-        auto A2    = Symbol{3};
-        auto A3    = Symbol{4};
-        auto B1    = Symbol{5};
-        auto B2    = Symbol{6};
-        auto B3    = Symbol{7};
-        auto B4    = Symbol{8};
-        auto C1    = Symbol{9};
-        auto C2    = Symbol{10};
-        auto D1    = Symbol{11};
-        auto D2    = Symbol{12};
-        auto D3    = Symbol{13};
-        auto E     = Symbol{14};
-        auto F     = Symbol{15};
-        auto G     = Symbol{16};
-        auto end   = Symbol{17};
-        auto empty = Symbol{18};
-        auto a     = Symbol{19};
-        auto b     = Symbol{20};
-        auto c     = Symbol{21};
-        auto d     = Symbol{22};
-        auto e     = Symbol{23};
-        auto f     = Symbol{24};
-        auto g     = Symbol{25};
+        auto Start = grammar.getSymbol("Start");
+        auto X = grammar.getSymbol("X");
+        auto A1 = grammar.getSymbol("A1");
+        auto A2 = grammar.getSymbol("A2");
+        auto A3 = grammar.getSymbol("A3");
+        auto B1 = grammar.getSymbol("B1");
+        auto B2 = grammar.getSymbol("B2");
+        auto B3 = grammar.getSymbol("B3");
+        auto B4 = grammar.getSymbol("B4");
+        auto C1 = grammar.getSymbol("C1");
+        auto C2 = grammar.getSymbol("C2");
+        auto D1 = grammar.getSymbol("D1");
+        auto D2 = grammar.getSymbol("D2");
+        auto D3 = grammar.getSymbol("D3");
+        auto E = grammar.getSymbol("E");
+        auto F = grammar.getSymbol("F");
+        auto G = grammar.getSymbol("G");
+        auto empty = grammar.getSymbol("");
+        auto a = grammar.getSymbol("a");
+        auto b = grammar.getSymbol("b");
+        auto c = grammar.getSymbol("c");
+        auto d = grammar.getSymbol("d");
+        auto e = grammar.getSymbol("e");
+        auto f = grammar.getSymbol("f");
+        auto g = grammar.getSymbol("g");
 
         REQUIRE(set(grammar.getFirstSet(Start)) == set({b, f, g, c, a, e, d, empty}));
 

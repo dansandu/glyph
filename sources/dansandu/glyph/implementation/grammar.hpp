@@ -20,6 +20,8 @@ public:
         return 0;
     }
 
+    dansandu::glyph::symbol::Symbol getSymbol(std::string_view identifier) const;
+
     dansandu::glyph::symbol::Symbol getStartSymbol() const
     {
         return dansandu::glyph::symbol::Symbol{0};
