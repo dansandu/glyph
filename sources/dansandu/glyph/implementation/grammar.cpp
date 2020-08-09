@@ -36,7 +36,7 @@ auto contains(const std::vector<T>& container, const U& value)
     return std::find(container.cbegin(), container.cend(), value) != container.cend();
 }
 
-Grammar::Grammar(std::string grammar) : grammar_{std::move(grammar)}
+Grammar::Grammar(std::string_view grammar) : grammar_{grammar}
 {
     static const auto productionRulePattern =
         std::regex{R"( *[a-zA-Z0-9]+ *-> *(?:(?:[a-zA-Z0-9]+ +)*[a-zA-Z0-9]+ *)?)"};

@@ -34,11 +34,11 @@ TEST_CASE("Parsing")
     auto identifier = grammar.getSymbol("identifier");
     auto whitespace = grammar.getEmptySymbol();
     
-    auto tokenizer = RegexTokenizer{{{identifier, std::regex{"[a-z]\\w*"}},
-                                     {number,     std::regex{"(?:[1-9]\\d*|0)(?:\\.\\d+)?"}},
-                                     {add,        std::regex{"\\+"}},
-                                     {multiply,   std::regex{"\\*"}},
-                                     {whitespace, std::regex{"\\s+"}}},
+    auto tokenizer = RegexTokenizer{{{identifier, "[a-z]\\w*"},
+                                     {number,     "(?:[1-9]\\d*|0)(?:\\.\\d+)?"},
+                                     {add,        "\\+"},
+                                     {multiply,   "\\*"},
+                                     {whitespace, "\\s+"}},
                                     {whitespace}};
 
     auto parsingTable = getCanonicalLeftToRightParsingTable(grammar, getAutomaton(grammar));

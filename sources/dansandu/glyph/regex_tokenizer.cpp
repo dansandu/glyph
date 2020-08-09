@@ -12,9 +12,15 @@ using dansandu::glyph::token::Token;
 namespace dansandu::glyph::regex_tokenizer
 {
 
-RegexTokenizer::RegexTokenizer(std::vector<Descriptor> descriptors, std::vector<Symbol> discarded)
-    : descriptors_{std::move(descriptors)}, discarded_{std::move(discarded)}
+RegexTokenizer::RegexTokenizer(const std::vector<std::pair<Symbol, std::string>>& descriptors,
+                               std::vector<Symbol> discarded)
+    : discarded_{std::move(discarded)}
 {
+    descriptors_.reserve(descriptors.size());
+    for (const auto& descriptor : descriptors)
+    {
+        descriptors_.push_back({descriptor.first, std::regex{descriptor.second}});
+    }
 }
 
 std::vector<Token> RegexTokenizer::operator()(std::string_view string) const
@@ -28,13 +34,13 @@ std::vector<Token> RegexTokenizer::operator()(std::string_view string) const
         auto matchFound = false;
         for (const auto& descriptor : descriptors_)
         {
-            if (matchFound = std::regex_search(position, string.cend(), match, descriptor.pattern, flags); matchFound)
+            if (matchFound = std::regex_search(position, string.cend(), match, descriptor.second, flags); matchFound)
             {
                 auto begin = static_cast<int>(match[0].first - string.cbegin());
                 auto end = static_cast<int>(match[0].second - string.cbegin());
-                if (std::find(discarded_.cbegin(), discarded_.cend(), descriptor.symbol) == discarded_.cend())
+                if (std::find(discarded_.cbegin(), discarded_.cend(), descriptor.first) == discarded_.cend())
                 {
-                    tokens.push_back({descriptor.symbol, begin, end});
+                    tokens.push_back({descriptor.first, begin, end});
                 }
                 position += match.length();
                 break;

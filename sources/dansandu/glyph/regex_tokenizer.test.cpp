@@ -16,10 +16,10 @@ TEST_CASE("RegexTokenizer")
     auto add        = Symbol{2};
     auto whitespace = Symbol{3};
 
-    auto descriptors = std::vector<RegexTokenizer::Descriptor>{{identifier, std::regex{"[a-zA-Z]\\w*"}},
-                                                               {number, std::regex{"([1-9]\\d*|0)(\\.\\d+)?"}},
-                                                               {add, std::regex{"\\+"}},
-                                                               {whitespace, std::regex{"\\s+"}}};
+    auto descriptors = std::vector<std::pair<Symbol, std::string>>{{identifier, "[a-zA-Z]\\w*"},
+                                                                   {number,     "([1-9]\\d*|0)(\\.\\d+)?"},
+                                                                   {add,        "\\+"},
+                                                                   {whitespace, "\\s+"}};
 
     SECTION("without discard")
     {

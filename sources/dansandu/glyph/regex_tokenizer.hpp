@@ -13,19 +13,13 @@ namespace dansandu::glyph::regex_tokenizer
 class PRALINE_EXPORT RegexTokenizer
 {
 public:
-    struct Descriptor
-    {
-        dansandu::glyph::symbol::Symbol symbol;
-        std::regex pattern;
-    };
-
-    explicit RegexTokenizer(std::vector<Descriptor> descriptors,
+    explicit RegexTokenizer(const std::vector<std::pair<dansandu::glyph::symbol::Symbol, std::string>>& descriptors,
                             std::vector<dansandu::glyph::symbol::Symbol> discarded = {});
 
     std::vector<dansandu::glyph::token::Token> operator()(std::string_view string) const;
 
 private:
-    std::vector<Descriptor> descriptors_;
+    std::vector<std::pair<dansandu::glyph::symbol::Symbol, std::regex>> descriptors_;
     std::vector<dansandu::glyph::symbol::Symbol> discarded_;
 };
 

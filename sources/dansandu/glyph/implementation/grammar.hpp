@@ -4,7 +4,7 @@
 #include "dansandu/glyph/symbol.hpp"
 
 #include <ostream>
-#include <string>
+#include <string_view>
 #include <vector>
 
 namespace dansandu::glyph::implementation::grammar
@@ -13,7 +13,7 @@ namespace dansandu::glyph::implementation::grammar
 class Grammar
 {
 public:
-    explicit Grammar(std::string grammar);
+    explicit Grammar(std::string_view grammar);
 
     int getStartRuleIndex() const
     {
