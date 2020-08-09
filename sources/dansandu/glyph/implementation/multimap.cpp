@@ -4,7 +4,7 @@
 #include <algorithm>
 
 using dansandu::ballotin::string::join;
-using dansandu::glyph::implementation::symbol::Symbol;
+using dansandu::glyph::symbol::Symbol;
 
 namespace dansandu::glyph::implementation::multimap
 {

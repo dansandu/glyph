@@ -1,21 +1,21 @@
 #pragma once
 
 #include "dansandu/ballotin/relation.hpp"
-#include "dansandu/glyph/implementation/symbol.hpp"
+#include "dansandu/glyph/symbol.hpp"
 
 namespace dansandu::glyph::implementation::item
 {
 
 struct Item : dansandu::ballotin::relation::total_order<Item>
 {
-    Item(int ruleIndex, int position, dansandu::glyph::implementation::symbol::Symbol lookahead)
+    Item(int ruleIndex, int position, dansandu::glyph::symbol::Symbol lookahead)
         : ruleIndex{ruleIndex}, position{position}, lookahead{lookahead}
     {
     }
 
     int ruleIndex;
     int position;
-    dansandu::glyph::implementation::symbol::Symbol lookahead;
+    dansandu::glyph::symbol::Symbol lookahead;
 };
 
 bool operator<(const Item& left, const Item& right);

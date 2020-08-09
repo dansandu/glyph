@@ -1,6 +1,6 @@
-#include "dansandu/glyph/implementation/symbol.hpp"
+#include "dansandu/glyph/symbol.hpp"
 
-namespace dansandu::glyph::implementation::symbol
+namespace dansandu::glyph::symbol
 {
 
 std::ostream& operator<<(std::ostream& stream, Symbol symbol)

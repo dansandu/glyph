@@ -1,6 +1,6 @@
 #pragma once
 
-#include "dansandu/glyph/implementation/symbol.hpp"
+#include "dansandu/glyph/symbol.hpp"
 
 #include <ostream>
 #include <vector>
@@ -10,8 +10,8 @@ namespace dansandu::glyph::implementation::rule
 
 struct Rule
 {
-    dansandu::glyph::implementation::symbol::Symbol leftSide;
-    std::vector<dansandu::glyph::implementation::symbol::Symbol> rightSide;
+    dansandu::glyph::symbol::Symbol leftSide;
+    std::vector<dansandu::glyph::symbol::Symbol> rightSide;
 };
 
 bool operator==(const Rule& left, const Rule& right);

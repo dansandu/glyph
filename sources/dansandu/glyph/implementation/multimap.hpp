@@ -1,6 +1,6 @@
 #pragma once
 
-#include "dansandu/glyph/implementation/symbol.hpp"
+#include "dansandu/glyph/symbol.hpp"
 
 #include <ostream>
 #include <vector>
@@ -11,10 +11,9 @@ namespace dansandu::glyph::implementation::multimap
 class Multimap
 {
 public:
-    std::vector<dansandu::glyph::implementation::symbol::Symbol>&
-    operator[](dansandu::glyph::implementation::symbol::Symbol key);
+    std::vector<dansandu::glyph::symbol::Symbol>& operator[](dansandu::glyph::symbol::Symbol key);
 
-    void merge(std::vector<dansandu::glyph::implementation::symbol::Symbol> partition);
+    void merge(std::vector<dansandu::glyph::symbol::Symbol> partition);
 
     template<typename Lambda>
     void forEach(Lambda&& lambda) const
@@ -26,8 +25,8 @@ public:
     }
 
 private:
-    std::vector<std::vector<dansandu::glyph::implementation::symbol::Symbol>> partitions_;
-    std::vector<std::vector<dansandu::glyph::implementation::symbol::Symbol>> values_;
+    std::vector<std::vector<dansandu::glyph::symbol::Symbol>> partitions_;
+    std::vector<std::vector<dansandu::glyph::symbol::Symbol>> values_;
 };
 
 std::ostream& operator<<(std::ostream& stream, const Multimap& multimap);

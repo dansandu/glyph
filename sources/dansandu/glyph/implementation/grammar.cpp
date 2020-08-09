@@ -18,7 +18,7 @@ using dansandu::ballotin::string::trim;
 using dansandu::glyph::error::GrammarError;
 using dansandu::glyph::implementation::multimap::Multimap;
 using dansandu::glyph::implementation::rule::Rule;
-using dansandu::glyph::implementation::symbol::Symbol;
+using dansandu::glyph::symbol::Symbol;
 
 namespace dansandu::glyph::implementation::grammar
 {

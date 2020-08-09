@@ -6,7 +6,7 @@ using dansandu::glyph::error::GrammarError;
 using dansandu::glyph::implementation::grammar::Grammar;
 using dansandu::glyph::implementation::item::Item;
 using dansandu::glyph::implementation::rule::Rule;
-using dansandu::glyph::implementation::symbol::Symbol;
+using dansandu::glyph::symbol::Symbol;
 
 namespace dansandu::glyph::implementation::automaton
 {

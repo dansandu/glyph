@@ -4,7 +4,7 @@
 #include <set>
 
 using dansandu::glyph::implementation::multimap::Multimap;
-using dansandu::glyph::implementation::symbol::Symbol;
+using dansandu::glyph::symbol::Symbol;
 
 TEST_CASE("Multimap")
 {

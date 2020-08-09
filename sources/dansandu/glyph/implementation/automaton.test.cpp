@@ -16,7 +16,7 @@ using dansandu::glyph::implementation::automaton::Transition;
 using dansandu::glyph::implementation::grammar::Grammar;
 using dansandu::glyph::implementation::item::Item;
 using dansandu::glyph::implementation::rule::Rule;
-using dansandu::glyph::implementation::symbol::Symbol;
+using dansandu::glyph::symbol::Symbol;
 
 using Items = std::vector<Item>;
 using Transitions = std::map<Symbol, std::vector<Item>>;
