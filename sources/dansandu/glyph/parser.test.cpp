@@ -32,30 +32,7 @@ TEST_CASE("Parser")
                          /*11*/ "Value -> identifier parenthesesStart Sums parenthesesEnd \n"
                          /*12*/ "Value -> parenthesesStart Sums parenthesesEnd";
 
-    auto parser = Parser{grammar};
-
-    auto add              = parser.getSymbol("add");
-    auto subtract         = parser.getSymbol("subtract");
-    auto multiply         = parser.getSymbol("multiply");
-    auto divide           = parser.getSymbol("divide");
-    auto power            = parser.getSymbol("power");
-    auto identifier       = parser.getSymbol("identifier");
-    auto number           = parser.getSymbol("number");
-    auto parenthesesStart = parser.getSymbol("parenthesesStart");
-    auto parenthesesEnd   = parser.getSymbol("parenthesesEnd");
-    auto whitespace       = parser.getSymbol("");
-
-    const auto regexTokenizer = RegexTokenizer{{{add,              "\\+"},
-                                                {subtract,         "\\-"},
-                                                {multiply,         "\\*"},
-                                                {divide,           "\\/"},
-                                                {power,            "\\^"},
-                                                {identifier,       "[a-zA-Z]\\w*"},
-                                                {number,           "([1-9]\\d*|0)(\\.\\d+)?"},
-                                                {parenthesesStart, "\\("},
-                                                {parenthesesEnd,   "\\)"},
-                                                {whitespace,       "\\s+"}},
-                                               {whitespace}};
+    const auto parser = Parser{grammar};
 
     const auto functions = std::map<std::string, double (*)(double)>{
         {"sin", std::sin},
@@ -70,21 +47,22 @@ TEST_CASE("Parser")
         {"pi", 3.14}
     };
 
-    auto formula = std::string{"z + 20 * y ^ sin(x * pi) * log(1024)"};
-    auto tokens  = regexTokenizer(formula);
-    auto tree    = parser.parse(tokens);
-
+    const auto formula = std::string{"z + 20 * y ^ sin(x * pi) * log(1024)"};
+    
     auto tokensStack = std::vector<Token>{};
     auto valuesStack = std::vector<double>{};
 
-    auto pop = [](auto& stack)
+    const auto pop = [](auto& stack)
     {
         auto value = stack.at(stack.size() - 1);
         stack.pop_back();
         return value;
     };
 
-    for (const auto& node : tree)
+    const auto identifier = parser.getSymbol("identifier");
+    const auto number     = parser.getSymbol("number");
+    
+    const auto visitor = [&](const Node& node)
     {
         if (node.isToken())
         {
@@ -171,7 +149,25 @@ TEST_CASE("Parser")
                 THROW(std::runtime_error, "unrecognized rule index: ", ruleIndex);
             }
         }
-    }
+    };
+
+    const auto whitespace = parser.getSymbol("");
+
+    const auto regexTokenizer = RegexTokenizer{{{parser.getSymbol("add"),              "\\+"},
+                                                {parser.getSymbol("subtract"),         "\\-"},
+                                                {parser.getSymbol("multiply"),         "\\*"},
+                                                {parser.getSymbol("divide"),           "\\/"},
+                                                {parser.getSymbol("power"),            "\\^"},
+                                                {identifier,                           "[a-zA-Z]\\w*"},
+                                                {number,                               "([1-9]\\d*|0)(\\.\\d+)?"},
+                                                {parser.getSymbol("parenthesesStart"), "\\("},
+                                                {parser.getSymbol("parenthesesEnd"),   "\\)"},
+                                                {whitespace,                           "\\s+"}},
+                                               {whitespace}};
+
+    const auto tokens = regexTokenizer(formula);
+
+    parser.parse(tokens, visitor);
 
     REQUIRE(tokensStack.empty());
 

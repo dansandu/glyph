@@ -4,6 +4,7 @@
 #include "dansandu/glyph/symbol.hpp"
 #include "dansandu/glyph/token.hpp"
 
+#include <functional>
 #include <memory>
 #include <string_view>
 #include <vector>
@@ -22,7 +23,8 @@ public:
 
     dansandu::glyph::symbol::Symbol getSymbol(std::string_view identifier) const;
 
-    std::vector<dansandu::glyph::node::Node> parse(const std::vector<dansandu::glyph::token::Token>& tokens) const;
+    void parse(const std::vector<dansandu::glyph::token::Token>& tokens,
+               const std::function<void(const dansandu::glyph::node::Node&)>& visitor) const;
 
 private:
     std::unique_ptr<ParserImplementation> implementation_;

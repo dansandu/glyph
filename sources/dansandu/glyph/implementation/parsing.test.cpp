@@ -42,7 +42,10 @@ TEST_CASE("Parsing")
                                     {whitespace}};
 
     auto parsingTable = getCanonicalLeftToRightParsingTable(grammar, getAutomaton(grammar));
-    auto tree = parse(tokenizer("a * b + 10"), parsingTable, grammar);
+
+    auto actualTree = std::vector<Node>{};
+
+    parse(tokenizer("a * b + 10"), parsingTable, grammar, [&actualTree](const Node& node) { actualTree.push_back(node); });
 
     auto expectedTree = std::vector<Node>{
         Node{Token{identifier, 0, 1}},
@@ -61,6 +64,6 @@ TEST_CASE("Parsing")
         Node{0}
     };
 
-    REQUIRE(tree == expectedTree);
+    REQUIRE(actualTree == expectedTree);
 }
 // clang-format on

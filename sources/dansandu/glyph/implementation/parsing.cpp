@@ -7,6 +7,7 @@
 #include "dansandu/glyph/symbol.hpp"
 #include "dansandu/glyph/token.hpp"
 
+#include <functional>
 #include <stdexcept>
 #include <vector>
 
@@ -22,13 +23,12 @@ using dansandu::glyph::token::Token;
 namespace dansandu::glyph::implementation::parsing
 {
 
-std::vector<Node> parse(std::vector<Token> tokens, const std::vector<std::vector<Cell>>& parsingTable,
-                        const Grammar& grammar)
+void parse(std::vector<Token> tokens, const std::vector<std::vector<Cell>>& parsingTable, const Grammar& grammar,
+           const std::function<void(const Node&)>& visitor)
 {
     tokens.push_back({grammar.getEndOfStringSymbol(), -1, -1});
     auto position = tokens.cbegin();
     auto stateStack = std::vector<int>{grammar.getStartRuleIndex()};
-    auto tree = std::vector<Node>{};
     while (!stateStack.empty())
     {
         auto symbolIndex = position->getSymbol().getIdentifierIndex();
@@ -41,38 +41,39 @@ std::vector<Node> parse(std::vector<Token> tokens, const std::vector<std::vector
         if (cell.action == Action::shift)
         {
             stateStack.push_back(cell.parameter);
-            tree.push_back(Node{*position});
+            visitor(Node{*position});
             ++position;
         }
         else if (cell.action == Action::reduce || cell.action == Action::accept)
         {
-            const auto& rule = grammar.getRules()[cell.parameter];
-            auto size =
-                !rule.rightSide.empty() && rule.rightSide[0] == grammar.getEmptySymbol() ? 0 : rule.rightSide.size();
-            if (stateStack.size() < size || tree.size() < size)
+            const auto& reductionRule = grammar.getRules()[cell.parameter];
+            auto reductionSize =
+                !reductionRule.rightSide.empty() && reductionRule.rightSide[0] == grammar.getEmptySymbol()
+                    ? 0
+                    : reductionRule.rightSide.size();
+            if (stateStack.size() < reductionSize)
             {
                 THROW(std::runtime_error,
                       "invalid state reached -- couldn't perform reduce action because the stack has missing elements");
             }
-            stateStack.erase(stateStack.end() - size, stateStack.end());
+            stateStack.erase(stateStack.end() - reductionSize, stateStack.end());
             if (cell.action == Action::reduce)
             {
                 if (stateStack.empty())
                 {
-                    THROW(std::runtime_error,
-                          "invalid state reached -- missing element in state stack on reduce action");
+                    THROW(std::runtime_error, "invalid state reached -- insufficient stack size for reduction");
                 }
-                auto newState = parsingTable[rule.leftSide.getIdentifierIndex()][stateStack.back()].parameter;
+                auto newState = parsingTable[reductionRule.leftSide.getIdentifierIndex()][stateStack.back()].parameter;
                 stateStack.push_back(newState);
-                tree.push_back(Node{cell.parameter});
+                visitor(Node{cell.parameter});
             }
             else
             {
-                tree.push_back(Node{cell.parameter});
-                return tree;
+                stateStack.pop_back();
+                visitor(Node{cell.parameter});
             }
         }
-        else if (cell.action == Action::error)
+        else
         {
             auto expectedSymbols = std::vector<std::string>{};
             for (auto symbolIndex = 0; symbolIndex < static_cast<int>(parsingTable.size()); ++symbolIndex)
@@ -82,15 +83,11 @@ std::vector<Node> parse(std::vector<Token> tokens, const std::vector<std::vector
                     expectedSymbols.push_back(grammar.getIdentifier(Symbol{symbolIndex}));
                 }
             }
-            THROW(SyntaxError, "invalid syntax at column ", position->begin(),
-                  " -- the following symbols were expected ", join(expectedSymbols, ", "));
-        }
-        else
-        {
-            THROW(std::runtime_error, "invalid state reached -- unrecognized cell action");
+            THROW(SyntaxError, "invalid syntax at column ", position->begin(), " with symbol '",
+                  grammar.getIdentifier(position->getSymbol()), "' -- the following symbols were expected [",
+                  join(expectedSymbols, ", "), "] for state ", state);
         }
     }
-    THROW(std::runtime_error, "invalid state reached");
 }
 
 }
