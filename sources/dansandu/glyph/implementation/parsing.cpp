@@ -47,10 +47,7 @@ void parse(std::vector<Token> tokens, const std::vector<std::vector<Cell>>& pars
         else if (cell.action == Action::reduce || cell.action == Action::accept)
         {
             const auto& reductionRule = grammar.getRules()[cell.parameter];
-            auto reductionSize =
-                !reductionRule.rightSide.empty() && reductionRule.rightSide[0] == grammar.getEmptySymbol()
-                    ? 0
-                    : reductionRule.rightSide.size();
+            auto reductionSize = reductionRule.rightSide.size();
             if (stateStack.size() < reductionSize)
             {
                 THROW(std::runtime_error,

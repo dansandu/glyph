@@ -1,7 +1,9 @@
 #include "dansandu/glyph/implementation/automaton.hpp"
+#include "dansandu/ballotin/container.hpp"
 #include "dansandu/ballotin/exception.hpp"
 #include "dansandu/glyph/error.hpp"
 
+using dansandu::ballotin::container::contains;
 using dansandu::glyph::error::GrammarError;
 using dansandu::glyph::implementation::grammar::Grammar;
 using dansandu::glyph::implementation::item::Item;
@@ -10,12 +12,6 @@ using dansandu::glyph::symbol::Symbol;
 
 namespace dansandu::glyph::implementation::automaton
 {
-
-template<typename T, typename U>
-auto contains(const std::vector<T>& container, const U& value)
-{
-    return std::find(container.cbegin(), container.cend(), value) != container.cend();
-}
 
 bool operator==(const Transition& left, const Transition& right)
 {
@@ -68,16 +64,15 @@ std::vector<Item> getStateClosure(std::vector<Item> state, const Grammar& gramma
     {
         auto parentItem = state[parentItemIndex];
         auto parentRule = rules[parentItem.ruleIndex];
-        auto followSet = getFollowSet(parentItem, grammar);
-        if (parentItem.position < static_cast<int>(parentRule.rightSide.size()) &&
-            parentRule.rightSide[parentItem.position] != grammar.getEmptySymbol())
+        auto parentItemFollowSet = getFollowSet(parentItem, grammar);
+        if (parentItem.position < static_cast<int>(parentRule.rightSide.size()))
         {
             auto symbol = parentRule.rightSide[parentItem.position];
             for (auto ruleIndex = 0; ruleIndex < static_cast<int>(rules.size()); ++ruleIndex)
             {
                 if (symbol == rules[ruleIndex].leftSide)
                 {
-                    for (auto followSymbol : followSet)
+                    for (auto followSymbol : parentItemFollowSet)
                     {
                         auto newItem = Item{ruleIndex, 0, followSymbol};
                         if (!contains(state, newItem))
@@ -99,8 +94,7 @@ std::map<Symbol, std::vector<Item>> getStateTransitions(const std::vector<Item>&
     const auto& rules = grammar.getRules();
     for (const auto& item : state)
     {
-        if (item.position < static_cast<int>(rules.at(item.ruleIndex).rightSide.size()) &&
-            rules[item.ruleIndex].rightSide[item.position] != grammar.getEmptySymbol())
+        if (item.position < static_cast<int>(rules[item.ruleIndex].rightSide.size()))
         {
             auto symbol = rules[item.ruleIndex].rightSide[item.position];
             auto newItem = Item{item.ruleIndex, item.position + 1, item.lookahead};
@@ -118,11 +112,9 @@ bool isFinalState(const std::vector<Item>& state, const Grammar& grammar)
 {
     auto startRuleIndex = grammar.getStartRuleIndex();
     const auto& startRule = grammar.getRules()[startRuleIndex];
-    auto startRuleEnd = static_cast<int>(startRule.rightSide.size());
     for (const auto& item : state)
     {
-        if (item.ruleIndex == startRuleIndex &&
-            (item.position == startRuleEnd || startRule.rightSide[item.position] == grammar.getEmptySymbol()))
+        if (item.ruleIndex == startRuleIndex && item.position == static_cast<int>(startRule.rightSide.size()))
         {
             return true;
         }

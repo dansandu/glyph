@@ -77,7 +77,7 @@ TEST_CASE("Grammar")
             auto rules = std::vector<Rule>{
                 Rule{start, {s}},
                 Rule{s,     {sum}},
-                Rule{s,     {empty}},
+                Rule{s,     {}},
                 Rule{sum,   {sum, add, value}},
                 Rule{sum,   {value}},
                 Rule{value, {number}},
@@ -195,14 +195,14 @@ TEST_CASE("Grammar")
             auto rules = std::vector<Rule>{
                 Rule{Start, {A, B, C, D}},
                 Rule{A,     {a}},
-                Rule{A,     {empty}},
+                Rule{A,     {}},
                 Rule{B,     {C, D}},
                 Rule{B,     {b}},
                 Rule{C,     {c}},
-                Rule{C,     {empty}},
+                Rule{C,     {}},
                 Rule{D,     {A, a}},
                 Rule{D,     {d}},
-                Rule{D,     {empty}}
+                Rule{D,     {}}
             };
 
             REQUIRE(grammar.getRules() == rules);
@@ -321,7 +321,7 @@ TEST_CASE("Grammar")
                 Rule{A,     {B, a}},
                 Rule{B,     {A, b}},
                 Rule{B,     {b}},
-                Rule{B,     {empty}}
+                Rule{B,     {}}
             };
 
             REQUIRE(grammar.getRules() == rules);

@@ -6,7 +6,7 @@
 namespace dansandu::glyph::implementation::item
 {
 
-struct Item : dansandu::ballotin::relation::total_order<Item>
+struct Item : dansandu::ballotin::relation::TotalOrder<Item>
 {
     Item(int ruleIndex, int position, dansandu::glyph::symbol::Symbol lookahead)
         : ruleIndex{ruleIndex}, position{position}, lookahead{lookahead}

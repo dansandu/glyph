@@ -1,4 +1,5 @@
 #include "dansandu/glyph/implementation/grammar.hpp"
+#include "dansandu/ballotin/container.hpp"
 #include "dansandu/ballotin/exception.hpp"
 #include "dansandu/ballotin/relation.hpp"
 #include "dansandu/ballotin/string.hpp"
@@ -11,7 +12,9 @@
 #include <tuple>
 #include <vector>
 
-using dansandu::ballotin::relation::total_order;
+using dansandu::ballotin::container::contains;
+using dansandu::ballotin::container::uniquePushBack;
+using dansandu::ballotin::relation::TotalOrder;
 using dansandu::ballotin::string::format;
 using dansandu::ballotin::string::join;
 using dansandu::ballotin::string::split;
@@ -28,12 +31,6 @@ template<typename T, typename U>
 auto find(const std::vector<T>& container, const U& value)
 {
     return std::find(container.cbegin(), container.cend(), value);
-}
-
-template<typename T, typename U>
-auto contains(const std::vector<T>& container, const U& value)
-{
-    return std::find(container.cbegin(), container.cend(), value) != container.cend();
 }
 
 Grammar::Grammar(std::string_view grammar) : grammar_{grammar}
@@ -70,7 +67,7 @@ Grammar::Grammar(std::string_view grammar) : grammar_{grammar}
         else if (ruleTokens.size() == 1)
         {
             leftSideColumn.push_back(trim(ruleTokens[0]));
-            rightSideColumn.push_back({""});
+            rightSideColumn.push_back({});
         }
         else
         {
@@ -95,10 +92,7 @@ Grammar::Grammar(std::string_view grammar) : grammar_{grammar}
     identifiers_ = std::vector<std::string>{{"Start"}};
     for (const auto& identifier : leftSideColumn)
     {
-        if (!contains(identifiers_, identifier))
-        {
-            identifiers_.push_back(identifier);
-        }
+        uniquePushBack(identifiers_, identifier);
     }
 
     // Insert terminals next and mark the beginning of the terminals (end of string identifier).
@@ -112,10 +106,7 @@ Grammar::Grammar(std::string_view grammar) : grammar_{grammar}
             // Ensures two things in one search:
             // 1. It's not a non-terminal (first part of the vector).
             // 2. The terminal isn't a duplicate (second part of the vector).
-            if (!contains(identifiers_, identifier))
-            {
-                identifiers_.push_back(identifier);
-            }
+            uniquePushBack(identifiers_, identifier);
         }
     }
 
@@ -135,7 +126,7 @@ Grammar::Grammar(std::string_view grammar) : grammar_{grammar}
     generateFirstTable();
 }
 
-struct PartialItem : total_order<PartialItem>
+struct PartialItem : TotalOrder<PartialItem>
 {
     friend bool operator<(PartialItem a, PartialItem b)
     {
@@ -168,13 +159,9 @@ void Grammar::generateFirstTable()
     while (!stack.empty())
     {
         auto currentItem = stack.back().first;
-        if (currentItem.position == static_cast<int>(rules_[currentItem.ruleIndex].rightSide.size()) ||
-            rules_[currentItem.ruleIndex].rightSide[currentItem.position] == getEmptySymbol())
+        if (currentItem.position == static_cast<int>(rules_[currentItem.ruleIndex].rightSide.size()))
         {
-            if (!contains(blanks, rules_[currentItem.ruleIndex].leftSide))
-            {
-                blanks.push_back(rules_[currentItem.ruleIndex].leftSide);
-            }
+            uniquePushBack(blanks, rules_[currentItem.ruleIndex].leftSide);
             stack.pop_back();
             continue;
         }
@@ -182,11 +169,7 @@ void Grammar::generateFirstTable()
         auto currentSymbol = rules_[currentItem.ruleIndex].rightSide[currentItem.position];
         if (isTerminal(currentSymbol))
         {
-            auto& partition = partitions[rules_[currentItem.ruleIndex].leftSide];
-            if (!contains(partition, currentSymbol))
-            {
-                partition.push_back(currentSymbol);
-            }
+            uniquePushBack(partitions[rules_[currentItem.ruleIndex].leftSide], currentSymbol);
             stack.pop_back();
             continue;
         }
@@ -204,10 +187,7 @@ void Grammar::generateFirstTable()
                 auto cycle = std::vector<Symbol>{};
                 for (auto j = i; j < rulesIndicesPath.size(); ++j)
                 {
-                    if (!contains(cycle, rules_[rulesIndicesPath[j]].leftSide))
-                    {
-                        cycle.push_back(rules_[rulesIndicesPath[j]].leftSide);
-                    }
+                    uniquePushBack(cycle, rules_[rulesIndicesPath[j]].leftSide);
                 }
                 partitions.merge(cycle);
             }
@@ -229,10 +209,7 @@ void Grammar::generateFirstTable()
             auto& target = partitions[rules_[currentItem.ruleIndex].leftSide];
             for (auto symbol : firstSet)
             {
-                if (!contains(target, symbol))
-                {
-                    target.push_back(symbol);
-                }
+                uniquePushBack(target, symbol);
             }
             if (contains(blanks, currentSymbol))
             {

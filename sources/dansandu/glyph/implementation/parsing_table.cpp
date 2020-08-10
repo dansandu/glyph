@@ -65,8 +65,7 @@ std::vector<std::vector<Cell>> getCanonicalLeftToRightParsingTable(const Grammar
     {
         for (const auto& item : automaton.states[stateIndex])
         {
-            if (item.position == static_cast<int>(rules[item.ruleIndex].rightSide.size()) ||
-                rules[item.ruleIndex].rightSide[item.position] == grammar.getEmptySymbol())
+            if (item.position == static_cast<int>(rules[item.ruleIndex].rightSide.size()))
             {
                 auto& cell = table[item.lookahead.getIdentifierIndex()][stateIndex];
                 if (cell.action != Action::error)

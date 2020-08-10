@@ -7,7 +7,7 @@
 namespace dansandu::glyph::symbol
 {
 
-class PRALINE_EXPORT Symbol : dansandu::ballotin::relation::total_order<Symbol>
+class PRALINE_EXPORT Symbol : dansandu::ballotin::relation::TotalOrder<Symbol>
 {
     friend bool operator<(Symbol a, Symbol b)
     {

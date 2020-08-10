@@ -1,10 +1,12 @@
 #include "dansandu/glyph/regex_tokenizer.hpp"
+#include "dansandu/ballotin/container.hpp"
 #include "dansandu/ballotin/exception.hpp"
 #include "dansandu/glyph/error.hpp"
 
 #include <string>
 #include <string_view>
 
+using dansandu::ballotin::container::contains;
 using dansandu::glyph::error::TokenizationError;
 using dansandu::glyph::symbol::Symbol;
 using dansandu::glyph::token::Token;
@@ -38,7 +40,7 @@ std::vector<Token> RegexTokenizer::operator()(std::string_view string) const
             {
                 auto begin = static_cast<int>(match[0].first - string.cbegin());
                 auto end = static_cast<int>(match[0].second - string.cbegin());
-                if (std::find(discarded_.cbegin(), discarded_.cend(), descriptor.first) == discarded_.cend())
+                if (!contains(discarded_, descriptor.first))
                 {
                     tokens.push_back({descriptor.first, begin, end});
                 }
