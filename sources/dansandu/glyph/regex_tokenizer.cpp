@@ -14,9 +14,9 @@ using dansandu::glyph::token::Token;
 namespace dansandu::glyph::regex_tokenizer
 {
 
-RegexTokenizer::RegexTokenizer(const std::vector<std::pair<Symbol, std::string>>& descriptors,
-                               std::vector<Symbol> discarded)
-    : discarded_{std::move(discarded)}
+RegexTokenizer::RegexTokenizer(const std::vector<std::pair<std::string, std::string>>& descriptors,
+                               std::function<Symbol(std::string_view)> symbolMapper, std::vector<std::string> discarded)
+    : symbolMapper_{std::move(symbolMapper)}, discarded_{std::move(discarded)}
 {
     descriptors_.reserve(descriptors.size());
     for (const auto& descriptor : descriptors)
@@ -42,7 +42,7 @@ std::vector<Token> RegexTokenizer::operator()(std::string_view string) const
                 auto end = static_cast<int>(match[0].second - string.cbegin());
                 if (!contains(discarded_, descriptor.first))
                 {
-                    tokens.push_back({descriptor.first, begin, end});
+                    tokens.push_back({symbolMapper_(descriptor.first), begin, end});
                 }
                 position += match.length();
                 break;

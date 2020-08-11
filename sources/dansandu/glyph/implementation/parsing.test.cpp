@@ -28,24 +28,24 @@ TEST_CASE("Parsing")
                            /*5*/"Value    -> number                  \n"
                            /*6*/"Value    -> identifier"};
 
-    auto add        = grammar.getSymbol("add");
-    auto multiply   = grammar.getSymbol("multiply");
-    auto number     = grammar.getSymbol("number");
-    auto identifier = grammar.getSymbol("identifier");
-    auto whitespace = grammar.getEmptySymbol();
-    
-    auto tokenizer = RegexTokenizer{{{identifier, "[a-z]\\w*"},
-                                     {number,     "(?:[1-9]\\d*|0)(?:\\.\\d+)?"},
-                                     {add,        "\\+"},
-                                     {multiply,   "\\*"},
-                                     {whitespace, "\\s+"}},
-                                    {whitespace}};
+    auto tokenizer = RegexTokenizer{{{"identifier", "[a-z]\\w*"},
+                                     {"number",     "(?:[1-9]\\d*|0)(?:\\.\\d+)?"},
+                                     {"add",        "\\+"},
+                                     {"multiply",   "\\*"},
+                                     {"whitespace", "\\s+"}},
+                                    [&grammar](auto id) { return grammar.getTerminalSymbol(id); },
+                                    {"whitespace"}};
 
     auto parsingTable = getCanonicalLeftToRightParsingTable(grammar, getAutomaton(grammar));
 
     auto actualTree = std::vector<Node>{};
 
     parse(tokenizer("a * b + 10"), parsingTable, grammar, [&actualTree](const Node& node) { actualTree.push_back(node); });
+
+    auto add        = grammar.getSymbol("add");
+    auto multiply   = grammar.getSymbol("multiply");
+    auto number     = grammar.getSymbol("number");
+    auto identifier = grammar.getSymbol("identifier");
 
     auto expectedTree = std::vector<Node>{
         Node{Token{identifier, 0, 1}},

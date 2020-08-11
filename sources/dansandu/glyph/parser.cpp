@@ -41,9 +41,9 @@ Parser::~Parser()
 {
 }
 
-Symbol Parser::getSymbol(std::string_view identifier) const
+Symbol Parser::getTerminalSymbol(std::string_view identifier) const
 {
-    return implementation_->grammar.getSymbol(identifier);
+    return implementation_->grammar.getTerminalSymbol(identifier);
 }
 
 void Parser::parse(const std::vector<Token>& tokens, const std::function<void(const Node&)>& visitor) const

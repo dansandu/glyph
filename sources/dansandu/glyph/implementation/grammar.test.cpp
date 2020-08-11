@@ -292,6 +292,21 @@ TEST_CASE("Grammar")
 
             REQUIRE(set(grammar.getFirstSet(empty)) == set({empty}));
         }
+
+        SECTION("get terminal")
+        {
+            REQUIRE(grammar.getTerminalSymbol("a") == a);
+
+            REQUIRE(grammar.getTerminalSymbol("b") == b);
+
+            REQUIRE(grammar.getTerminalSymbol("c") == c);
+
+            REQUIRE(grammar.getTerminalSymbol("d") == d);
+
+            REQUIRE_THROWS_AS(grammar.getTerminalSymbol(""), GrammarError);
+
+            REQUIRE_THROWS_AS(grammar.getTerminalSymbol("$"), GrammarError);
+        }
     }
 
     SECTION("grammar #3")

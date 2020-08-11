@@ -257,4 +257,17 @@ Symbol Grammar::getSymbol(std::string_view identifier) const
     }
 }
 
+Symbol Grammar::getTerminalSymbol(std::string_view identifier) const
+{
+    if (auto position = std::find(identifiers_.cbegin() + terminalBeginIndex_ + 2, identifiers_.cend(), identifier);
+        position != identifiers_.cend())
+    {
+        return Symbol{static_cast<int>(position - identifiers_.cbegin())};
+    }
+    else
+    {
+        THROW(GrammarError, "identifier '", identifier, "' does not match any terminal identifiers in grammar");
+    }
+}
+
 }

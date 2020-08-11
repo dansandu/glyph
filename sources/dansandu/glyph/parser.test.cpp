@@ -15,29 +15,35 @@ using dansandu::glyph::parser::Parser;
 using dansandu::glyph::regex_tokenizer::RegexTokenizer;
 using dansandu::glyph::token::Token;
 
+template<typename T>
+auto pop(std::vector<T>& stack)
+{
+    auto value = stack.at(stack.size() - 1);
+    stack.pop_back();
+    return value;
+}
+
 // clang-format off
 TEST_CASE("Parser")
 {
-    const auto grammar = /* 0*/ "Start -> Sums                                            \n"
-                         /* 1*/ "Sums  -> Sums add Products                               \n"
-                         /* 2*/ "Sums  -> Sums subtract Products                          \n"
-                         /* 3*/ "Sums  -> Products                                        \n"
-                         /* 4*/ "Products -> Products multiply Exponentials               \n"
-                         /* 5*/ "Products -> Products divide Exponentials                 \n"
-                         /* 6*/ "Products -> Exponentials                                 \n"
-                         /* 7*/ "Exponentials -> Exponentials power Value                 \n"
-                         /* 8*/ "Exponentials -> Value                                    \n"
-                         /* 9*/ "Value -> identifier                                      \n"
-                         /*10*/ "Value -> number                                          \n"
-                         /*11*/ "Value -> identifier parenthesesStart Sums parenthesesEnd \n"
-                         /*12*/ "Value -> parenthesesStart Sums parenthesesEnd";
-
-    const auto parser = Parser{grammar};
+    const auto parser = Parser{/* 0*/ "Start -> Sums                                            \n"
+                               /* 1*/ "Sums  -> Sums add Products                               \n"
+                               /* 2*/ "Sums  -> Sums subtract Products                          \n"
+                               /* 3*/ "Sums  -> Products                                        \n"
+                               /* 4*/ "Products -> Products multiply Exponentials               \n"
+                               /* 5*/ "Products -> Products divide Exponentials                 \n"
+                               /* 6*/ "Products -> Exponentials                                 \n"
+                               /* 7*/ "Exponentials -> Exponentials power Value                 \n"
+                               /* 8*/ "Exponentials -> Value                                    \n"
+                               /* 9*/ "Value -> identifier                                      \n"
+                               /*10*/ "Value -> number                                          \n"
+                               /*11*/ "Value -> identifier parenthesesStart Sums parenthesesEnd \n"
+                               /*12*/ "Value -> parenthesesStart Sums parenthesesEnd"};
 
     const auto functions = std::map<std::string, double (*)(double)>{
         {"sin", std::sin},
         {"cos", std::cos},
-        {"log", std::log}
+        {"ln", std::log}
     };
 
     const auto variables = std::map<std::string, double>{
@@ -47,20 +53,13 @@ TEST_CASE("Parser")
         {"pi", 3.14}
     };
 
-    const auto formula = std::string{"z + 20 * y ^ sin(x * pi) * log(1024)"};
+    const auto formula = std::string{"z + 20 * y ^ sin(x * pi) * ln(1024)"};
     
     auto tokensStack = std::vector<Token>{};
     auto valuesStack = std::vector<double>{};
 
-    const auto pop = [](auto& stack)
-    {
-        auto value = stack.at(stack.size() - 1);
-        stack.pop_back();
-        return value;
-    };
-
-    const auto identifier = parser.getSymbol("identifier");
-    const auto number     = parser.getSymbol("number");
+    const auto identifier = parser.getTerminalSymbol("identifier");
+    const auto number     = parser.getTerminalSymbol("number");
     
     const auto visitor = [&](const Node& node)
     {
@@ -151,19 +150,18 @@ TEST_CASE("Parser")
         }
     };
 
-    const auto whitespace = parser.getSymbol("");
-
-    const auto regexTokenizer = RegexTokenizer{{{parser.getSymbol("add"),              "\\+"},
-                                                {parser.getSymbol("subtract"),         "\\-"},
-                                                {parser.getSymbol("multiply"),         "\\*"},
-                                                {parser.getSymbol("divide"),           "\\/"},
-                                                {parser.getSymbol("power"),            "\\^"},
-                                                {identifier,                           "[a-zA-Z]\\w*"},
-                                                {number,                               "([1-9]\\d*|0)(\\.\\d+)?"},
-                                                {parser.getSymbol("parenthesesStart"), "\\("},
-                                                {parser.getSymbol("parenthesesEnd"),   "\\)"},
-                                                {whitespace,                           "\\s+"}},
-                                               {whitespace}};
+    const auto regexTokenizer = RegexTokenizer{{{"add",              "\\+"},
+                                                {"subtract",         "\\-"},
+                                                {"multiply",         "\\*"},
+                                                {"divide",           "\\/"},
+                                                {"power",            "\\^"},
+                                                {"identifier",       "[a-zA-Z]\\w*"},
+                                                {"number",           "([1-9]\\d*|0)(\\.\\d+)?"},
+                                                {"parenthesesStart", "\\("},
+                                                {"parenthesesEnd",   "\\)"},
+                                                {"whitespace",       "\\s+"}},
+                                               [&parser](auto id) { return parser.getTerminalSymbol(id); },
+                                               {"whitespace"}};
 
     const auto tokens = regexTokenizer(formula);
 

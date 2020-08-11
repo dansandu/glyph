@@ -21,7 +21,7 @@ public:
 
     ~Parser();
 
-    dansandu::glyph::symbol::Symbol getSymbol(std::string_view identifier) const;
+    dansandu::glyph::symbol::Symbol getTerminalSymbol(std::string_view identifier) const;
 
     void parse(const std::vector<dansandu::glyph::token::Token>& tokens,
                const std::function<void(const dansandu::glyph::node::Node&)>& visitor) const;
