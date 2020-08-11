@@ -18,7 +18,7 @@ using dansandu::glyph::token::Token;
 template<typename T>
 auto pop(std::vector<T>& stack)
 {
-    auto value = stack.at(stack.size() - 1);
+    auto value = std::move(stack.at(stack.size() - 1));
     stack.pop_back();
     return value;
 }
@@ -129,8 +129,8 @@ TEST_CASE("Parser")
             else if (ruleIndex == 10)
             {
                 auto token = pop(tokensStack);
-                auto numberAsString = std::string{formula.begin() + token.begin(), formula.begin() + token.end()};
-                valuesStack.push_back(std::stod(numberAsString));
+                auto nr = std::string{formula.begin() + token.begin(), formula.begin() + token.end()};
+                valuesStack.push_back(std::stod(nr));
             }
             else if (ruleIndex == 11)
             {

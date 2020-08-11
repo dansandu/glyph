@@ -1,4 +1,5 @@
 #include "catchorg/catch/catch.hpp"
+#include "dansandu/glyph/error.hpp"
 #include "dansandu/glyph/implementation/grammar.hpp"
 #include "dansandu/glyph/implementation/parsing.hpp"
 #include "dansandu/glyph/implementation/parsing_table.hpp"
@@ -9,6 +10,7 @@
 #include <regex>
 #include <vector>
 
+using dansandu::glyph::error::SyntaxError;
 using dansandu::glyph::implementation::automaton::getAutomaton;
 using dansandu::glyph::implementation::grammar::Grammar;
 using dansandu::glyph::implementation::parsing::parse;
@@ -77,31 +79,45 @@ TEST_CASE("Parsing")
                                      /*3*/"B -> b     \n"
                                      /*4*/"B ->"};
 
-        auto tokenizer = RegexTokenizer{{{"a", "a"},
-                                         {"b", "b"}},
-                                        [&grammar](auto id) { return grammar.getTerminalSymbol(id); }};
+        const auto tokenizer = RegexTokenizer{{{"a", "a"},
+                                               {"b", "b"}},
+                                              [&grammar](auto id) { return grammar.getTerminalSymbol(id); }};
 
-        auto parsingTable = getCanonicalLeftToRightParsingTable(grammar, getAutomaton(grammar));
+        const auto parsingTable = getCanonicalLeftToRightParsingTable(grammar, getAutomaton(grammar));
 
-        auto actualTree = std::vector<Node>{};
+        SECTION("successful parse")
+        {
+            auto actualTree = std::vector<Node>{};
 
-        parse(tokenizer("aba"), parsingTable, grammar, [&actualTree](const Node& node) { actualTree.push_back(node); });
+            parse(tokenizer("ababa"), parsingTable, grammar, [&actualTree](const Node& node) { actualTree.push_back(node); });
 
-        auto a = grammar.getSymbol("a");
-        auto b = grammar.getSymbol("b");
+            auto a = grammar.getSymbol("a");
+            auto b = grammar.getSymbol("b");
 
-        auto expectedTree = std::vector<Node>{
-            Node{4},
-            Node{Token{a, 0, 1}},
-            Node{1},
-            Node{Token{b, 1, 2}},
-            Node{2},
-            Node{Token{a, 2, 3}},
-            Node{1},
-            Node{0}
-        };
+            auto expectedTree = std::vector<Node>{
+                Node{4},
+                Node{Token{a, 0, 1}},
+                Node{1},
+                Node{Token{b, 1, 2}},
+                Node{2},
+                Node{Token{a, 2, 3}},
+                Node{1},
+                Node{Token{b, 3, 4}},
+                Node{2},
+                Node{Token{a, 4, 5}},
+                Node{1},
+                Node{0}
+            };
 
-        REQUIRE(actualTree == expectedTree);        
+            REQUIRE(actualTree == expectedTree);
+        }
+
+        SECTION("failed parse")
+        {
+            REQUIRE_THROWS_AS(parse(tokenizer("aa"), parsingTable, grammar, [](const auto&) { }), SyntaxError);
+
+            REQUIRE_THROWS_AS(parse(tokenizer("aaba"), parsingTable, grammar, [](const auto&) { }), SyntaxError);
+        }
     }
 }
 // clang-format on
