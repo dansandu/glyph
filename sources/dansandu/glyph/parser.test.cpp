@@ -27,18 +27,21 @@ auto pop(std::vector<T>& stack)
 TEST_CASE("Parser")
 {
     const auto parser = Parser{/* 0*/ "Start -> Sums                                            \n"
-                               /* 1*/ "Sums  -> Sums add Products                               \n"
-                               /* 2*/ "Sums  -> Sums subtract Products                          \n"
+                               /* 1*/ "Sums  -> Sums plus Products                              \n"
+                               /* 2*/ "Sums  -> Sums minus Products                             \n"
                                /* 3*/ "Sums  -> Products                                        \n"
                                /* 4*/ "Products -> Products multiply Exponentials               \n"
                                /* 5*/ "Products -> Products divide Exponentials                 \n"
                                /* 6*/ "Products -> Exponentials                                 \n"
-                               /* 7*/ "Exponentials -> Exponentials power Value                 \n"
-                               /* 8*/ "Exponentials -> Value                                    \n"
-                               /* 9*/ "Value -> identifier                                      \n"
-                               /*10*/ "Value -> number                                          \n"
-                               /*11*/ "Value -> identifier parenthesesStart Sums parenthesesEnd \n"
-                               /*12*/ "Value -> parenthesesStart Sums parenthesesEnd"};
+                               /* 7*/ "Exponentials -> Exponentials power SignedValue           \n"
+                               /* 8*/ "Exponentials -> SignedValue                              \n"
+                               /* 9*/ "SignedValue  -> Value                                    \n"
+                               /*10*/ "SignedValue  -> plus Value                               \n"
+                               /*11*/ "SignedValue  -> minus Value                              \n"
+                               /*12*/ "Value -> identifier                                      \n"
+                               /*13*/ "Value -> number                                          \n"
+                               /*14*/ "Value -> identifier parenthesesStart Sums parenthesesEnd \n"
+                               /*15*/ "Value -> parenthesesStart Sums parenthesesEnd"};
 
     const auto functions = std::map<std::string, double (*)(double)>{
         {"sin", std::sin},
@@ -53,7 +56,7 @@ TEST_CASE("Parser")
         {"pi", 3.14}
     };
 
-    const auto formula = std::string{"z + 20 * y ^ sin(x * pi) * ln(1024)"};
+    const auto formula = std::string{"z + 20 * y ^ sin(x * pi) * ln(1024) + -100"};
     
     auto tokensStack = std::vector<Token>{};
     auto valuesStack = std::vector<double>{};
@@ -73,85 +76,87 @@ TEST_CASE("Parser")
         }
         else
         {
-            auto ruleIndex = node.getRuleIndex();
-            if (ruleIndex == 0)
+            switch(node.getRuleIndex())
             {
-
-            }
-            else if (ruleIndex == 1)
+            case 0:
+            case 3:
+            case 6:
+            case 8:
+            case 9:
+            case 10:
+            case 15:
+                break;
+            case 1:
             {
                 auto rhs = pop(valuesStack);
                 auto lhs = pop(valuesStack);
                 valuesStack.push_back(lhs + rhs);
+                break;
             }
-            else if (ruleIndex == 2)
+            case 2:
             {
                 auto rhs = pop(valuesStack);
                 auto lhs = pop(valuesStack);
                 valuesStack.push_back(lhs - rhs);
+                break;
             }
-            else if (ruleIndex == 3)
-            {
-
-            }
-            else if (ruleIndex == 4)
+            case 4:
             {
                 auto rhs = pop(valuesStack);
                 auto lhs = pop(valuesStack);
                 valuesStack.push_back(lhs * rhs);
+                break;
             }
-            else if (ruleIndex == 5)
+            case 5:
             {
                 auto rhs = pop(valuesStack);
                 auto lhs = pop(valuesStack);
                 valuesStack.push_back(lhs / rhs);
+                break;
             }
-            else if (ruleIndex == 6)
-            {
-
-            }
-            else if (ruleIndex == 7)
+            case 7:
             {
                 auto rhs = pop(valuesStack);
                 auto lhs = pop(valuesStack);
                 valuesStack.push_back(std::pow(lhs, rhs));
+                break;
             }
-            else if (ruleIndex == 8)
+            case 11:
             {
-                
+                auto value = pop(valuesStack);
+                valuesStack.push_back(-value);
+                break;
             }
-            else if (ruleIndex == 9)
+            case 12:
             {
                 auto token = pop(tokensStack);
                 auto id = std::string{formula.begin() + token.begin(), formula.begin() + token.end()};
                 valuesStack.push_back(variables.at(id));
+                break;
             }
-            else if (ruleIndex == 10)
+            case 13:
             {
                 auto token = pop(tokensStack);
                 auto nr = std::string{formula.begin() + token.begin(), formula.begin() + token.end()};
                 valuesStack.push_back(std::stod(nr));
+                break;
             }
-            else if (ruleIndex == 11)
+            case 14:
             {
                 auto token = pop(tokensStack);
                 auto argument = pop(valuesStack);
                 auto function = std::string{formula.begin() + token.begin(), formula.begin() + token.end()};
                 valuesStack.push_back(functions.at(function)(argument));
+                break;
             }
-            else if (ruleIndex == 12)
-            {
-            
-            }
-            else
-            {
-                THROW(std::runtime_error, "unrecognized rule index: ", ruleIndex);
+            default:
+                THROW(std::runtime_error, "unrecognized rule index: ", node.getRuleIndex());
             }
         }
     };
 
-    const auto regexTokenizer = RegexTokenizer{{{"add",              "\\+"},
-                                                {"subtract",         "\\-"},
+    const auto regexTokenizer = RegexTokenizer{{{"plus",             "\\+"},
+                                                {"minus",            "\\-"},
                                                 {"multiply",         "\\*"},
                                                 {"divide",           "\\/"},
                                                 {"power",            "\\^"},
@@ -171,6 +176,6 @@ TEST_CASE("Parser")
 
     REQUIRE(valuesStack.size() == 1);
 
-    REQUIRE(valuesStack.front() == Approx(7031.46320796));
+    REQUIRE(valuesStack.front() == Approx(6931.46320796));
 }
 // clang-format on

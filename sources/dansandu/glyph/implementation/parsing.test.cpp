@@ -26,17 +26,19 @@ TEST_CASE("Parsing")
 
     SECTION("grammar #1")
     {
-        const auto grammar = Grammar{/*0*/"Start    -> Sums                    \n"
-                                     /*1*/"Sums     -> Sums add Products       \n"
-                                     /*2*/"Sums     -> Products                \n"
-                                     /*3*/"Products -> Products multiply Value \n"
-                                     /*4*/"Products -> Value                   \n"
-                                     /*5*/"Value    -> number                  \n"
-                                     /*6*/"Value    -> identifier"};
+        const auto grammar = Grammar{/*0*/"Start       -> Sums                          \n"
+                                     /*1*/"Sums        -> Sums plus Products            \n"
+                                     /*2*/"Sums        -> Products                      \n"
+                                     /*3*/"Products    -> Products multiply SignedValue \n"
+                                     /*4*/"Products    -> SignedValue                   \n"
+                                     /*5*/"SignedValue -> Value                         \n"
+                                     /*6*/"SignedValue -> plus Value                    \n"
+                                     /*7*/"Value       -> number                        \n"
+                                     /*8*/"Value       -> identifier"};
 
         const auto tokenizer = RegexTokenizer{{{"identifier", "[a-z]\\w*"},
                                                {"number",     "([1-9]\\d*|0)(\\.\\d+)?"},
-                                               {"add",        "\\+"},
+                                               {"plus",       "\\+"},
                                                {"multiply",   "\\*"},
                                                {"whitespace", "\\s+"}},
                                               [&grammar](auto id) { return grammar.getTerminalSymbol(id); },
@@ -50,22 +52,25 @@ TEST_CASE("Parsing")
 
             parse(tokenizer("a * b + 10"), parsingTable, grammar, [&actualTree](const Node& node) { actualTree.push_back(node); });
 
-            const auto add        = grammar.getSymbol("add");
+            const auto plus       = grammar.getSymbol("plus");
             const auto multiply   = grammar.getSymbol("multiply");
             const auto number     = grammar.getSymbol("number");
             const auto identifier = grammar.getSymbol("identifier");
 
             const auto expectedTree = std::vector<Node>{
                 Node{Token{identifier, 0, 1}},
-                Node{6},
+                Node{8},
+                Node{5},
                 Node{4},
                 Node{Token{multiply, 2, 3}},
                 Node{Token{identifier, 4, 5}},
-                Node{6},
+                Node{8},
+                Node{5},
                 Node{3},
                 Node{2},
-                Node{Token{add, 6, 7}},
+                Node{Token{plus, 6, 7}},
                 Node{Token{number, 8, 10}},
+                Node{7},
                 Node{5},
                 Node{4},
                 Node{1},
