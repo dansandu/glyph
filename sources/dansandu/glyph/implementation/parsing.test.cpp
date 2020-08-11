@@ -22,53 +22,69 @@ using dansandu::glyph::token::Token;
 // clang-format off
 TEST_CASE("Parsing")
 {
+    const auto doNothing = [](const auto&) { };
+
     SECTION("grammar #1")
     {
-        auto grammar = Grammar{/*0*/"Start    -> Sums                    \n"
-                               /*1*/"Sums     -> Sums add Products       \n"
-                               /*2*/"Sums     -> Products                \n"
-                               /*3*/"Products -> Products multiply Value \n"
-                               /*4*/"Products -> Value                   \n"
-                               /*5*/"Value    -> number                  \n"
-                               /*6*/"Value    -> identifier"};
+        const auto grammar = Grammar{/*0*/"Start    -> Sums                    \n"
+                                     /*1*/"Sums     -> Sums add Products       \n"
+                                     /*2*/"Sums     -> Products                \n"
+                                     /*3*/"Products -> Products multiply Value \n"
+                                     /*4*/"Products -> Value                   \n"
+                                     /*5*/"Value    -> number                  \n"
+                                     /*6*/"Value    -> identifier"};
 
-        auto tokenizer = RegexTokenizer{{{"identifier", "[a-z]\\w*"},
-                                         {"number",     "(?:[1-9]\\d*|0)(?:\\.\\d+)?"},
-                                         {"add",        "\\+"},
-                                         {"multiply",   "\\*"},
-                                         {"whitespace", "\\s+"}},
-                                        [&grammar](auto id) { return grammar.getTerminalSymbol(id); },
-                                        {"whitespace"}};
+        const auto tokenizer = RegexTokenizer{{{"identifier", "[a-z]\\w*"},
+                                               {"number",     "([1-9]\\d*|0)(\\.\\d+)?"},
+                                               {"add",        "\\+"},
+                                               {"multiply",   "\\*"},
+                                               {"whitespace", "\\s+"}},
+                                              [&grammar](auto id) { return grammar.getTerminalSymbol(id); },
+                                              {"whitespace"}};
 
-        auto parsingTable = getCanonicalLeftToRightParsingTable(grammar, getAutomaton(grammar));
+        const auto parsingTable = getCanonicalLeftToRightParsingTable(grammar, getAutomaton(grammar));
 
-        auto actualTree = std::vector<Node>{};
+        SECTION("successful parse")
+        {
+            auto actualTree = std::vector<Node>{};
 
-        parse(tokenizer("a * b + 10"), parsingTable, grammar, [&actualTree](const Node& node) { actualTree.push_back(node); });
+            parse(tokenizer("a * b + 10"), parsingTable, grammar, [&actualTree](const Node& node) { actualTree.push_back(node); });
 
-        auto add        = grammar.getSymbol("add");
-        auto multiply   = grammar.getSymbol("multiply");
-        auto number     = grammar.getSymbol("number");
-        auto identifier = grammar.getSymbol("identifier");
+            const auto add        = grammar.getSymbol("add");
+            const auto multiply   = grammar.getSymbol("multiply");
+            const auto number     = grammar.getSymbol("number");
+            const auto identifier = grammar.getSymbol("identifier");
 
-        auto expectedTree = std::vector<Node>{
-            Node{Token{identifier, 0, 1}},
-            Node{6},
-            Node{4},
-            Node{Token{multiply, 2, 3}},
-            Node{Token{identifier, 4, 5}},
-            Node{6},
-            Node{3},
-            Node{2},
-            Node{Token{add, 6, 7}},
-            Node{Token{number, 8, 10}},
-            Node{5},
-            Node{4},
-            Node{1},
-            Node{0}
-        };
+            const auto expectedTree = std::vector<Node>{
+                Node{Token{identifier, 0, 1}},
+                Node{6},
+                Node{4},
+                Node{Token{multiply, 2, 3}},
+                Node{Token{identifier, 4, 5}},
+                Node{6},
+                Node{3},
+                Node{2},
+                Node{Token{add, 6, 7}},
+                Node{Token{number, 8, 10}},
+                Node{5},
+                Node{4},
+                Node{1},
+                Node{0}
+            };
 
-        REQUIRE(actualTree == expectedTree);
+            REQUIRE(actualTree == expectedTree);
+        }
+
+        SECTION("failed parse")
+        {
+            REQUIRE_THROWS_AS(parse(tokenizer("a *"), parsingTable, grammar, doNothing), SyntaxError);
+
+            REQUIRE_THROWS_AS(parse(tokenizer("* 2"), parsingTable, grammar, doNothing), SyntaxError);
+
+            REQUIRE_THROWS_AS(parse(tokenizer("+ * a"), parsingTable, grammar, doNothing), SyntaxError);
+
+            REQUIRE_THROWS_AS(parse(tokenizer("x y"), parsingTable, grammar, doNothing), SyntaxError);
+        }
     }
 
     SECTION("grammar #2")
@@ -91,10 +107,10 @@ TEST_CASE("Parsing")
 
             parse(tokenizer("ababa"), parsingTable, grammar, [&actualTree](const Node& node) { actualTree.push_back(node); });
 
-            auto a = grammar.getSymbol("a");
-            auto b = grammar.getSymbol("b");
+            const auto a = grammar.getSymbol("a");
+            const auto b = grammar.getSymbol("b");
 
-            auto expectedTree = std::vector<Node>{
+            const auto expectedTree = std::vector<Node>{
                 Node{4},
                 Node{Token{a, 0, 1}},
                 Node{1},
@@ -114,9 +130,9 @@ TEST_CASE("Parsing")
 
         SECTION("failed parse")
         {
-            REQUIRE_THROWS_AS(parse(tokenizer("aa"), parsingTable, grammar, [](const auto&) { }), SyntaxError);
+            REQUIRE_THROWS_AS(parse(tokenizer("aa"), parsingTable, grammar, doNothing), SyntaxError);
 
-            REQUIRE_THROWS_AS(parse(tokenizer("aaba"), parsingTable, grammar, [](const auto&) { }), SyntaxError);
+            REQUIRE_THROWS_AS(parse(tokenizer("aaba"), parsingTable, grammar, doNothing), SyntaxError);
         }
     }
 }
