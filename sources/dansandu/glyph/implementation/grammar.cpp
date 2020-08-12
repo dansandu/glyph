@@ -112,12 +112,12 @@ Grammar::Grammar(std::string_view grammar) : grammar_{grammar}
 
     for (auto ruleIndex = 0U; ruleIndex < leftSideColumn.size(); ++ruleIndex)
     {
-        int identifierIndex = static_cast<int>(find(identifiers_, leftSideColumn[ruleIndex]) - identifiers_.cbegin());
+        auto identifierIndex = static_cast<int>(find(identifiers_, leftSideColumn[ruleIndex]) - identifiers_.cbegin());
         auto leftSideSymbol = Symbol{identifierIndex};
         auto rightSideSymbols = std::vector<Symbol>{};
         for (const auto& identifier : rightSideColumn[ruleIndex])
         {
-            int identifierIndex = static_cast<int>(find(identifiers_, identifier) - identifiers_.cbegin());
+            auto identifierIndex = static_cast<int>(find(identifiers_, identifier) - identifiers_.cbegin());
             rightSideSymbols.push_back(Symbol{identifierIndex});
         }
         rules_.push_back({leftSideSymbol, std::move(rightSideSymbols)});
