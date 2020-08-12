@@ -1,5 +1,6 @@
 #include "catchorg/catch/catch.hpp"
 #include "dansandu/ballotin/exception.hpp"
+#include "dansandu/glyph/error.hpp"
 #include "dansandu/glyph/node.hpp"
 #include "dansandu/glyph/parser.hpp"
 #include "dansandu/glyph/regex_tokenizer.hpp"
@@ -10,6 +11,7 @@
 #include <string>
 
 using Catch::Detail::Approx;
+using dansandu::glyph::error::SyntaxError;
 using dansandu::glyph::node::Node;
 using dansandu::glyph::parser::Parser;
 using dansandu::glyph::regex_tokenizer::RegexTokenizer;
@@ -201,5 +203,13 @@ TEST_CASE("Parser")
     REQUIRE(parser.evaluate(functions, variables, "z + 20 * y ^ sin(x * pi) * ln(1024) + -100") == Approx(6931.46320796));
 
     REQUIRE(parser.evaluate(functions, variables, "(20 * -z - -y) / (+300.0 + x)") == Approx(-6.48918469));
+
+    REQUIRE_THROWS_AS(parser.evaluate({}, {}, "(50 + 30"), SyntaxError);
+
+    REQUIRE_THROWS_AS(parser.evaluate({}, {}, ""), SyntaxError);
+
+    REQUIRE_THROWS_AS(parser.evaluate({}, {}, "(50 + 30"), SyntaxError);
+
+    REQUIRE_THROWS_AS(parser.evaluate({}, {}, "50+"), SyntaxError);
 }
 // clang-format on
