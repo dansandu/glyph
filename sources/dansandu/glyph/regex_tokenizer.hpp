@@ -16,14 +16,14 @@ class PRALINE_EXPORT RegexTokenizer
 {
 public:
     explicit RegexTokenizer(const std::vector<std::pair<std::string, std::string>>& descriptors,
-                            std::function<dansandu::glyph::symbol::Symbol(std::string_view)> symbolMapper,
                             std::vector<std::string> discarded = {});
 
-    std::vector<dansandu::glyph::token::Token> operator()(std::string_view string) const;
+    std::vector<dansandu::glyph::token::Token>
+    operator()(std::string_view string,
+               const std::function<dansandu::glyph::symbol::Symbol(std::string_view)>& symbolMapper) const;
 
 private:
     std::vector<std::pair<std::string, std::regex>> descriptors_;
-    std::function<dansandu::glyph::symbol::Symbol(std::string_view)> symbolMapper_;
     std::vector<std::string> discarded_;
 };
 

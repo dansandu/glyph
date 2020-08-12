@@ -26,23 +26,24 @@ TEST_CASE("Parsing")
 
     SECTION("grammar #1")
     {
-        const auto grammar = Grammar{/*0*/"Start       -> Sums                          \n"
-                                     /*1*/"Sums        -> Sums plus Products            \n"
-                                     /*2*/"Sums        -> Products                      \n"
-                                     /*3*/"Products    -> Products multiply SignedValue \n"
-                                     /*4*/"Products    -> SignedValue                   \n"
-                                     /*5*/"SignedValue -> Value                         \n"
-                                     /*6*/"SignedValue -> plus Value                    \n"
-                                     /*7*/"Value       -> number                        \n"
-                                     /*8*/"Value       -> identifier"};
+        const auto grammar = Grammar{/*0*/ "Start       -> Sums                          \n"
+                                     /*1*/ "Sums        -> Sums plus Products            \n"
+                                     /*2*/ "Sums        -> Products                      \n"
+                                     /*3*/ "Products    -> Products multiply SignedValue \n"
+                                     /*4*/ "Products    -> SignedValue                   \n"
+                                     /*5*/ "SignedValue -> Value                         \n"
+                                     /*6*/ "SignedValue -> plus Value                    \n"
+                                     /*7*/ "Value       -> number                        \n"
+                                     /*8*/ "Value       -> identifier"};
 
         const auto tokenizer = RegexTokenizer{{{"identifier", "[a-z]\\w*"},
                                                {"number",     "([1-9]\\d*|0)(\\.\\d+)?"},
                                                {"plus",       "\\+"},
                                                {"multiply",   "\\*"},
                                                {"whitespace", "\\s+"}},
-                                              [&grammar](auto id) { return grammar.getTerminalSymbol(id); },
                                               {"whitespace"}};
+
+        const auto mapper = [&grammar](auto id) { return grammar.getTerminalSymbol(id); };
 
         const auto parsingTable = getCanonicalLeftToRightParsingTable(grammar, getAutomaton(grammar));
 
@@ -50,7 +51,9 @@ TEST_CASE("Parsing")
         {
             auto actualTree = std::vector<Node>{};
 
-            parse(tokenizer("a * b + 10"), parsingTable, grammar, [&actualTree](const Node& node) { actualTree.push_back(node); });
+            const auto visitor = [&actualTree](const Node& node) { actualTree.push_back(node); };
+
+            parse(tokenizer("a * b + 10", mapper), parsingTable, grammar, visitor);
 
             const auto plus       = grammar.getSymbol("plus");
             const auto multiply   = grammar.getSymbol("multiply");
@@ -82,27 +85,27 @@ TEST_CASE("Parsing")
 
         SECTION("failed parse")
         {
-            REQUIRE_THROWS_AS(parse(tokenizer("a *"), parsingTable, grammar, doNothing), SyntaxError);
+            REQUIRE_THROWS_AS(parse(tokenizer("a *", mapper), parsingTable, grammar, doNothing), SyntaxError);
 
-            REQUIRE_THROWS_AS(parse(tokenizer("* 2"), parsingTable, grammar, doNothing), SyntaxError);
+            REQUIRE_THROWS_AS(parse(tokenizer("* 2", mapper), parsingTable, grammar, doNothing), SyntaxError);
 
-            REQUIRE_THROWS_AS(parse(tokenizer("+ * a"), parsingTable, grammar, doNothing), SyntaxError);
+            REQUIRE_THROWS_AS(parse(tokenizer("+ * a", mapper), parsingTable, grammar, doNothing), SyntaxError);
 
-            REQUIRE_THROWS_AS(parse(tokenizer("x y"), parsingTable, grammar, doNothing), SyntaxError);
+            REQUIRE_THROWS_AS(parse(tokenizer("x y", mapper), parsingTable, grammar, doNothing), SyntaxError);
         }
     }
 
     SECTION("grammar #2")
     {
-        const auto grammar = Grammar{/*0*/"Start -> A \n"
-                                     /*1*/"A -> B a   \n"
-                                     /*2*/"B -> A b   \n"
-                                     /*3*/"B -> b     \n"
-                                     /*4*/"B ->"};
+        const auto grammar = Grammar{/*0*/ "Start -> A \n"
+                                     /*1*/ "A -> B a   \n"
+                                     /*2*/ "B -> A b   \n"
+                                     /*3*/ "B -> b     \n"
+                                     /*4*/ "B ->"};
 
-        const auto tokenizer = RegexTokenizer{{{"a", "a"},
-                                               {"b", "b"}},
-                                              [&grammar](auto id) { return grammar.getTerminalSymbol(id); }};
+        const auto tokenizer = RegexTokenizer{{{"a", "a"}, {"b", "b"}}};
+
+        const auto mapper = [&grammar](auto id) { return grammar.getTerminalSymbol(id); };
 
         const auto parsingTable = getCanonicalLeftToRightParsingTable(grammar, getAutomaton(grammar));
 
@@ -110,7 +113,9 @@ TEST_CASE("Parsing")
         {
             auto actualTree = std::vector<Node>{};
 
-            parse(tokenizer("ababa"), parsingTable, grammar, [&actualTree](const Node& node) { actualTree.push_back(node); });
+            const auto visitor = [&actualTree](const Node& node) { actualTree.push_back(node); };
+
+            parse(tokenizer("ababa", mapper), parsingTable, grammar, visitor);
 
             const auto a = grammar.getSymbol("a");
             const auto b = grammar.getSymbol("b");
@@ -135,9 +140,9 @@ TEST_CASE("Parsing")
 
         SECTION("failed parse")
         {
-            REQUIRE_THROWS_AS(parse(tokenizer("aa"), parsingTable, grammar, doNothing), SyntaxError);
+            REQUIRE_THROWS_AS(parse(tokenizer("aa", mapper), parsingTable, grammar, doNothing), SyntaxError);
 
-            REQUIRE_THROWS_AS(parse(tokenizer("aaba"), parsingTable, grammar, doNothing), SyntaxError);
+            REQUIRE_THROWS_AS(parse(tokenizer("aaba", mapper), parsingTable, grammar, doNothing), SyntaxError);
         }
     }
 }

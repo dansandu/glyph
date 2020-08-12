@@ -33,30 +33,30 @@ TEST_CASE("RegexTokenizer")
 
     SECTION("without discard")
     {
-        auto tokenizer = RegexTokenizer{descriptors, symbolMapper};
+        auto tokenizer = RegexTokenizer{descriptors};
 
-        REQUIRE(tokenizer("") == std::vector<Token>{});
+        REQUIRE(tokenizer("", symbolMapper) == std::vector<Token>{});
 
-        REQUIRE(tokenizer("a + 10") == std::vector<Token>{{identifier, 0, 1},
+        REQUIRE(tokenizer("a + 10", symbolMapper) == std::vector<Token>{{identifier, 0, 1},
                                                           {whitespace, 1, 2},
                                                           {add, 2, 3},
                                                           {whitespace, 3, 4},
                                                           {number, 4, 6}});
 
-        REQUIRE_THROWS_AS(tokenizer("a + & + 20"), TokenizationError);
+        REQUIRE_THROWS_AS(tokenizer("a + & + 20", symbolMapper), TokenizationError);
 
-        REQUIRE_THROWS_AS(tokenizer("a + f()"), TokenizationError);
+        REQUIRE_THROWS_AS(tokenizer("a + f()", symbolMapper), TokenizationError);
 
-        REQUIRE_THROWS_AS(tokenizer("@a + 10"), TokenizationError);
+        REQUIRE_THROWS_AS(tokenizer("@a + 10", symbolMapper), TokenizationError);
     }
 
     SECTION("with discard")
     {
-        auto tokenizer = RegexTokenizer{descriptors, symbolMapper, {"whitespace"}};
+        auto tokenizer = RegexTokenizer{descriptors, {"whitespace"}};
 
-        REQUIRE(tokenizer("a   + 1000") == std::vector<Token>{{identifier, 0, 1},
-                                                              {add, 4, 5},
-                                                              {number, 6, 10}});
+        REQUIRE(tokenizer("a   + 1000", symbolMapper) == std::vector<Token>{{identifier, 0, 1},
+                                                                            {add, 4, 5},
+                                                                            {number, 6, 10}});
     }
 }
 // clang-format on

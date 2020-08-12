@@ -20,6 +20,8 @@ TEST_CASE("Node")
         REQUIRE(!node.isRule());
 
         REQUIRE(node.getToken() == token);
+
+        REQUIRE_THROWS_AS(node.getRuleIndex(), std::runtime_error);
     }
 
     SECTION("with production rule")
@@ -32,5 +34,7 @@ TEST_CASE("Node")
         REQUIRE(!node.isToken());
 
         REQUIRE(node.getRuleIndex() == ruleIndex);
+
+        REQUIRE_THROWS_AS(node.getToken(), std::runtime_error);
     }
 }
