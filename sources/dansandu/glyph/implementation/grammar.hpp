@@ -51,7 +51,7 @@ public:
 
     int getIdentifiersCount() const
     {
-        return identifiers_.size();
+        return static_cast<int>(identifiers_.size());
     }
 
     bool isTerminal(dansandu::glyph::symbol::Symbol symbol) const

@@ -96,7 +96,7 @@ Grammar::Grammar(std::string_view grammar) : grammar_{grammar}
     }
 
     // Insert terminals next and mark the beginning of the terminals (end of string identifier).
-    terminalBeginIndex_ = identifiers_.size();
+    terminalBeginIndex_ = static_cast<int>(identifiers_.size());
     identifiers_.push_back("$");
     identifiers_.push_back("");
     for (const auto& rightSide : rightSideColumn)
@@ -112,12 +112,12 @@ Grammar::Grammar(std::string_view grammar) : grammar_{grammar}
 
     for (auto ruleIndex = 0U; ruleIndex < leftSideColumn.size(); ++ruleIndex)
     {
-        int identifierIndex = find(identifiers_, leftSideColumn[ruleIndex]) - identifiers_.cbegin();
+        int identifierIndex = static_cast<int>(find(identifiers_, leftSideColumn[ruleIndex]) - identifiers_.cbegin());
         auto leftSideSymbol = Symbol{identifierIndex};
         auto rightSideSymbols = std::vector<Symbol>{};
         for (const auto& identifier : rightSideColumn[ruleIndex])
         {
-            int identifierIndex = find(identifiers_, identifier) - identifiers_.cbegin();
+            int identifierIndex = static_cast<int>(find(identifiers_, identifier) - identifiers_.cbegin());
             rightSideSymbols.push_back(Symbol{identifierIndex});
         }
         rules_.push_back({leftSideSymbol, std::move(rightSideSymbols)});
