@@ -60,7 +60,16 @@ Grammar::Grammar(std::string_view grammar) : grammar_{grammar}
             auto rightSide = std::vector<std::string>{};
             for (const auto& identifier : split(ruleTokens[1], " "))
             {
-                rightSide.push_back(trim(identifier));
+                auto trimmedIdentifier = trim(identifier);
+                if (trimmedIdentifier != "Start")
+                {
+                    rightSide.push_back(std::move(trimmedIdentifier));
+                }
+                else
+                {
+                    THROW(GrammarError, "right side of production rule '", trimmedLine,
+                          "' cannot contain Start non-terminal");
+                }
             }
             rightSideColumn.push_back(std::move(rightSide));
         }
@@ -145,88 +154,99 @@ void Grammar::generateFirstTable()
 {
     auto partitions = Multimap{};
 
-    for (auto i = terminalBeginIndex_ + 1; i < static_cast<int>(identifiers_.size()); ++i)
+    for (auto terminalIndex = terminalBeginIndex_; terminalIndex < static_cast<int>(identifiers_.size());
+         ++terminalIndex)
     {
-        partitions[Symbol{i}] = {Symbol{i}};
+        partitions[Symbol{terminalIndex}] = {Symbol{terminalIndex}};
     }
 
     auto blanks = std::vector<Symbol>{};
-    auto rulesIndicesPath = std::vector<int>{};
     auto visitedRulesIndices = std::vector<int>{};
-    auto stack = std::vector<std::pair<PartialItem, int>>{};
-    stack.push_back({PartialItem{getStartRuleIndex(), 0}, -1});
 
-    while (!stack.empty())
+    for (auto rootRuleIndex = 0; rootRuleIndex < static_cast<int>(rules_.size()); ++rootRuleIndex)
     {
-        auto currentItem = stack.back().first;
-        if (currentItem.position == static_cast<int>(rules_[currentItem.ruleIndex].rightSide.size()))
+        if (contains(visitedRulesIndices, rootRuleIndex))
         {
-            uniquePushBack(blanks, rules_[currentItem.ruleIndex].leftSide);
-            stack.pop_back();
             continue;
         }
 
-        auto currentSymbol = rules_[currentItem.ruleIndex].rightSide[currentItem.position];
-        if (isTerminal(currentSymbol))
-        {
-            uniquePushBack(partitions[rules_[currentItem.ruleIndex].leftSide], currentSymbol);
-            stack.pop_back();
-            continue;
-        }
+        visitedRulesIndices.push_back(rootRuleIndex);
 
-        auto parentRuleIndex = stack.back().second;
-        while (!rulesIndicesPath.empty() && rulesIndicesPath.back() != parentRuleIndex)
+        auto rulesIndicesPath = std::vector<int>{};
+        auto stack = std::vector<std::pair<PartialItem, int>>{{PartialItem{rootRuleIndex, 0}, -1}};
+
+        while (!stack.empty())
         {
-            rulesIndicesPath.pop_back();
-        }
-        rulesIndicesPath.push_back(currentItem.ruleIndex);
-        for (auto i = 0U; i < rulesIndicesPath.size(); ++i)
-        {
-            if (rules_[rulesIndicesPath[i]].leftSide == currentSymbol)
+            auto currentItem = stack.back().first;
+            if (currentItem.position == static_cast<int>(rules_[currentItem.ruleIndex].rightSide.size()))
             {
-                auto cycle = std::vector<Symbol>{};
-                for (auto j = i; j < rulesIndicesPath.size(); ++j)
+                uniquePushBack(blanks, rules_[currentItem.ruleIndex].leftSide);
+                stack.pop_back();
+                continue;
+            }
+
+            auto currentSymbol = rules_[currentItem.ruleIndex].rightSide[currentItem.position];
+            if (isTerminal(currentSymbol))
+            {
+                uniquePushBack(partitions[rules_[currentItem.ruleIndex].leftSide], currentSymbol);
+                stack.pop_back();
+                continue;
+            }
+
+            auto parentRuleIndex = stack.back().second;
+            while (!rulesIndicesPath.empty() && rulesIndicesPath.back() != parentRuleIndex)
+            {
+                rulesIndicesPath.pop_back();
+            }
+            rulesIndicesPath.push_back(currentItem.ruleIndex);
+            for (auto i = 0U; i < rulesIndicesPath.size(); ++i)
+            {
+                if (rules_[rulesIndicesPath[i]].leftSide == currentSymbol)
                 {
-                    uniquePushBack(cycle, rules_[rulesIndicesPath[j]].leftSide);
+                    auto cycle = std::vector<Symbol>{};
+                    for (auto j = i; j < rulesIndicesPath.size(); ++j)
+                    {
+                        uniquePushBack(cycle, rules_[rulesIndicesPath[j]].leftSide);
+                    }
+                    partitions.merge(cycle);
                 }
-                partitions.merge(cycle);
             }
-        }
 
-        auto childrenRulesIndices = std::vector<int>{};
-        for (auto ruleIndex = 0U; ruleIndex < rules_.size(); ++ruleIndex)
-        {
-            if (rules_[ruleIndex].leftSide == currentSymbol && !contains(visitedRulesIndices, ruleIndex))
+            auto childrenRulesIndices = std::vector<int>{};
+            for (auto ruleIndex = 0U; ruleIndex < rules_.size(); ++ruleIndex)
             {
-                childrenRulesIndices.push_back(ruleIndex);
+                if (rules_[ruleIndex].leftSide == currentSymbol && !contains(visitedRulesIndices, ruleIndex))
+                {
+                    childrenRulesIndices.push_back(ruleIndex);
+                }
             }
-        }
-        if (childrenRulesIndices.empty())
-        {
-            partitions[currentSymbol];
-            partitions[rules_[currentItem.ruleIndex].leftSide];
-            const auto& firstSet = partitions[currentSymbol];
-            auto& target = partitions[rules_[currentItem.ruleIndex].leftSide];
-            for (auto symbol : firstSet)
+            if (childrenRulesIndices.empty())
             {
-                uniquePushBack(target, symbol);
-            }
-            if (contains(blanks, currentSymbol))
-            {
-                ++stack.back().first.position;
+                partitions[currentSymbol];
+                partitions[rules_[currentItem.ruleIndex].leftSide];
+                const auto& firstSet = partitions[currentSymbol];
+                auto& target = partitions[rules_[currentItem.ruleIndex].leftSide];
+                for (auto symbol : firstSet)
+                {
+                    uniquePushBack(target, symbol);
+                }
+                if (contains(blanks, currentSymbol))
+                {
+                    ++stack.back().first.position;
+                }
+                else
+                {
+                    stack.pop_back();
+                }
             }
             else
             {
-                stack.pop_back();
-            }
-        }
-        else
-        {
-            visitedRulesIndices.insert(visitedRulesIndices.cend(), childrenRulesIndices.cbegin(),
-                                       childrenRulesIndices.cend());
-            for (auto ruleIndex : childrenRulesIndices)
-            {
-                stack.push_back({PartialItem{ruleIndex, 0}, currentItem.ruleIndex});
+                visitedRulesIndices.insert(visitedRulesIndices.cend(), childrenRulesIndices.cbegin(),
+                                           childrenRulesIndices.cend());
+                for (auto ruleIndex : childrenRulesIndices)
+                {
+                    stack.push_back({PartialItem{ruleIndex, 0}, currentItem.ruleIndex});
+                }
             }
         }
     }

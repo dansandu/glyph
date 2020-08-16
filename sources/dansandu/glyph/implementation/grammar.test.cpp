@@ -44,6 +44,8 @@ TEST_CASE("Grammar")
         REQUIRE_THROWS_AS(Grammar{"Start -> S\nStart -> SS"}, GrammarError);
 
         REQUIRE_THROWS_AS(Grammar{"S -> SS\nStart -> SS"}, GrammarError);
+
+        REQUIRE_THROWS_AS(Grammar{"Start -> Sums\nSums -> Start"}, GrammarError);
     }
 
     SECTION("grammar #1")
@@ -56,32 +58,45 @@ TEST_CASE("Grammar")
             Sum   -> Value
             Value -> number
             Value -> id
+            Value -> id parenthesesStart ParametersBegin Parameters parenthesesEnd
+            ParametersBegin ->
+            Parameters -> Parameters comma Sum
+            Parameters -> Sum
         )";
         
         auto grammar = Grammar{text};
 
-        auto start  = grammar.getSymbol("Start");
-        auto s      = grammar.getSymbol("S");
-        auto sum    = grammar.getSymbol("Sum");
-        auto value  = grammar.getSymbol("Value");
-        auto end    = grammar.getSymbol("$");
-        auto empty  = grammar.getSymbol("");
-        auto add    = grammar.getSymbol("add");
-        auto number = grammar.getSymbol("number");
-        auto id     = grammar.getSymbol("id");
+        auto Start            = grammar.getSymbol("Start");
+        auto S                = grammar.getSymbol("S");
+        auto Sum              = grammar.getSymbol("Sum");
+        auto Value            = grammar.getSymbol("Value");
+        auto ParametersBegin  = grammar.getSymbol("ParametersBegin");
+        auto Parameters       = grammar.getSymbol("Parameters");
+        auto end              = grammar.getSymbol("$");
+        auto empty            = grammar.getSymbol("");
+        auto add              = grammar.getSymbol("add");
+        auto number           = grammar.getSymbol("number");
+        auto id               = grammar.getSymbol("id");
+        auto parenthesesStart = grammar.getSymbol("parenthesesStart");
+        auto parenthesesEnd   = grammar.getSymbol("parenthesesEnd");
+        auto comma            = grammar.getSymbol("comma");
 
         REQUIRE(grammar.toString() == text);
 
         SECTION("rules")
         {
             auto rules = std::vector<Rule>{
-                Rule{start, {s}},
-                Rule{s,     {sum}},
-                Rule{s,     {}},
-                Rule{sum,   {sum, add, value}},
-                Rule{sum,   {value}},
-                Rule{value, {number}},
-                Rule{value, {id}}
+                Rule{Start,           {S}},
+                Rule{S,               {Sum}},
+                Rule{S,               {}},
+                Rule{Sum,             {Sum, add, Value}},
+                Rule{Sum,             {Value}},
+                Rule{Value,           {number}},
+                Rule{Value,           {id}},
+                Rule{Value,           {id, parenthesesStart, ParametersBegin, Parameters, parenthesesEnd}},
+                Rule{ParametersBegin, {}},
+                Rule{Parameters,      {Parameters, comma, Sum}},
+                Rule{Parameters,      {Sum}},
             };
 
             REQUIRE(grammar.getRules() == rules);
@@ -89,7 +104,7 @@ TEST_CASE("Grammar")
 
         SECTION("special symbols")
         {
-            REQUIRE(grammar.getStartSymbol() == start);
+            REQUIRE(grammar.getStartSymbol() == Start);
 
             REQUIRE(grammar.getEndOfStringSymbol() == end);
 
@@ -98,15 +113,19 @@ TEST_CASE("Grammar")
 
         SECTION("identifiers")
         {
-            REQUIRE(grammar.getIdentifier(start) == "Start");
+            REQUIRE(grammar.getIdentifier(Start) == "Start");
 
-            REQUIRE(grammar.getIdentifier(s) == "S");
+            REQUIRE(grammar.getIdentifier(S) == "S");
 
-            REQUIRE(grammar.getIdentifier(sum) == "Sum");
+            REQUIRE(grammar.getIdentifier(Sum) == "Sum");
+
+            REQUIRE(grammar.getIdentifier(Value) == "Value");
+
+            REQUIRE(grammar.getIdentifier(ParametersBegin) == "ParametersBegin");
+
+            REQUIRE(grammar.getIdentifier(Parameters) == "Parameters");
 
             REQUIRE(grammar.getIdentifier(add) == "add");
-
-            REQUIRE(grammar.getIdentifier(value) == "Value");
 
             REQUIRE(grammar.getIdentifier(number) == "number");
 
@@ -115,17 +134,27 @@ TEST_CASE("Grammar")
             REQUIRE(grammar.getIdentifier(empty) == "");
 
             REQUIRE(grammar.getIdentifier(end) == "$");
+            
+            REQUIRE(grammar.getIdentifier(parenthesesStart) == "parenthesesStart");
+            
+            REQUIRE(grammar.getIdentifier(parenthesesEnd) == "parenthesesEnd");
+
+            REQUIRE(grammar.getIdentifier(comma) == "comma");
         }
 
         SECTION("non-terminals")
         {
-            REQUIRE(grammar.isNonTerminal(start));
+            REQUIRE(grammar.isNonTerminal(Start));
 
-            REQUIRE(grammar.isNonTerminal(sum));
+            REQUIRE(grammar.isNonTerminal(Sum));
 
-            REQUIRE(grammar.isNonTerminal(value));
+            REQUIRE(grammar.isNonTerminal(Value));
 
-            REQUIRE(grammar.isNonTerminal(s));
+            REQUIRE(grammar.isNonTerminal(S));
+
+            REQUIRE(grammar.isNonTerminal(ParametersBegin));
+
+            REQUIRE(grammar.isNonTerminal(Parameters));
         }
 
         SECTION("terminals")
@@ -139,23 +168,41 @@ TEST_CASE("Grammar")
             REQUIRE(grammar.isTerminal(end));
 
             REQUIRE(grammar.isTerminal(empty));
+
+            REQUIRE(grammar.isTerminal(parenthesesStart));
+
+            REQUIRE(grammar.isTerminal(parenthesesEnd));
+
+            REQUIRE(grammar.isTerminal(comma));
         }
 
         SECTION("first sets")
         {
-            REQUIRE(set(grammar.getFirstSet(start)) == set({id, number, empty}));
+            REQUIRE(set(grammar.getFirstSet(Start)) == set({id, number, empty}));
 
-            REQUIRE(set(grammar.getFirstSet(s)) == set({id, number, empty}));
+            REQUIRE(set(grammar.getFirstSet(S)) == set({id, number, empty}));
 
-            REQUIRE(set(grammar.getFirstSet(sum)) == set({id, number}));
+            REQUIRE(set(grammar.getFirstSet(Sum)) == set({id, number}));
 
-            REQUIRE(set(grammar.getFirstSet(value)) == set({id, number}));
+            REQUIRE(set(grammar.getFirstSet(Value)) == set({id, number}));
+            
+            REQUIRE(set(grammar.getFirstSet(ParametersBegin)) == set({empty}));
+
+            REQUIRE(set(grammar.getFirstSet(Parameters)) == set({id, number}));
 
             REQUIRE(set(grammar.getFirstSet(number)) == set({number}));
 
             REQUIRE(set(grammar.getFirstSet(id)) == set({id}));
 
             REQUIRE(set(grammar.getFirstSet(empty)) == set({empty}));
+
+            REQUIRE(set(grammar.getFirstSet(end)) == set({end}));
+            
+            REQUIRE(set(grammar.getFirstSet(parenthesesStart)) == set({parenthesesStart}));
+            
+            REQUIRE(set(grammar.getFirstSet(parenthesesEnd)) == set({parenthesesEnd}));
+            
+            REQUIRE(set(grammar.getFirstSet(comma)) == set({comma}));
         }
     }
 
