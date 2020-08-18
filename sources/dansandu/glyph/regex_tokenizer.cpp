@@ -1,12 +1,10 @@
 #include "dansandu/glyph/regex_tokenizer.hpp"
-#include "dansandu/ballotin/container.hpp"
 #include "dansandu/ballotin/exception.hpp"
 #include "dansandu/glyph/error.hpp"
 
 #include <string>
 #include <string_view>
 
-using dansandu::ballotin::container::contains;
 using dansandu::glyph::error::TokenizationError;
 using dansandu::glyph::symbol::Symbol;
 using dansandu::glyph::token::Token;
@@ -14,9 +12,7 @@ using dansandu::glyph::token::Token;
 namespace dansandu::glyph::regex_tokenizer
 {
 
-RegexTokenizer::RegexTokenizer(const std::vector<std::pair<std::string, std::string>>& descriptors,
-                               std::vector<std::string> discarded)
-    : discarded_{std::move(discarded)}
+RegexTokenizer::RegexTokenizer(const std::vector<std::pair<Symbol, std::string>>& descriptors)
 {
     descriptors_.reserve(descriptors.size());
     for (const auto& descriptor : descriptors)
@@ -25,8 +21,7 @@ RegexTokenizer::RegexTokenizer(const std::vector<std::pair<std::string, std::str
     }
 }
 
-std::vector<Token> RegexTokenizer::operator()(std::string_view string,
-                                              const std::function<Symbol(std::string_view)>& symbolMapper) const
+std::vector<Token> RegexTokenizer::operator()(std::string_view string) const
 {
     auto tokens = std::vector<Token>{};
     auto position = string.cbegin();
@@ -41,10 +36,7 @@ std::vector<Token> RegexTokenizer::operator()(std::string_view string,
             {
                 auto begin = static_cast<int>(match[0].first - string.cbegin());
                 auto end = static_cast<int>(match[0].second - string.cbegin());
-                if (!contains(discarded_, descriptor.first))
-                {
-                    tokens.push_back({symbolMapper(descriptor.first), begin, end});
-                }
+                tokens.push_back({descriptor.first, begin, end});
                 position += match.length();
                 break;
             }
@@ -52,7 +44,7 @@ std::vector<Token> RegexTokenizer::operator()(std::string_view string,
         if (!matchFound)
         {
             auto index = position - string.cbegin();
-            THROW(TokenizationError, "no pattern matches symbol at position ", index, ":\n", string, "\n",
+            THROW(TokenizationError, "no pattern matches symbol at position ", index + 1, ":\n", string, "\n",
                   std::string(index, ' '), "^");
         }
     }

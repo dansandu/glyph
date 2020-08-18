@@ -24,6 +24,11 @@ public:
 
     dansandu::glyph::symbol::Symbol getTerminalSymbol(std::string_view identifier) const;
 
+    dansandu::glyph::symbol::Symbol getDiscardedSymbolPlaceholder() const
+    {
+        return dansandu::glyph::symbol::Symbol{};
+    }
+
     dansandu::glyph::symbol::Symbol getStartSymbol() const
     {
         return dansandu::glyph::symbol::Symbol{0};

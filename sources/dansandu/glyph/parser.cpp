@@ -121,6 +121,11 @@ Symbol Parser::getTerminalSymbol(std::string_view identifier) const
     return implementation_->grammar.getTerminalSymbol(identifier);
 }
 
+Symbol Parser::getDiscardedSymbolPlaceholder() const
+{
+    return implementation_->grammar.getDiscardedSymbolPlaceholder();
+}
+
 void Parser::parse(const std::vector<Token>& tokens, const std::function<void(const Node&)>& visitor) const
 {
     dansandu::glyph::implementation::parsing::parse(tokens, implementation_->parsingTable, implementation_->grammar,

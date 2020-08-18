@@ -36,14 +36,17 @@ TEST_CASE("Parsing")
                                      /*7*/ "Value       -> number                        \n"
                                      /*8*/ "Value       -> identifier"};
 
-        const auto tokenizer = RegexTokenizer{{{"identifier", "[a-z]\\w*"},
-                                               {"number",     "([1-9]\\d*|0)(\\.\\d+)?"},
-                                               {"plus",       "\\+"},
-                                               {"multiply",   "\\*"},
-                                               {"whitespace", "\\s+"}},
-                                              {"whitespace"}};
+        const auto identifier = grammar.getSymbol("identifier");
+        const auto plus       = grammar.getSymbol("plus");
+        const auto multiply   = grammar.getSymbol("multiply");
+        const auto number     = grammar.getSymbol("number");
+        const auto discarded  = grammar.getDiscardedSymbolPlaceholder();
 
-        const auto mapper = [&grammar](auto id) { return grammar.getTerminalSymbol(id); };
+        const auto tokenizer = RegexTokenizer{{{identifier, "[a-z]\\w*"},
+                                               {number,     "([1-9]\\d*|0)(\\.\\d+)?"},
+                                               {plus,       "\\+"},
+                                               {multiply,   "\\*"},
+                                               {discarded,  "\\s+"}}};
 
         const auto parsingTable = getCanonicalLeftToRightParsingTable(grammar, getAutomaton(grammar));
 
@@ -53,12 +56,7 @@ TEST_CASE("Parsing")
 
             const auto visitor = [&actualTree](const Node& node) { actualTree.push_back(node); };
 
-            parse(tokenizer("a * b + 10", mapper), parsingTable, grammar, visitor);
-
-            const auto plus       = grammar.getSymbol("plus");
-            const auto multiply   = grammar.getSymbol("multiply");
-            const auto number     = grammar.getSymbol("number");
-            const auto identifier = grammar.getSymbol("identifier");
+            parse(tokenizer("a * b + 10"), parsingTable, grammar, visitor);
 
             const auto expectedTree = std::vector<Node>{
                 Node{Token{identifier, 0, 1}},
@@ -85,13 +83,13 @@ TEST_CASE("Parsing")
 
         SECTION("failed parse")
         {
-            REQUIRE_THROWS_AS(parse(tokenizer("a *", mapper), parsingTable, grammar, doNothing), SyntaxError);
+            REQUIRE_THROWS_AS(parse(tokenizer("a *"), parsingTable, grammar, doNothing), SyntaxError);
 
-            REQUIRE_THROWS_AS(parse(tokenizer("* 2", mapper), parsingTable, grammar, doNothing), SyntaxError);
+            REQUIRE_THROWS_AS(parse(tokenizer("* 2"), parsingTable, grammar, doNothing), SyntaxError);
 
-            REQUIRE_THROWS_AS(parse(tokenizer("+ * a", mapper), parsingTable, grammar, doNothing), SyntaxError);
+            REQUIRE_THROWS_AS(parse(tokenizer("+ * a"), parsingTable, grammar, doNothing), SyntaxError);
 
-            REQUIRE_THROWS_AS(parse(tokenizer("x y", mapper), parsingTable, grammar, doNothing), SyntaxError);
+            REQUIRE_THROWS_AS(parse(tokenizer("x y"), parsingTable, grammar, doNothing), SyntaxError);
         }
     }
 
@@ -103,9 +101,10 @@ TEST_CASE("Parsing")
                                      /*3*/ "B -> b     \n"
                                      /*4*/ "B ->"};
 
-        const auto tokenizer = RegexTokenizer{{{"a", "a"}, {"b", "b"}}};
-
-        const auto mapper = [&grammar](auto id) { return grammar.getTerminalSymbol(id); };
+        const auto a = grammar.getSymbol("a");
+        const auto b = grammar.getSymbol("b");
+        
+        const auto tokenizer = RegexTokenizer{{{a, "a"}, {b, "b"}}};
 
         const auto parsingTable = getCanonicalLeftToRightParsingTable(grammar, getAutomaton(grammar));
 
@@ -115,7 +114,7 @@ TEST_CASE("Parsing")
 
             const auto visitor = [&actualTree](const Node& node) { actualTree.push_back(node); };
 
-            parse(tokenizer("ababa", mapper), parsingTable, grammar, visitor);
+            parse(tokenizer("ababa"), parsingTable, grammar, visitor);
 
             const auto a = grammar.getSymbol("a");
             const auto b = grammar.getSymbol("b");
@@ -140,9 +139,9 @@ TEST_CASE("Parsing")
 
         SECTION("failed parse")
         {
-            REQUIRE_THROWS_AS(parse(tokenizer("aa", mapper), parsingTable, grammar, doNothing), SyntaxError);
+            REQUIRE_THROWS_AS(parse(tokenizer("aa"), parsingTable, grammar, doNothing), SyntaxError);
 
-            REQUIRE_THROWS_AS(parse(tokenizer("aaba", mapper), parsingTable, grammar, doNothing), SyntaxError);
+            REQUIRE_THROWS_AS(parse(tokenizer("aaba"), parsingTable, grammar, doNothing), SyntaxError);
         }
     }
 }

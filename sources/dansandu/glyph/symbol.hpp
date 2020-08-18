@@ -15,6 +15,10 @@ class PRALINE_EXPORT Symbol : dansandu::ballotin::relation::TotalOrder<Symbol>
     }
 
 public:
+    Symbol() : identifierIndex_{-1}
+    {
+    }
+
     explicit Symbol(int identifierIndex) : identifierIndex_{identifierIndex}
     {
     }

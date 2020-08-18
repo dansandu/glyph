@@ -46,17 +46,16 @@ public:
                   /*13*/ "Value -> number                                          \n"
                   /*14*/ "Value -> identifier parenthesesStart Sums parenthesesEnd \n"
                   /*15*/ "Value -> parenthesesStart Sums parenthesesEnd"},
-          tokenizer_{{{"plus", "\\+"},
-                      {"minus", "\\-"},
-                      {"multiply", "\\*"},
-                      {"divide", "\\/"},
-                      {"power", "\\^"},
-                      {"identifier", "[a-zA-Z]\\w*"},
-                      {"number", "([1-9]\\d*|0)(\\.\\d+)?"},
-                      {"parenthesesStart", "\\("},
-                      {"parenthesesEnd", "\\)"},
-                      {"whitespace", "\\s+"}},
-                     {"whitespace"}}
+          tokenizer_{{{parser_.getTerminalSymbol("plus"),             "\\+"},
+                      {parser_.getTerminalSymbol("minus"),            "\\-"},
+                      {parser_.getTerminalSymbol("multiply"),         "\\*"},
+                      {parser_.getTerminalSymbol("divide"),           "\\/"},
+                      {parser_.getTerminalSymbol("power"),            "\\^"},
+                      {parser_.getTerminalSymbol("identifier"),       "[a-zA-Z]\\w*"},
+                      {parser_.getTerminalSymbol("number"),           "([1-9]\\d*|0)(\\.\\d+)?"},
+                      {parser_.getTerminalSymbol("parenthesesStart"), "\\("},
+                      {parser_.getTerminalSymbol("parenthesesEnd"),   "\\)"},
+                      {parser_.getDiscardedSymbolPlaceholder(),       "\\s+"}}}
     {
     }
 
@@ -161,9 +160,7 @@ public:
             }
         };
 
-        const auto mapper = [this](auto id) { return parser_.getTerminalSymbol(id); };
-
-        parser_.parse(tokenizer_(formula, mapper), visitor);
+        parser_.parse(tokenizer_(formula), visitor);
 
         if (!tokensStack.empty())
         {

@@ -23,26 +23,26 @@ using dansandu::glyph::token::Token;
 namespace dansandu::glyph::implementation::parsing
 {
 
-void parse(std::vector<Token> tokens, const std::vector<std::vector<Cell>>& parsingTable, const Grammar& grammar,
+void parse(const std::vector<Token>& tokens, const std::vector<std::vector<Cell>>& parsingTable, const Grammar& grammar,
            const std::function<void(const Node&)>& visitor)
 {
-    tokens.push_back({grammar.getEndOfStringSymbol(), -1, -1});
-    auto position = tokens.cbegin();
+    auto tokenPosition = tokens.cbegin();
     auto stateStack = std::vector<int>{grammar.getStartRuleIndex()};
     while (!stateStack.empty())
     {
-        auto symbolIndex = position->getSymbol().getIdentifierIndex();
-        if (symbolIndex < 0 || symbolIndex >= grammar.getIdentifiersCount())
+        while (tokenPosition != tokens.cend() && tokenPosition->getSymbol() == grammar.getDiscardedSymbolPlaceholder())
         {
-            THROW(std::runtime_error, "symbol with index ", symbolIndex, " is not recognized by the grammar");
+            ++tokenPosition;
         }
+
+        auto token = tokenPosition != tokens.cend() ? *tokenPosition : Token{grammar.getEndOfStringSymbol(), -1, -1};
         auto state = stateStack.back();
-        auto cell = parsingTable[symbolIndex][state];
+        auto cell = parsingTable[token.getSymbol().getIdentifierIndex()][state];
         if (cell.action == Action::shift)
         {
             stateStack.push_back(cell.parameter);
-            visitor(Node{*position});
-            ++position;
+            visitor(Node{token});
+            ++tokenPosition;
         }
         else if (cell.action == Action::reduce || cell.action == Action::accept)
         {
@@ -80,8 +80,8 @@ void parse(std::vector<Token> tokens, const std::vector<std::vector<Cell>>& pars
                     expectedSymbols.push_back(grammar.getIdentifier(Symbol{symbolIndex}));
                 }
             }
-            THROW(SyntaxError, "invalid syntax at column ", position->begin(), " with symbol '",
-                  grammar.getIdentifier(position->getSymbol()), "' -- the following symbols were expected [",
+            THROW(SyntaxError, "invalid syntax at column ", token.begin() + 1, " with symbol '",
+                  grammar.getIdentifier(token.getSymbol()), "' -- the following symbols were expected [",
                   join(expectedSymbols, ", "), "] for state ", state);
         }
     }

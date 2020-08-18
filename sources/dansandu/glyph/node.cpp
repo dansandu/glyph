@@ -13,7 +13,7 @@ Node::Node(const Token& token) : ruleIndex_{-1}, token_{token}
 {
 }
 
-Node::Node(int ruleIndex) : ruleIndex_{ruleIndex}, token_{Symbol{-1}, 0, 0}
+Node::Node(int ruleIndex) : ruleIndex_{ruleIndex}, token_{Symbol{}, 0, 0}
 {
 }
 
