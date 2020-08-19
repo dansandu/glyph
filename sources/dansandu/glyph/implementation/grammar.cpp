@@ -1,130 +1,293 @@
 #include "dansandu/glyph/implementation/grammar.hpp"
 #include "dansandu/ballotin/container.hpp"
 #include "dansandu/ballotin/exception.hpp"
+#include "dansandu/ballotin/relation.hpp"
 #include "dansandu/ballotin/string.hpp"
 #include "dansandu/glyph/error.hpp"
+#include "dansandu/glyph/implementation/multimap.hpp"
 
 #include <algorithm>
-#include <map>
 #include <regex>
 #include <string>
+#include <tuple>
 #include <vector>
 
-using dansandu::ballotin::container::setInsert;
-using dansandu::ballotin::container::setUnion;
+using dansandu::ballotin::container::contains;
+using dansandu::ballotin::container::uniquePushBack;
+using dansandu::ballotin::relation::TotalOrder;
 using dansandu::ballotin::string::format;
 using dansandu::ballotin::string::join;
 using dansandu::ballotin::string::split;
 using dansandu::ballotin::string::trim;
 using dansandu::glyph::error::GrammarError;
+using dansandu::glyph::implementation::multimap::Multimap;
+using dansandu::glyph::implementation::rule::Rule;
+using dansandu::glyph::symbol::Symbol;
 
 namespace dansandu::glyph::implementation::grammar
 {
 
-static const auto productionRulePattern = std::regex{R"( *[a-zA-Z]+ *-> *(?:(?:[a-zA-Z]+ +)*[a-zA-Z]+ *)?)"};
-
-bool operator==(const Rule& left, const Rule& right)
+template<typename T, typename U>
+auto find(const std::vector<T>& container, const U& value)
 {
-    return left.leftSide == right.leftSide && left.rightSide == right.rightSide;
+    return std::find(container.cbegin(), container.cend(), value);
 }
 
-bool operator!=(const Rule& left, const Rule& right)
+Grammar::Grammar(std::string_view grammar) : grammar_{grammar}
 {
-    return !(left == right);
-}
+    static const auto productionRulePattern =
+        std::regex{R"( *[a-zA-Z0-9]+ *-> *(?:(?:[a-zA-Z0-9]+ +)*[a-zA-Z0-9]+ *)?)"};
 
-std::ostream& operator<<(std::ostream& stream, const Rule& rule)
-{
-    return stream << "'" << rule.leftSide << "'"
-                  << " -> "
-                  << "'" << join(rule.rightSide, "' '") << "'";
-}
+    auto leftSideColumn = std::vector<std::string>{};
+    auto rightSideColumn = std::vector<std::vector<std::string>>{};
 
-static std::vector<Rule> getRulesWork(std::string_view grammar)
-{
-    auto rules = std::vector<Rule>{};
-    for (const auto& line : split(grammar, "\n"))
+    for (const auto& line : split(grammar_, "\n"))
     {
-        if (!std::regex_match(line.cbegin(), line.cend(), productionRulePattern))
-            THROW(GrammarError, "invalid production rule: ", line);
-        auto rule = split(line, "->");
-        if (rule.size() == 2)
-            rules.push_back({trim(rule[0]), split(rule[1], " ")});
-        else if (rule.size() == 1)
-            rules.push_back({trim(rule[0]), {}});
-        else
-            THROW(GrammarError, "ill-formed right side of production rule ", line);
-    }
-    return rules;
-}
-
-static std::pair<std::vector<std::string>, std::vector<std::string>> getSymbols(const std::vector<Rule>& rules)
-{
-    auto nonterminals = std::vector<std::string>{};
-    for (const auto& rule : rules)
-        setInsert(nonterminals, rule.leftSide);
-    auto terminals = std::vector<std::string>{};
-    for (const auto& rule : rules)
-    {
-        for (const auto& symbol : rule.rightSide)
-            if (std::find(nonterminals.cbegin(), nonterminals.cend(), symbol) == nonterminals.cend())
-                setInsert(terminals, symbol);
-        if (rule.rightSide.empty())
-            setInsert(terminals, "");
-    }
-    return {std::move(nonterminals), std::move(terminals)};
-}
-
-Grammar::Grammar(std::string grammar) : asString_{std::move(grammar)}, rules_{getRulesWork(asString_)}
-{
-    auto symbols = getSymbols(rules_);
-    nonterminals_ = std::move(symbols.first);
-    terminals_ = std::move(symbols.second);
-}
-
-static void populateFirstOf(const std::string& symbol, const std::vector<Rule>& rules, SymbolTable& firstTable)
-{
-    if (firstTable.find(symbol) != firstTable.end())
-        return;
-
-    auto& firstSet = firstTable[symbol];
-    for (const auto& rule : rules)
-        if (symbol == rule.leftSide)
+        auto trimmedLine = trim(line);
+        if (trimmedLine.empty())
         {
-            if (rule.rightSide.empty())
-                setInsert(firstSet, "");
-            auto allOfRightHasEmpty = true;
-            for (const auto& rightSymbol : rule.rightSide)
+            continue;
+        }
+        if (!std::regex_match(trimmedLine.cbegin(), trimmedLine.cend(), productionRulePattern))
+        {
+            THROW(GrammarError, "invalid production rule: ", trimmedLine);
+        }
+        auto ruleTokens = split(trimmedLine, "->");
+        if (ruleTokens.size() == 2)
+        {
+            leftSideColumn.push_back(trim(ruleTokens[0]));
+
+            auto rightSide = std::vector<std::string>{};
+            for (const auto& identifier : split(ruleTokens[1], " "))
             {
-                populateFirstOf(rightSymbol, rules, firstTable);
-                const auto& firstOfRight = firstTable[rightSymbol];
-                auto emptyPosition = std::find(firstOfRight.cbegin(), firstOfRight.cend(), "");
-                if (emptyPosition != firstOfRight.cend())
+                auto trimmedIdentifier = trim(identifier);
+                if (trimmedIdentifier != "Start")
                 {
-                    auto copy = std::vector<std::string>{firstOfRight.cbegin(), emptyPosition};
-                    copy.insert(copy.end(), emptyPosition + 1, firstOfRight.cend());
-                    firstSet = setUnion(firstSet, copy);
+                    rightSide.push_back(std::move(trimmedIdentifier));
                 }
                 else
                 {
-                    firstSet = setUnion(firstSet, firstOfRight);
-                    allOfRightHasEmpty = false;
-                    break;
+                    THROW(GrammarError, "right side of production rule '", trimmedLine,
+                          "' cannot contain Start non-terminal");
                 }
             }
-            if (allOfRightHasEmpty)
-                setInsert(firstSet, "");
+            rightSideColumn.push_back(std::move(rightSide));
         }
+        else if (ruleTokens.size() == 1)
+        {
+            leftSideColumn.push_back(trim(ruleTokens[0]));
+            rightSideColumn.push_back({});
+        }
+        else
+        {
+            THROW(GrammarError, "ill-formed right side of production rule ", trimmedLine);
+        }
+    }
+
+    if (leftSideColumn.empty() || leftSideColumn.front() != "Start")
+    {
+        THROW(GrammarError, "the first production rule must be the start rule");
+    }
+
+    for (auto i = 1U; i < leftSideColumn.size(); ++i)
+    {
+        if (leftSideColumn[i] == "Start")
+        {
+            THROW(GrammarError, "there can only be one start production rule");
+        }
+    }
+
+    // Insert nonterminals first.
+    identifiers_ = std::vector<std::string>{{"Start"}};
+    for (const auto& identifier : leftSideColumn)
+    {
+        uniquePushBack(identifiers_, identifier);
+    }
+
+    // Insert terminals next and mark the beginning of the terminals (end of string identifier).
+    terminalBeginIndex_ = static_cast<int>(identifiers_.size());
+    identifiers_.push_back("$");
+    identifiers_.push_back("");
+    for (const auto& rightSide : rightSideColumn)
+    {
+        for (const auto& identifier : rightSide)
+        {
+            // Ensures two things in one search:
+            // 1. It's not a non-terminal (first part of the vector).
+            // 2. The terminal isn't a duplicate (second part of the vector).
+            uniquePushBack(identifiers_, identifier);
+        }
+    }
+
+    for (auto ruleIndex = 0U; ruleIndex < leftSideColumn.size(); ++ruleIndex)
+    {
+        auto identifierIndex = static_cast<int>(find(identifiers_, leftSideColumn[ruleIndex]) - identifiers_.cbegin());
+        auto leftSideSymbol = Symbol{identifierIndex};
+        auto rightSideSymbols = std::vector<Symbol>{};
+        for (const auto& identifier : rightSideColumn[ruleIndex])
+        {
+            auto identifierIndex = static_cast<int>(find(identifiers_, identifier) - identifiers_.cbegin());
+            rightSideSymbols.push_back(Symbol{identifierIndex});
+        }
+        rules_.push_back({leftSideSymbol, std::move(rightSideSymbols)});
+    }
+
+    generateFirstTable();
 }
 
-SymbolTable getFirstTable(const Grammar& grammar)
+struct PartialItem : TotalOrder<PartialItem>
 {
-    auto firstTable = SymbolTable{};
-    for (const auto& terminal : grammar.getTerminals())
-        firstTable[terminal] = {terminal};
-    for (const auto& nonterminal : grammar.getNonterminals())
-        populateFirstOf(nonterminal, grammar.getRules(), firstTable);
-    return firstTable;
+    friend bool operator<(PartialItem a, PartialItem b)
+    {
+        return std::tie(a.ruleIndex, a.position) < std::tie(b.ruleIndex, b.position);
+    }
+
+    PartialItem(int ruleIndex, int position) : ruleIndex{ruleIndex}, position{position}
+    {
+    }
+
+    int ruleIndex;
+    int position;
+};
+
+void Grammar::generateFirstTable()
+{
+    auto partitions = Multimap{};
+
+    for (auto terminalIndex = terminalBeginIndex_; terminalIndex < static_cast<int>(identifiers_.size());
+         ++terminalIndex)
+    {
+        partitions[Symbol{terminalIndex}] = {Symbol{terminalIndex}};
+    }
+
+    auto blanks = std::vector<Symbol>{};
+    auto visitedRulesIndices = std::vector<int>{};
+
+    for (auto rootRuleIndex = 0; rootRuleIndex < static_cast<int>(rules_.size()); ++rootRuleIndex)
+    {
+        if (contains(visitedRulesIndices, rootRuleIndex))
+        {
+            continue;
+        }
+
+        visitedRulesIndices.push_back(rootRuleIndex);
+
+        auto rulesIndicesPath = std::vector<int>{};
+        auto stack = std::vector<std::pair<PartialItem, int>>{{PartialItem{rootRuleIndex, 0}, -1}};
+
+        while (!stack.empty())
+        {
+            auto currentItem = stack.back().first;
+            if (currentItem.position == static_cast<int>(rules_[currentItem.ruleIndex].rightSide.size()))
+            {
+                uniquePushBack(blanks, rules_[currentItem.ruleIndex].leftSide);
+                stack.pop_back();
+                continue;
+            }
+
+            auto currentSymbol = rules_[currentItem.ruleIndex].rightSide[currentItem.position];
+            if (isTerminal(currentSymbol))
+            {
+                uniquePushBack(partitions[rules_[currentItem.ruleIndex].leftSide], currentSymbol);
+                stack.pop_back();
+                continue;
+            }
+
+            auto parentRuleIndex = stack.back().second;
+            while (!rulesIndicesPath.empty() && rulesIndicesPath.back() != parentRuleIndex)
+            {
+                rulesIndicesPath.pop_back();
+            }
+            rulesIndicesPath.push_back(currentItem.ruleIndex);
+            for (auto i = 0U; i < rulesIndicesPath.size(); ++i)
+            {
+                if (rules_[rulesIndicesPath[i]].leftSide == currentSymbol)
+                {
+                    auto cycle = std::vector<Symbol>{};
+                    for (auto j = i; j < rulesIndicesPath.size(); ++j)
+                    {
+                        uniquePushBack(cycle, rules_[rulesIndicesPath[j]].leftSide);
+                    }
+                    partitions.merge(cycle);
+                }
+            }
+
+            auto childrenRulesIndices = std::vector<int>{};
+            for (auto ruleIndex = 0U; ruleIndex < rules_.size(); ++ruleIndex)
+            {
+                if (rules_[ruleIndex].leftSide == currentSymbol && !contains(visitedRulesIndices, ruleIndex))
+                {
+                    childrenRulesIndices.push_back(ruleIndex);
+                }
+            }
+            if (childrenRulesIndices.empty())
+            {
+                partitions[currentSymbol];
+                partitions[rules_[currentItem.ruleIndex].leftSide];
+                const auto& firstSet = partitions[currentSymbol];
+                auto& target = partitions[rules_[currentItem.ruleIndex].leftSide];
+                for (auto symbol : firstSet)
+                {
+                    uniquePushBack(target, symbol);
+                }
+                if (contains(blanks, currentSymbol))
+                {
+                    ++stack.back().first.position;
+                }
+                else
+                {
+                    stack.pop_back();
+                }
+            }
+            else
+            {
+                visitedRulesIndices.insert(visitedRulesIndices.cend(), childrenRulesIndices.cbegin(),
+                                           childrenRulesIndices.cend());
+                for (auto ruleIndex : childrenRulesIndices)
+                {
+                    stack.push_back({PartialItem{ruleIndex, 0}, currentItem.ruleIndex});
+                }
+            }
+        }
+    }
+
+    firstTable_ = std::vector<std::vector<Symbol>>{identifiers_.size()};
+    partitions.forEach([this](const auto& partition, const auto& firstSet) {
+        for (auto symbol : partition)
+        {
+            firstTable_[symbol.getIdentifierIndex()] = std::vector<Symbol>{firstSet.cbegin(), firstSet.cend()};
+        }
+    });
+    for (auto symbol : blanks)
+    {
+        firstTable_[symbol.getIdentifierIndex()].push_back(getEmptySymbol());
+    }
+}
+
+Symbol Grammar::getSymbol(std::string_view identifier) const
+{
+    if (auto position = find(identifiers_, identifier); position != identifiers_.cend())
+    {
+        return Symbol{static_cast<int>(position - identifiers_.cbegin())};
+    }
+    else
+    {
+        THROW(GrammarError, "identifier '", identifier,
+              "' does not match any identifiers in grammar: ", join(identifiers_, ", "));
+    }
+}
+
+Symbol Grammar::getTerminalSymbol(std::string_view identifier) const
+{
+    if (auto position = std::find(identifiers_.cbegin() + terminalBeginIndex_ + 2, identifiers_.cend(), identifier);
+        position != identifiers_.cend())
+    {
+        return Symbol{static_cast<int>(position - identifiers_.cbegin())};
+    }
+    else
+    {
+        THROW(GrammarError, "identifier '", identifier, "' does not match any terminal identifiers in grammar");
+    }
 }
 
 }

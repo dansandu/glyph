@@ -1,168 +1,184 @@
-#include "dansandu/ballotin/container.hpp"
+#include "catchorg/catch/catch.hpp"
 #include "dansandu/glyph/error.hpp"
 #include "dansandu/glyph/implementation/automaton.hpp"
 #include "dansandu/glyph/implementation/grammar.hpp"
 
-#include <map>
-#include <string>
+#include <set>
 #include <vector>
-
-using dansandu::ballotin::container::operator<<;
-using dansandu::glyph::implementation::automaton::operator<<;
-using dansandu::glyph::implementation::grammar::operator<<;
-
-#include "catchorg/catch/catch.hpp"
 
 using dansandu::glyph::error::GrammarError;
 using dansandu::glyph::implementation::automaton::getAutomaton;
-using dansandu::glyph::implementation::automaton::getClosure;
 using dansandu::glyph::implementation::automaton::getFollowSet;
-using dansandu::glyph::implementation::automaton::getStartRuleIndex;
-using dansandu::glyph::implementation::automaton::getTransitions;
+using dansandu::glyph::implementation::automaton::getStateClosure;
+using dansandu::glyph::implementation::automaton::getStateTransitions;
 using dansandu::glyph::implementation::automaton::isFinalState;
-using dansandu::glyph::implementation::automaton::Item;
 using dansandu::glyph::implementation::automaton::Transition;
-using dansandu::glyph::implementation::grammar::endOfString;
 using dansandu::glyph::implementation::grammar::Grammar;
-using dansandu::glyph::implementation::grammar::Rule;
+using dansandu::glyph::implementation::item::Item;
+using dansandu::glyph::implementation::rule::Rule;
+using dansandu::glyph::symbol::Symbol;
 
 using Items = std::vector<Item>;
-using Transitions = std::map<std::string, std::vector<Item>>;
+using Transitions = std::map<Symbol, std::vector<Item>>;
+
+static std::set<Symbol> set(const std::vector<Symbol>& l)
+{
+    return std::set<Symbol>{l.cbegin(), l.cend()};
+}
+
+static std::set<Symbol> set(std::initializer_list<Symbol> l)
+{
+    return std::set<Symbol>{l.begin(), l.end()};
+}
 
 // clang-format off
-TEST_CASE("Automaton") {
-    constexpr auto startRuleIndex = 0;
-    auto grammar = Grammar{"Start -> Sums                        \n"
-                           "Sums -> Sums add Products            \n"
-                           "Sums -> Products                     \n"
-                           "Products -> Products multiply number \n"
-                           "Products -> number"};    
-    const auto& rules = grammar.getRules();
-    auto firstTable = getFirstTable(grammar);
+TEST_CASE("Automaton")
+{
+    auto grammar = Grammar{R"(
+        Start    -> Sums
+        Sums     -> Sums add Products
+        Sums     -> Products
+        Products -> Products multiply number
+        Products -> number
+    )"};
 
-    SECTION("follow set") {
-        REQUIRE(getFollowSet({1, 0, endOfString}, rules, firstTable) == std::vector<std::string>{"add"});
+    auto Sums     = grammar.getSymbol("Sums");
+    auto Products = grammar.getSymbol("Products");
+    auto end      = grammar.getSymbol("$");
+    auto add      = grammar.getSymbol("add");
+    auto multiply = grammar.getSymbol("multiply");
+    auto number   = grammar.getSymbol("number");
 
-        REQUIRE(getFollowSet({2, 0, endOfString}, rules, firstTable) == std::vector<std::string>{endOfString});
+    SECTION("follow set")
+    {
+        REQUIRE(set(getFollowSet(Item{0, 0, end}, grammar)) == set({end}));
 
-        REQUIRE(getFollowSet({4, 1, "multiply"}, rules, firstTable) == std::vector<std::string>{"multiply"});
+        REQUIRE(set(getFollowSet(Item{1, 0, end}, grammar)) == set({add}));
+
+        REQUIRE(set(getFollowSet(Item{2, 0, end}, grammar)) == set({end}));
+
+        REQUIRE(set(getFollowSet(Item{3, 0, end}, grammar)) == set({multiply}));
+
+        REQUIRE(set(getFollowSet(Item{4, 1, multiply}, grammar)) == set({multiply}));
     }
 
-    SECTION("start rule index") {
-        REQUIRE(getStartRuleIndex(rules) == startRuleIndex);
-        
-        auto multipleStartRulesGrammar = Grammar{"Start -> number \n Start -> identifier"};
-        REQUIRE_THROWS_AS(getStartRuleIndex(multipleStartRulesGrammar.getRules()), GrammarError);
+    SECTION("closure")
+    {
+        REQUIRE(getStateClosure({}, grammar).empty());
 
-        auto noStartRuleGrammar = Grammar{"S -> number \n S -> identifier"};
-        REQUIRE_THROWS_AS(getStartRuleIndex(noStartRuleGrammar.getRules()), GrammarError);
-    }
-
-    SECTION("closure") {
-        REQUIRE(getClosure({}, rules, firstTable).empty());
-
-        REQUIRE(getClosure({ {0, 0, endOfString} }, rules, firstTable) == Items{{
-            Item{0, 0, "$"},
-            Item{1, 0, "$"},
-            Item{1, 0, "add"},
-            Item{2, 0, "$"},
-            Item{2, 0, "add"},
-            Item{3, 0, "$"},
-            Item{3, 0, "add"},
-            Item{3, 0, "multiply"},
-            Item{4, 0, "$"},
-            Item{4, 0, "add"},
-            Item{4, 0, "multiply"}}
+        REQUIRE(getStateClosure({Item{0, 0, end}}, grammar) == Items{{
+            Item{0, 0, end},
+            Item{1, 0, end},
+            Item{1, 0, add},
+            Item{2, 0, end},
+            Item{2, 0, add},
+            Item{3, 0, end},
+            Item{3, 0, add},
+            Item{3, 0, multiply},
+            Item{4, 0, end},
+            Item{4, 0, add},
+            Item{4, 0, multiply}}
         });
 
-        REQUIRE(getClosure({ {0, 1, endOfString} }, rules, firstTable) == Items{{ {0, 1, endOfString} }});
+        REQUIRE(getStateClosure({Item{0, 1, end}}, grammar) == Items{Item{0, 1, end}});
 
-        REQUIRE(getClosure({ {1, 1, endOfString} }, rules, firstTable) == Items{{ {1, 1, endOfString} }});
+        REQUIRE(getStateClosure({Item{1, 1, end}}, grammar) == Items{Item{1, 1, end}});
     }
 
-    SECTION("transitions") {
-        REQUIRE(getTransitions({}, rules).empty());
+    SECTION("transitions")
+    {
+        REQUIRE(getStateTransitions({}, grammar).empty());
 
-        REQUIRE(getTransitions({ Item{0, 0, endOfString}, Item{1, 1, "multiply"}, Item{2, 0, "add"}, Item{3, 0, "add"} }, rules) == Transitions{{
-            {"add", { Item{1, 2, "multiply"} }},
-            {"Products", { Item{2, 1, "add"}, Item{3, 1, "add"} }},
-            {"Sums", { Item{0, 1, endOfString} }}
-        }});
+        REQUIRE(getStateTransitions({Item{0, 1, end}}, grammar) == Transitions{});
 
-        REQUIRE(getTransitions({ Item{0, 1, endOfString} }, rules) == Transitions{});
+        auto state = Items{
+            Item{0, 0, end},
+            Item{1, 1, multiply},
+            Item{2, 0, add},
+            Item{3, 0, add}
+        };
+
+        auto transitions = Transitions{
+            {add,      {Item{1, 2, multiply}}},
+            {Products, {Item{2, 1, add}, Item{3, 1, add}}},
+            {Sums,     {Item{0, 1, end}}}
+        };
+
+        REQUIRE(getStateTransitions(state, grammar) == transitions);
     }
 
-    SECTION("final state") {
-        REQUIRE(isFinalState({ {0, 1, endOfString}, {1, 1, endOfString} }, rules, startRuleIndex));
+    SECTION("final state")
+    {
+        REQUIRE(isFinalState({Item{0, 1, end}, Item{1, 1, end}}, grammar));
 
-        REQUIRE(!isFinalState({ {0, 0, endOfString}, {1, 1, endOfString}, {2, 0, endOfString} }, rules, startRuleIndex));
+        REQUIRE(!isFinalState({Item{0, 0, end}, Item{1, 1, end}, Item{2, 0, end}}, grammar));
     }
 
-    SECTION("generate automaton") {
+    SECTION("automaton") {
         auto automaton = getAutomaton(grammar);
 
-        REQUIRE(automaton.states == std::vector<Items>{{
-            Items{{Item{0, 0, "$"},
-                   Item{1, 0, "$"},
-                   Item{1, 0, "add"},
-                   Item{2, 0, "$"},
-                   Item{2, 0, "add"},
-                   Item{3, 0, "$"},
-                   Item{3, 0, "add"},
-                   Item{3, 0, "multiply"},
-                   Item{4, 0, "$"},
-                   Item{4, 0, "add"},
-                   Item{4, 0, "multiply"}}},
+        REQUIRE(automaton.states == std::vector<Items>{
+            Items{Item{0, 0, end},
+                  Item{1, 0, end},
+                  Item{1, 0, add},
+                  Item{2, 0, end},
+                  Item{2, 0, add},
+                  Item{3, 0, end},
+                  Item{3, 0, add},
+                  Item{3, 0, multiply},
+                  Item{4, 0, end},
+                  Item{4, 0, add},
+                  Item{4, 0, multiply}},
 
-            Items{{Item{2, 1, "$"},
-                   Item{2, 1, "add"},
-                   Item{3, 1, "$"},
-                   Item{3, 1, "add"},
-                   Item{3, 1, "multiply"}}},
+            Items{Item{0, 1, end},
+                  Item{1, 1, end},
+                  Item{1, 1, add}},
     
-            Items{{Item{0, 1, "$"},
-                   Item{1, 1, "$"},
-                   Item{1, 1, "add"}}},
+            Items{Item{2, 1, end},
+                  Item{2, 1, add},
+                  Item{3, 1, end},
+                  Item{3, 1, add},
+                  Item{3, 1, multiply}},
     
-            Items{{Item{4, 1, "$"},
-                   Item{4, 1, "add"},
-                   Item{4, 1, "multiply"}}},
-    
-            Items{{Item{3, 2, "$"},
-                   Item{3, 2, "add"},
-                   Item{3, 2, "multiply"}}},
-    
-            Items{{Item{1, 2, "$"},
-                   Item{1, 2, "add"},
-                   Item{3, 0, "$"},
-                   Item{3, 0, "add"},
-                   Item{3, 0, "multiply"},
-                   Item{4, 0, "$"},
-                   Item{4, 0, "add"},
-                   Item{4, 0, "multiply"}}},
-    
-            Items{{Item{3, 3, "$"},
-                   Item{3, 3, "add"},
-                   Item{3, 3, "multiply"}}},
-    
-            Items{{Item{1, 3, "$"},
-                   Item{1, 3, "add"},
-                   Item{3, 1, "$"},
-                   Item{3, 1, "add"},
-                   Item{3, 1, "multiply"}}}
-        }});
+            Items{Item{4, 1, end},
+                  Item{4, 1, add},
+                  Item{4, 1, multiply}},
+        
+            Items{Item{1, 2, end},
+                  Item{1, 2, add},
+                  Item{3, 0, end},
+                  Item{3, 0, add},
+                  Item{3, 0, multiply},
+                  Item{4, 0, end},
+                  Item{4, 0, add},
+                  Item{4, 0, multiply}},
 
-        REQUIRE(automaton.transitions == std::vector<Transition>{{
-            Transition{"Products", 0, 1},
-            Transition{"Sums", 0, 2},
-            Transition{"number", 0, 3},
-            Transition{"multiply", 1, 4},
-            Transition{"add", 2, 5},
-            Transition{"number", 4, 6},
-            Transition{"Products", 5, 7},
-            Transition{"number", 5, 3},
-            Transition{"multiply", 7, 4}
-        }});
+            Items{Item{3, 2, end},
+                  Item{3, 2, add},
+                  Item{3, 2, multiply}},
+    
+            Items{Item{1, 3, end},
+                  Item{1, 3, add},
+                  Item{3, 1, end},
+                  Item{3, 1, add},
+                  Item{3, 1, multiply}},
+
+            Items{Item{3, 3, end},
+                  Item{3, 3, add},
+                  Item{3, 3, multiply}}
+        });
+
+        REQUIRE(automaton.transitions == std::vector<Transition>{
+            Transition{Sums, 0, 1},
+            Transition{Products, 0, 2},
+            Transition{number, 0, 3},
+            Transition{add, 1, 4},
+            Transition{multiply, 2, 5},
+            Transition{Products, 4, 6},
+            Transition{number, 4, 3},
+            Transition{number, 5, 7},
+            Transition{multiply, 6, 5}
+        });
     }
 }
 // clang-format on

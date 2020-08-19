@@ -4,84 +4,87 @@
 #include "dansandu/glyph/error.hpp"
 #include "dansandu/glyph/implementation/grammar.hpp"
 #include "dansandu/glyph/node.hpp"
+#include "dansandu/glyph/symbol.hpp"
 #include "dansandu/glyph/token.hpp"
 
-#include <iterator>
+#include <functional>
 #include <stdexcept>
 #include <vector>
 
 using dansandu::ballotin::string::join;
 using dansandu::glyph::error::SyntaxError;
-using dansandu::glyph::implementation::grammar::endOfString;
-using dansandu::glyph::implementation::grammar::Rule;
+using dansandu::glyph::implementation::grammar::Grammar;
 using dansandu::glyph::implementation::parsing_table::Action;
-using dansandu::glyph::implementation::parsing_table::ParsingTable;
+using dansandu::glyph::implementation::parsing_table::Cell;
 using dansandu::glyph::node::Node;
+using dansandu::glyph::symbol::Symbol;
 using dansandu::glyph::token::Token;
 
 namespace dansandu::glyph::implementation::parsing
 {
 
-Node parse(std::vector<Token> tokens, const ParsingTable& parsingTable, const std::vector<Rule>& rules)
+void parse(const std::vector<Token>& tokens, const std::vector<std::vector<Cell>>& parsingTable, const Grammar& grammar,
+           const std::function<void(const Node&)>& visitor)
 {
-    tokens.push_back({endOfString, -1, -1});
-    auto states = std::vector<int>{parsingTable.startRuleIndex};
-    auto trees = std::vector<Node>{};
-    auto token = tokens.cbegin();
-    const auto& table = parsingTable.table;
-    while (!states.empty())
+    auto tokenPosition = tokens.cbegin();
+    auto stateStack = std::vector<int>{grammar.getStartRuleIndex()};
+    while (!stateStack.empty())
     {
-        auto state = states.back();
-        auto row = table.find(token->getIdentifier());
-        if (row == table.cend())
-            THROW(SyntaxError, "unrecognized symbol '", token->getIdentifier(), "' at column ", token->begin());
-        auto cell = row->second.at(state);
+        while (tokenPosition != tokens.cend() && tokenPosition->getSymbol() == grammar.getDiscardedSymbolPlaceholder())
+        {
+            ++tokenPosition;
+        }
+
+        auto token = tokenPosition != tokens.cend() ? *tokenPosition : Token{grammar.getEndOfStringSymbol(), -1, -1};
+        auto state = stateStack.back();
+        auto cell = parsingTable[token.getSymbol().getIdentifierIndex()][state];
         if (cell.action == Action::shift)
         {
-            states.push_back(cell.parameter);
-            trees.emplace_back(*token);
-            ++token;
+            stateStack.push_back(cell.parameter);
+            visitor(Node{token});
+            ++tokenPosition;
         }
         else if (cell.action == Action::reduce || cell.action == Action::accept)
         {
-            const auto& reductionRule = rules.at(cell.parameter);
+            const auto& reductionRule = grammar.getRules()[cell.parameter];
             auto reductionSize = reductionRule.rightSide.size();
-            if (states.size() < reductionSize || trees.size() < reductionSize)
+            if (stateStack.size() < reductionSize)
+            {
                 THROW(std::runtime_error,
                       "invalid state reached -- couldn't perform reduce action because the stack has missing elements");
-            auto newNode = Node{cell.parameter, std::vector<Node>{std::make_move_iterator(trees.end() - reductionSize),
-                                                                  std::make_move_iterator(trees.end())}};
-            states.erase(states.end() - reductionSize, states.end());
-            trees.erase(trees.end() - reductionSize, trees.end());
+            }
+            stateStack.erase(stateStack.end() - reductionSize, stateStack.end());
             if (cell.action == Action::reduce)
             {
-                if (states.empty())
-                    THROW(std::runtime_error,
-                          "invalid state reached -- missing element in state stack on reduce action");
-                auto newState = table.at(reductionRule.leftSide).at(states.back()).parameter;
-                states.push_back(newState);
-                trees.push_back(std::move(newNode));
+                if (stateStack.empty())
+                {
+                    THROW(std::runtime_error, "invalid state reached -- insufficient stack size for reduction");
+                }
+                auto newState = parsingTable[reductionRule.leftSide.getIdentifierIndex()][stateStack.back()].parameter;
+                stateStack.push_back(newState);
+                visitor(Node{cell.parameter});
             }
             else
             {
-                return newNode;
+                stateStack.pop_back();
+                visitor(Node{cell.parameter});
             }
-        }
-        else if (cell.action == Action::error)
-        {
-            auto expectedSymbols = std::vector<std::string>{};
-            for (const auto& row : table)
-                if (row.second.at(state).action != Action::error)
-                    expectedSymbols.push_back(row.first);
-            THROW(SyntaxError, "invalid syntax at column ", token->begin(), " -- the following symbols were expected ",
-                  join(expectedSymbols, ", "));
         }
         else
         {
-            THROW(std::runtime_error, "invalid state reached -- unrecognized cell action");
+            auto expectedSymbols = std::vector<std::string>{};
+            for (auto symbolIndex = 0; symbolIndex < static_cast<int>(parsingTable.size()); ++symbolIndex)
+            {
+                if (parsingTable[symbolIndex][state].action != Action::error)
+                {
+                    expectedSymbols.push_back(grammar.getIdentifier(Symbol{symbolIndex}));
+                }
+            }
+            THROW(SyntaxError, "invalid syntax at column ", token.begin() + 1, " with symbol '",
+                  grammar.getIdentifier(token.getSymbol()), "' -- the following symbols were expected [",
+                  join(expectedSymbols, ", "), "] for state ", state);
         }
     }
-    THROW(std::runtime_error, "invalid state reached");
 }
 
 }

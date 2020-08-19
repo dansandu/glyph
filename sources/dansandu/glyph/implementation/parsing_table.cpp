@@ -4,16 +4,11 @@
 #include "dansandu/glyph/implementation/automaton.hpp"
 #include "dansandu/glyph/implementation/grammar.hpp"
 
-#include <map>
 #include <ostream>
-#include <stdexcept>
-#include <string>
 #include <vector>
 
 using dansandu::glyph::error::ParsingError;
 using dansandu::glyph::implementation::automaton::Automaton;
-using dansandu::glyph::implementation::automaton::Item;
-using dansandu::glyph::implementation::grammar::endOfString;
 using dansandu::glyph::implementation::grammar::Grammar;
 
 namespace dansandu::glyph::implementation::parsing_table
@@ -34,7 +29,7 @@ std::ostream& operator<<(std::ostream& stream, Action action)
     case Action::error:
         return stream << "error";
     default:
-        THROW(std::invalid_argument, "unrecognized cell action");
+        THROW(ParsingError, "unrecognized cell action");
     }
 }
 
@@ -53,32 +48,38 @@ std::ostream& operator<<(std::ostream& stream, Cell cell)
     return stream << "Cell(" << cell.action << ", " << cell.parameter << ")";
 }
 
-ParsingTable getCanonicalLeftToRightParsingTable(const Grammar& grammar, const Automaton& automaton)
+std::vector<std::vector<Cell>> getCanonicalLeftToRightParsingTable(const Grammar& grammar, const Automaton& automaton)
 {
-    auto table = std::map<std::string, std::vector<Cell>>{};
-    auto stateCount = static_cast<int>(automaton.states.size());
+    auto table = std::vector<std::vector<Cell>>(grammar.getIdentifiersCount());
+    for (auto& row : table)
+    {
+        row = std::vector<Cell>{automaton.states.size()};
+    }
     for (const auto& transition : automaton.transitions)
     {
-        auto rowPosition = table.find(transition.symbol);
-        if (rowPosition == table.end())
-            rowPosition = table.emplace(transition.symbol, std::vector<Cell>(stateCount)).first;
-        auto isTerminal = std::find(grammar.getNonterminals().cbegin(), grammar.getNonterminals().cend(),
-                                    transition.symbol) == grammar.getNonterminals().cend();
-        rowPosition->second.at(transition.from) = Cell{isTerminal ? Action::shift : Action::goTo, transition.to};
+        auto action = grammar.isTerminal(transition.symbol) ? Action::shift : Action::goTo;
+        table[transition.symbol.getIdentifierIndex()][transition.from] = Cell{action, transition.to};
     }
-    auto& endOfStringRow = table.emplace(endOfString, std::vector<Cell>(stateCount)).first->second;
-    for (auto stateIndex = 0; stateIndex < stateCount; ++stateIndex)
+    const auto& rules = grammar.getRules();
+    for (auto stateIndex = 0U; stateIndex < automaton.states.size(); ++stateIndex)
+    {
         for (const auto& item : automaton.states[stateIndex])
-            if (item.position == static_cast<int>(grammar.getRules().at(item.ruleIndex).rightSide.size()))
+        {
+            if (item.position == static_cast<int>(rules[item.ruleIndex].rightSide.size()))
             {
-                auto& cell = table.at(item.lookahead).at(stateIndex);
+                auto& cell = table[item.lookahead.getIdentifierIndex()][stateIndex];
                 if (cell.action != Action::error)
+                {
                     THROW(ParsingError, "grammar cannot be parsed using a CLR(1) parser due to ", cell.action,
                           "/reduce conflict");
+                }
                 cell = Cell{Action::reduce, item.ruleIndex};
             }
-    endOfStringRow.at(automaton.finalStateIndex) = Cell{Action::accept, automaton.startRuleIndex};
-    return {automaton.startRuleIndex, std::move(table)};
+        }
+    }
+    table[grammar.getEndOfStringSymbol().getIdentifierIndex()][automaton.finalStateIndex] =
+        Cell{Action::accept, grammar.getStartRuleIndex()};
+    return table;
 }
 
 }

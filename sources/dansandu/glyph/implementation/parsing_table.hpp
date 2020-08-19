@@ -1,11 +1,9 @@
 #pragma once
+
 #include "dansandu/glyph/implementation/automaton.hpp"
 #include "dansandu/glyph/implementation/grammar.hpp"
 
-#include <map>
 #include <ostream>
-#include <stdexcept>
-#include <string>
 #include <vector>
 
 namespace dansandu::glyph::implementation::parsing_table
@@ -27,6 +25,7 @@ struct Cell
     Cell() : action{Action::error}, parameter{0}
     {
     }
+
     Cell(Action action, int parameter) : action{action}, parameter{parameter}
     {
     }
@@ -41,13 +40,7 @@ bool operator!=(Cell left, Cell right);
 
 std::ostream& operator<<(std::ostream& stream, Cell cell);
 
-struct ParsingTable
-{
-    int startRuleIndex;
-    std::map<std::string, std::vector<Cell>> table;
-};
-
-ParsingTable
+std::vector<std::vector<Cell>>
 getCanonicalLeftToRightParsingTable(const dansandu::glyph::implementation::grammar::Grammar& grammar,
                                     const dansandu::glyph::implementation::automaton::Automaton& automaton);
 

@@ -1,10 +1,8 @@
 #pragma once
 
+#include "dansandu/glyph/symbol.hpp"
+
 #include <ostream>
-#include <regex>
-#include <stdexcept>
-#include <string>
-#include <vector>
 
 namespace dansandu::glyph::token
 {
@@ -12,13 +10,13 @@ namespace dansandu::glyph::token
 class PRALINE_EXPORT Token
 {
 public:
-    Token(std::string identifier, int begin, int end) : identifier_{std::move(identifier)}, begin_{begin}, end_{end}
+    Token(dansandu::glyph::symbol::Symbol symbol, int begin, int end) : symbol_{symbol}, begin_{begin}, end_{end}
     {
     }
 
-    const std::string& getIdentifier() const
+    dansandu::glyph::symbol::Symbol getSymbol() const
     {
-        return identifier_;
+        return symbol_;
     }
 
     int begin() const
@@ -32,7 +30,7 @@ public:
     }
 
 private:
-    std::string identifier_;
+    dansandu::glyph::symbol::Symbol symbol_;
     int begin_;
     int end_;
 };
@@ -42,24 +40,5 @@ PRALINE_EXPORT bool operator==(const Token& left, const Token& right);
 PRALINE_EXPORT bool operator!=(const Token& left, const Token& right);
 
 PRALINE_EXPORT std::ostream& operator<<(std::ostream& stream, const Token& token);
-
-class PRALINE_EXPORT RegexTokenizer
-{
-public:
-    struct Descriptor
-    {
-        std::string identifier;
-        std::string pattern;
-    };
-
-    explicit RegexTokenizer(std::vector<Descriptor> descriptors, std::vector<std::string> discarded = {});
-
-    std::vector<Token> operator()(std::string_view string) const;
-
-private:
-    std::vector<Descriptor> descriptors_;
-    std::vector<std::string> discarded_;
-    std::regex pattern_;
-};
 
 }
