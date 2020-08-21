@@ -81,6 +81,7 @@ int main(int argumentsCount, char** arguments)
     const auto add = parser.getTerminalSymbol("add");
     const auto multiply = parser.getTerminalSymbol("multiply");
     const auto number = parser.getTerminalSymbol("number");
+
     // Whitespace doesn't influence the parsing so we can discard it from the
     // original string. This will simplify the grammar. Here the whitespace
     // symbol is mapped to a special symbol which is skipped by the parser when
@@ -120,6 +121,7 @@ int main(int argumentsCount, char** arguments)
             // The parser has encountered a terminal in the formula. Terminals
             // are mapped to tokens.
             const auto token = node.getToken();
+            
             // The only tokens we are interested in are numbers. These are the
             // only symbols which hold values. The add and multiply terminals
             // are used in conjunction with their production rule so we can
