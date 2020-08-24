@@ -212,15 +212,17 @@ void Grammar::generateFirstTable()
                 }
             }
 
-            auto childrenRulesIndices = std::vector<int>{};
+            auto hasUnvisitedChildren = false;
             for (auto ruleIndex = 0U; ruleIndex < rules_.size(); ++ruleIndex)
             {
                 if (rules_[ruleIndex].leftSide == currentSymbol && !contains(visitedRulesIndices, ruleIndex))
                 {
-                    childrenRulesIndices.push_back(ruleIndex);
+                    hasUnvisitedChildren = true;
+                    stack.push_back({PartialItem{static_cast<int>(ruleIndex), 0}, currentItem.ruleIndex});
+                    visitedRulesIndices.push_back(ruleIndex);
                 }
             }
-            if (childrenRulesIndices.empty())
+            if (!hasUnvisitedChildren)
             {
                 partitions[currentSymbol];
                 partitions[rules_[currentItem.ruleIndex].leftSide];
@@ -237,15 +239,6 @@ void Grammar::generateFirstTable()
                 else
                 {
                     stack.pop_back();
-                }
-            }
-            else
-            {
-                visitedRulesIndices.insert(visitedRulesIndices.cend(), childrenRulesIndices.cbegin(),
-                                           childrenRulesIndices.cend());
-                for (auto ruleIndex : childrenRulesIndices)
-                {
-                    stack.push_back({PartialItem{ruleIndex, 0}, currentItem.ruleIndex});
                 }
             }
         }
