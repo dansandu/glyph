@@ -1,10 +1,10 @@
-#include "dansandu/glyph/implementation/grammar.hpp"
+#include "dansandu/glyph/internal/grammar.hpp"
 #include "dansandu/ballotin/container.hpp"
 #include "dansandu/ballotin/exception.hpp"
 #include "dansandu/ballotin/relation.hpp"
 #include "dansandu/ballotin/string.hpp"
 #include "dansandu/glyph/error.hpp"
-#include "dansandu/glyph/implementation/multimap.hpp"
+#include "dansandu/glyph/internal/multimap.hpp"
 
 #include <algorithm>
 #include <regex>
@@ -20,11 +20,11 @@ using dansandu::ballotin::string::join;
 using dansandu::ballotin::string::split;
 using dansandu::ballotin::string::trim;
 using dansandu::glyph::error::GrammarError;
-using dansandu::glyph::implementation::multimap::Multimap;
-using dansandu::glyph::implementation::rule::Rule;
+using dansandu::glyph::internal::multimap::Multimap;
+using dansandu::glyph::internal::rule::Rule;
 using dansandu::glyph::symbol::Symbol;
 
-namespace dansandu::glyph::implementation::grammar
+namespace dansandu::glyph::internal::grammar
 {
 
 template<typename T, typename U>
@@ -33,7 +33,7 @@ auto find(const std::vector<T>& container, const U& value)
     return std::find(container.cbegin(), container.cend(), value);
 }
 
-Grammar::Grammar(std::string_view grammar) : grammar_{grammar}
+Grammar::Grammar(const std::string_view grammar) : grammar_{grammar}
 {
     static const auto productionRulePattern =
         std::regex{R"( *[a-zA-Z0-9]+ *-> *(?:(?:[a-zA-Z0-9]+ +)*[a-zA-Z0-9]+ *)?)"};
@@ -43,7 +43,7 @@ Grammar::Grammar(std::string_view grammar) : grammar_{grammar}
 
     for (const auto& line : split(grammar_, "\n"))
     {
-        auto trimmedLine = trim(line);
+        const auto trimmedLine = trim(line);
         if (trimmedLine.empty())
         {
             continue;
@@ -52,7 +52,7 @@ Grammar::Grammar(std::string_view grammar) : grammar_{grammar}
         {
             THROW(GrammarError, "invalid production rule: ", trimmedLine);
         }
-        auto ruleTokens = split(trimmedLine, "->");
+        const auto ruleTokens = split(trimmedLine, "->");
         if (ruleTokens.size() == 2)
         {
             leftSideColumn.push_back(trim(ruleTokens[0]));
@@ -121,12 +121,13 @@ Grammar::Grammar(std::string_view grammar) : grammar_{grammar}
 
     for (auto ruleIndex = 0U; ruleIndex < leftSideColumn.size(); ++ruleIndex)
     {
-        auto identifierIndex = static_cast<int>(find(identifiers_, leftSideColumn[ruleIndex]) - identifiers_.cbegin());
-        auto leftSideSymbol = Symbol{identifierIndex};
+        const auto identifierIndex =
+            static_cast<int>(find(identifiers_, leftSideColumn[ruleIndex]) - identifiers_.cbegin());
+        const auto leftSideSymbol = Symbol{identifierIndex};
         auto rightSideSymbols = std::vector<Symbol>{};
         for (const auto& identifier : rightSideColumn[ruleIndex])
         {
-            auto identifierIndex = static_cast<int>(find(identifiers_, identifier) - identifiers_.cbegin());
+            const auto identifierIndex = static_cast<int>(find(identifiers_, identifier) - identifiers_.cbegin());
             rightSideSymbols.push_back(Symbol{identifierIndex});
         }
         rules_.push_back({leftSideSymbol, std::move(rightSideSymbols)});
@@ -137,18 +138,18 @@ Grammar::Grammar(std::string_view grammar) : grammar_{grammar}
 
 struct PartialItem : TotalOrder<PartialItem>
 {
-    friend bool operator<(PartialItem a, PartialItem b)
-    {
-        return std::tie(a.ruleIndex, a.position) < std::tie(b.ruleIndex, b.position);
-    }
-
-    PartialItem(int ruleIndex, int position) : ruleIndex{ruleIndex}, position{position}
+    PartialItem(const int ruleIndex, const int position) : ruleIndex{ruleIndex}, position{position}
     {
     }
 
     int ruleIndex;
     int position;
 };
+
+inline bool operator<(const PartialItem a, const PartialItem b)
+{
+    return std::tie(a.ruleIndex, a.position) < std::tie(b.ruleIndex, b.position);
+}
 
 void Grammar::generateFirstTable()
 {
@@ -177,7 +178,7 @@ void Grammar::generateFirstTable()
 
         while (!stack.empty())
         {
-            auto currentItem = stack.back().first;
+            const auto currentItem = stack.back().first;
             if (currentItem.position == static_cast<int>(rules_[currentItem.ruleIndex].rightSide.size()))
             {
                 uniquePushBack(blanks, rules_[currentItem.ruleIndex].leftSide);
@@ -185,7 +186,7 @@ void Grammar::generateFirstTable()
                 continue;
             }
 
-            auto currentSymbol = rules_[currentItem.ruleIndex].rightSide[currentItem.position];
+            const auto currentSymbol = rules_[currentItem.ruleIndex].rightSide[currentItem.position];
             if (isTerminal(currentSymbol))
             {
                 uniquePushBack(partitions[rules_[currentItem.ruleIndex].leftSide], currentSymbol);
@@ -193,7 +194,7 @@ void Grammar::generateFirstTable()
                 continue;
             }
 
-            auto parentRuleIndex = stack.back().second;
+            const auto parentRuleIndex = stack.back().second;
             while (!rulesIndicesPath.empty() && rulesIndicesPath.back() != parentRuleIndex)
             {
                 rulesIndicesPath.pop_back();
@@ -228,7 +229,7 @@ void Grammar::generateFirstTable()
                 partitions[rules_[currentItem.ruleIndex].leftSide];
                 const auto& firstSet = partitions[currentSymbol];
                 auto& target = partitions[rules_[currentItem.ruleIndex].leftSide];
-                for (auto symbol : firstSet)
+                for (const auto symbol : firstSet)
                 {
                     uniquePushBack(target, symbol);
                 }
@@ -246,20 +247,20 @@ void Grammar::generateFirstTable()
 
     firstTable_ = std::vector<std::vector<Symbol>>{identifiers_.size()};
     partitions.forEach([this](const auto& partition, const auto& firstSet) {
-        for (auto symbol : partition)
+        for (const auto symbol : partition)
         {
             firstTable_[symbol.getIdentifierIndex()] = std::vector<Symbol>{firstSet.cbegin(), firstSet.cend()};
         }
     });
-    for (auto symbol : blanks)
+    for (const auto symbol : blanks)
     {
         firstTable_[symbol.getIdentifierIndex()].push_back(getEmptySymbol());
     }
 }
 
-Symbol Grammar::getSymbol(std::string_view identifier) const
+Symbol Grammar::getSymbol(const std::string_view identifier) const
 {
-    if (auto position = find(identifiers_, identifier); position != identifiers_.cend())
+    if (const auto position = find(identifiers_, identifier); position != identifiers_.cend())
     {
         return Symbol{static_cast<int>(position - identifiers_.cbegin())};
     }
@@ -270,9 +271,10 @@ Symbol Grammar::getSymbol(std::string_view identifier) const
     }
 }
 
-Symbol Grammar::getTerminalSymbol(std::string_view identifier) const
+Symbol Grammar::getTerminalSymbol(const std::string_view identifier) const
 {
-    if (auto position = std::find(identifiers_.cbegin() + terminalBeginIndex_ + 2, identifiers_.cend(), identifier);
+    if (const auto position =
+            std::find(identifiers_.cbegin() + terminalBeginIndex_ + 2, identifiers_.cend(), identifier);
         position != identifiers_.cend())
     {
         return Symbol{static_cast<int>(position - identifiers_.cbegin())};

@@ -11,15 +11,15 @@ using dansandu::glyph::token::Token;
 // clang-format off
 TEST_CASE("RegexTokenizer")
 {
-    auto identifier = Symbol{0};
-    auto number     = Symbol{1};
-    auto add        = Symbol{2};
-    auto whitespace = Symbol{3};
+    const auto identifier = Symbol{0};
+    const auto number     = Symbol{1};
+    const auto add        = Symbol{2};
+    const auto whitespace = Symbol{3};
 
-    auto tokenizer = RegexTokenizer{{{identifier, "[a-zA-Z]\\w*"},
-                                     {number,     "([1-9]\\d*|0)(\\.\\d+)?"},
-                                     {add,        "\\+"},
-                                     {whitespace, "\\s+"}}};
+    const auto tokenizer = RegexTokenizer{{{identifier, "[a-zA-Z]\\w*"},
+                                           {number,     "([1-9]\\d*|0)(\\.\\d+)?"},
+                                           {add,        "\\+"},
+                                           {whitespace, "\\s+"}}};
 
     REQUIRE(tokenizer("") == std::vector<Token>{});
 

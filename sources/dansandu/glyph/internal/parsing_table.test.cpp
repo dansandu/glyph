@@ -1,15 +1,15 @@
 #include "catchorg/catch/catch.hpp"
-#include "dansandu/glyph/implementation/automaton.hpp"
-#include "dansandu/glyph/implementation/grammar.hpp"
-#include "dansandu/glyph/implementation/parsing_table.hpp"
+#include "dansandu/glyph/internal/automaton.hpp"
+#include "dansandu/glyph/internal/grammar.hpp"
+#include "dansandu/glyph/internal/parsing_table.hpp"
 
 #include <vector>
 
-using dansandu::glyph::implementation::automaton::getAutomaton;
-using dansandu::glyph::implementation::grammar::Grammar;
-using dansandu::glyph::implementation::parsing_table::Action;
-using dansandu::glyph::implementation::parsing_table::Cell;
-using dansandu::glyph::implementation::parsing_table::getCanonicalLeftToRightParsingTable;
+using dansandu::glyph::internal::automaton::getAutomaton;
+using dansandu::glyph::internal::grammar::Grammar;
+using dansandu::glyph::internal::parsing_table::Action;
+using dansandu::glyph::internal::parsing_table::Cell;
+using dansandu::glyph::internal::parsing_table::getClr1ParsingTable;
 
 // clang-format off
 TEST_CASE("Parsing table") {
@@ -21,7 +21,7 @@ TEST_CASE("Parsing table") {
         Products -> number
     )"};
 
-    const auto table = getCanonicalLeftToRightParsingTable(grammar, getAutomaton(grammar));
+    const auto table = getClr1ParsingTable(grammar, getAutomaton(grammar));
     
     constexpr auto reduce = Action::reduce,
                    accept = Action::accept,

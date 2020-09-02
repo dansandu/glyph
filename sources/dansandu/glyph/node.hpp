@@ -12,7 +12,7 @@ class PRALINE_EXPORT Node
 public:
     explicit Node(const dansandu::glyph::token::Token& token);
 
-    explicit Node(int ruleIndex);
+    explicit Node(const int ruleIndex);
 
     bool isRule() const;
 

@@ -1,20 +1,19 @@
 #include "catchorg/catch/catch.hpp"
 #include "dansandu/glyph/error.hpp"
-#include "dansandu/glyph/implementation/grammar.hpp"
-#include "dansandu/glyph/implementation/parsing.hpp"
-#include "dansandu/glyph/implementation/parsing_table.hpp"
+#include "dansandu/glyph/internal/grammar.hpp"
+#include "dansandu/glyph/internal/parsing.hpp"
+#include "dansandu/glyph/internal/parsing_table.hpp"
 #include "dansandu/glyph/node.hpp"
 #include "dansandu/glyph/regex_tokenizer.hpp"
 #include "dansandu/glyph/token.hpp"
 
-#include <regex>
 #include <vector>
 
 using dansandu::glyph::error::SyntaxError;
-using dansandu::glyph::implementation::automaton::getAutomaton;
-using dansandu::glyph::implementation::grammar::Grammar;
-using dansandu::glyph::implementation::parsing::parse;
-using dansandu::glyph::implementation::parsing_table::getCanonicalLeftToRightParsingTable;
+using dansandu::glyph::internal::automaton::getAutomaton;
+using dansandu::glyph::internal::grammar::Grammar;
+using dansandu::glyph::internal::parsing::parse;
+using dansandu::glyph::internal::parsing_table::getClr1ParsingTable;
 using dansandu::glyph::node::Node;
 using dansandu::glyph::regex_tokenizer::RegexTokenizer;
 using dansandu::glyph::token::Token;
@@ -48,7 +47,7 @@ TEST_CASE("Parsing")
                                                {multiply,   "\\*"},
                                                {discarded,  "\\s+"}}};
 
-        const auto parsingTable = getCanonicalLeftToRightParsingTable(grammar, getAutomaton(grammar));
+        const auto parsingTable = getClr1ParsingTable(grammar, getAutomaton(grammar));
 
         SECTION("successful parse")
         {
@@ -106,7 +105,7 @@ TEST_CASE("Parsing")
         
         const auto tokenizer = RegexTokenizer{{{a, "a"}, {b, "b"}}};
 
-        const auto parsingTable = getCanonicalLeftToRightParsingTable(grammar, getAutomaton(grammar));
+        const auto parsingTable = getClr1ParsingTable(grammar, getAutomaton(grammar));
 
         SECTION("successful parse")
         {

@@ -10,7 +10,8 @@ namespace dansandu::glyph::token
 class PRALINE_EXPORT Token
 {
 public:
-    Token(dansandu::glyph::symbol::Symbol symbol, int begin, int end) : symbol_{symbol}, begin_{begin}, end_{end}
+    Token(const dansandu::glyph::symbol::Symbol symbol, const int begin, const int end)
+        : symbol_{symbol}, begin_{begin}, end_{end}
     {
     }
 

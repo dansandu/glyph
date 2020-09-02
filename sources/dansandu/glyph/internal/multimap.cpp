@@ -1,4 +1,4 @@
-#include "dansandu/glyph/implementation/multimap.hpp"
+#include "dansandu/glyph/internal/multimap.hpp"
 #include "dansandu/ballotin/string.hpp"
 
 #include <algorithm>
@@ -6,7 +6,7 @@
 using dansandu::ballotin::string::join;
 using dansandu::glyph::symbol::Symbol;
 
-namespace dansandu::glyph::implementation::multimap
+namespace dansandu::glyph::internal::multimap
 {
 
 template<typename T>
@@ -15,7 +15,7 @@ auto find(const std::vector<T>& container, const T& value)
     return std::find(container.cbegin(), container.cend(), value);
 }
 
-std::vector<Symbol>& Multimap::operator[](Symbol key)
+std::vector<Symbol>& Multimap::operator[](const Symbol key)
 {
     for (auto index = 0U; index < partitions_.size(); ++index)
     {
@@ -38,14 +38,14 @@ void Multimap::merge(std::vector<Symbol> partition)
         if (std::any_of(partitions_[index].cbegin(), partitions_[index].cend(),
                         [&partition](auto symbol) { return find(partition, symbol) != partition.cend(); }))
         {
-            for (auto symbol : partitions_[index])
+            for (const auto symbol : partitions_[index])
             {
                 if (find(partition, symbol) == partition.cend())
                 {
                     partition.push_back(symbol);
                 }
             }
-            for (auto symbol : values_[index])
+            for (const auto symbol : values_[index])
             {
                 if (find(value, symbol) == value.cend())
                 {

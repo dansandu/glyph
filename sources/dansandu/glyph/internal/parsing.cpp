@@ -1,8 +1,8 @@
-#include "dansandu/glyph/implementation/parsing.hpp"
+#include "dansandu/glyph/internal/parsing.hpp"
 #include "dansandu/ballotin/exception.hpp"
 #include "dansandu/ballotin/string.hpp"
 #include "dansandu/glyph/error.hpp"
-#include "dansandu/glyph/implementation/grammar.hpp"
+#include "dansandu/glyph/internal/grammar.hpp"
 #include "dansandu/glyph/node.hpp"
 #include "dansandu/glyph/symbol.hpp"
 #include "dansandu/glyph/token.hpp"
@@ -13,14 +13,14 @@
 
 using dansandu::ballotin::string::join;
 using dansandu::glyph::error::SyntaxError;
-using dansandu::glyph::implementation::grammar::Grammar;
-using dansandu::glyph::implementation::parsing_table::Action;
-using dansandu::glyph::implementation::parsing_table::Cell;
+using dansandu::glyph::internal::grammar::Grammar;
+using dansandu::glyph::internal::parsing_table::Action;
+using dansandu::glyph::internal::parsing_table::Cell;
 using dansandu::glyph::node::Node;
 using dansandu::glyph::symbol::Symbol;
 using dansandu::glyph::token::Token;
 
-namespace dansandu::glyph::implementation::parsing
+namespace dansandu::glyph::internal::parsing
 {
 
 void parse(const std::vector<Token>& tokens, const std::vector<std::vector<Cell>>& parsingTable, const Grammar& grammar,
@@ -35,9 +35,10 @@ void parse(const std::vector<Token>& tokens, const std::vector<std::vector<Cell>
             ++tokenPosition;
         }
 
-        auto token = tokenPosition != tokens.cend() ? *tokenPosition : Token{grammar.getEndOfStringSymbol(), -1, -1};
-        auto state = stateStack.back();
-        auto cell = parsingTable[token.getSymbol().getIdentifierIndex()][state];
+        const auto token =
+            tokenPosition != tokens.cend() ? *tokenPosition : Token{grammar.getEndOfStringSymbol(), -1, -1};
+        const auto state = stateStack.back();
+        const auto cell = parsingTable[token.getSymbol().getIdentifierIndex()][state];
         if (cell.action == Action::shift)
         {
             stateStack.push_back(cell.parameter);
@@ -47,7 +48,7 @@ void parse(const std::vector<Token>& tokens, const std::vector<std::vector<Cell>
         else if (cell.action == Action::reduce || cell.action == Action::accept)
         {
             const auto& reductionRule = grammar.getRules()[cell.parameter];
-            auto reductionSize = reductionRule.rightSide.size();
+            const auto reductionSize = reductionRule.rightSide.size();
             if (stateStack.size() < reductionSize)
             {
                 THROW(std::runtime_error,
@@ -60,7 +61,8 @@ void parse(const std::vector<Token>& tokens, const std::vector<std::vector<Cell>
                 {
                     THROW(std::runtime_error, "invalid state reached -- insufficient stack size for reduction");
                 }
-                auto newState = parsingTable[reductionRule.leftSide.getIdentifierIndex()][stateStack.back()].parameter;
+                const auto newState =
+                    parsingTable[reductionRule.leftSide.getIdentifierIndex()][stateStack.back()].parameter;
                 stateStack.push_back(newState);
                 visitor(Node{cell.parameter});
             }
