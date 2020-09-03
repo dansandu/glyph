@@ -6,6 +6,7 @@
 
 #include <functional>
 #include <memory>
+#include <string>
 #include <string_view>
 #include <vector>
 
@@ -17,11 +18,11 @@ struct ParserImplementation;
 class PRALINE_EXPORT Parser
 {
 public:
-    explicit Parser(std::string_view grammar);
+    explicit Parser(const std::string_view grammar);
 
     ~Parser();
 
-    dansandu::glyph::symbol::Symbol getTerminalSymbol(std::string_view identifier) const;
+    dansandu::glyph::symbol::Symbol getTerminalSymbol(const std::string_view identifier) const;
 
     dansandu::glyph::symbol::Symbol getDiscardedSymbolPlaceholder() const;
 

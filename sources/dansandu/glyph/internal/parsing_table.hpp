@@ -1,12 +1,12 @@
 #pragma once
 
-#include "dansandu/glyph/implementation/automaton.hpp"
-#include "dansandu/glyph/implementation/grammar.hpp"
+#include "dansandu/glyph/internal/automaton.hpp"
+#include "dansandu/glyph/internal/grammar.hpp"
 
 #include <ostream>
 #include <vector>
 
-namespace dansandu::glyph::implementation::parsing_table
+namespace dansandu::glyph::internal::parsing_table
 {
 
 enum class Action
@@ -40,8 +40,7 @@ bool operator!=(Cell left, Cell right);
 
 std::ostream& operator<<(std::ostream& stream, Cell cell);
 
-std::vector<std::vector<Cell>>
-getCanonicalLeftToRightParsingTable(const dansandu::glyph::implementation::grammar::Grammar& grammar,
-                                    const dansandu::glyph::implementation::automaton::Automaton& automaton);
+std::vector<std::vector<Cell>> getClr1ParsingTable(const dansandu::glyph::internal::grammar::Grammar& grammar,
+                                                   const dansandu::glyph::internal::automaton::Automaton& automaton);
 
 }

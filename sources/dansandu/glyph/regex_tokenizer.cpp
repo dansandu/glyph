@@ -21,12 +21,12 @@ RegexTokenizer::RegexTokenizer(const std::vector<std::pair<Symbol, std::string>>
     }
 }
 
-std::vector<Token> RegexTokenizer::operator()(std::string_view string) const
+std::vector<Token> RegexTokenizer::operator()(const std::string_view string) const
 {
     auto tokens = std::vector<Token>{};
     auto position = string.cbegin();
     auto match = std::match_results<decltype(position)>{};
-    auto flags = std::regex_constants::match_continuous;
+    const auto flags = std::regex_constants::match_continuous;
     while (position != string.cend())
     {
         auto matchFound = false;
@@ -34,8 +34,8 @@ std::vector<Token> RegexTokenizer::operator()(std::string_view string) const
         {
             if (matchFound = std::regex_search(position, string.cend(), match, descriptor.second, flags); matchFound)
             {
-                auto begin = static_cast<int>(match[0].first - string.cbegin());
-                auto end = static_cast<int>(match[0].second - string.cbegin());
+                const auto begin = static_cast<int>(match[0].first - string.cbegin());
+                const auto end = static_cast<int>(match[0].second - string.cbegin());
                 tokens.push_back({descriptor.first, begin, end});
                 position += match.length();
                 break;
@@ -43,7 +43,7 @@ std::vector<Token> RegexTokenizer::operator()(std::string_view string) const
         }
         if (!matchFound)
         {
-            auto index = position - string.cbegin();
+            const auto index = position - string.cbegin();
             THROW(TokenizationError, "no pattern matches symbol at position ", index + 1, ":\n", string, "\n",
                   std::string(index, ' '), "^");
         }

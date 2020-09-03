@@ -5,7 +5,7 @@
 #include <ostream>
 #include <vector>
 
-namespace dansandu::glyph::implementation::rule
+namespace dansandu::glyph::internal::rule
 {
 
 struct Rule

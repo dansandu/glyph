@@ -1,9 +1,9 @@
-#include "dansandu/glyph/implementation/rule.hpp"
+#include "dansandu/glyph/internal/rule.hpp"
 #include "dansandu/ballotin/string.hpp"
 
 using dansandu::ballotin::string::join;
 
-namespace dansandu::glyph::implementation::rule
+namespace dansandu::glyph::internal::rule
 {
 
 bool operator==(const Rule& left, const Rule& right)

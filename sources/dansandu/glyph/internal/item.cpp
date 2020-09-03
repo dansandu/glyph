@@ -1,8 +1,8 @@
-#include "dansandu/glyph/implementation/item.hpp"
+#include "dansandu/glyph/internal/item.hpp"
 
 #include <tuple>
 
-namespace dansandu::glyph::implementation::item
+namespace dansandu::glyph::internal::item
 {
 
 bool operator<(const Item& left, const Item& right)
