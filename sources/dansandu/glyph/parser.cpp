@@ -34,16 +34,14 @@ struct ParserImplementation
     {
     }
 
-    std::string dump() const;
+    void dump(std::ostream& stream) const;
 
     Grammar grammar;
     std::vector<std::vector<Cell>> parsingTable;
 };
 
-std::string ParserImplementation::dump() const
+void ParserImplementation::dump(std::ostream& stream) const
 {
-    auto stream = std::stringstream{};
-
     stream << std::endl << "Rules:" << std::endl;
     for (const auto& rule : grammar.getRules())
     {
@@ -103,8 +101,6 @@ std::string ParserImplementation::dump() const
         }
         stream << std::endl;
     }
-
-    return stream.str();
 }
 
 Parser::Parser(const std::string_view grammar) : implementation_{std::make_unique<ParserImplementation>(grammar)}
@@ -130,9 +126,9 @@ void Parser::parse(const std::vector<Token>& tokens, const std::function<void(co
     ::parse(tokens, implementation_->parsingTable, implementation_->grammar, visitor);
 }
 
-std::string Parser::dump() const
+void Parser::dump(std::ostream& stream) const
 {
-    return implementation_->dump();
+    implementation_->dump(stream);
 }
 
 }

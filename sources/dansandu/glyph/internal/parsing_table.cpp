@@ -14,7 +14,7 @@ using dansandu::glyph::internal::grammar::Grammar;
 namespace dansandu::glyph::internal::parsing_table
 {
 
-std::ostream& operator<<(std::ostream& stream, Action action)
+std::ostream& operator<<(std::ostream& stream, const Action action)
 {
     switch (action)
     {
@@ -33,17 +33,7 @@ std::ostream& operator<<(std::ostream& stream, Action action)
     }
 }
 
-bool operator==(Cell left, Cell right)
-{
-    return left.action == right.action && left.parameter == right.parameter;
-}
-
-bool operator!=(Cell left, Cell right)
-{
-    return !(left == right);
-}
-
-std::ostream& operator<<(std::ostream& stream, Cell cell)
+std::ostream& operator<<(std::ostream& stream, const Cell cell)
 {
     return stream << "Cell(" << cell.action << ", " << cell.parameter << ")";
 }
@@ -57,7 +47,7 @@ std::vector<std::vector<Cell>> getClr1ParsingTable(const Grammar& grammar, const
     }
     for (const auto& transition : automaton.transitions)
     {
-        auto action = grammar.isTerminal(transition.symbol) ? Action::shift : Action::goTo;
+        const auto action = grammar.isTerminal(transition.symbol) ? Action::shift : Action::goTo;
         table[transition.symbol.getIdentifierIndex()][transition.from] = Cell{action, transition.to};
     }
     const auto& rules = grammar.getRules();

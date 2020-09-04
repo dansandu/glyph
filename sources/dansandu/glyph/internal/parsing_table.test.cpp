@@ -13,7 +13,7 @@ using dansandu::glyph::internal::parsing_table::getClr1ParsingTable;
 
 // clang-format off
 TEST_CASE("Parsing table") {
-    auto grammar = Grammar{R"(
+    const auto grammar = Grammar{R"(
         Start    -> Sums
         Sums     -> Sums add Products
         Sums     -> Products
@@ -23,10 +23,10 @@ TEST_CASE("Parsing table") {
 
     const auto table = getClr1ParsingTable(grammar, getAutomaton(grammar));
     
-    constexpr auto reduce = Action::reduce,
-                   accept = Action::accept,
-                   shift = Action::shift,
-                   goTo = Action::goTo;
+    const auto reduce = Action::reduce,
+               accept = Action::accept,
+               shift = Action::shift,
+               goTo = Action::goTo;
     
     REQUIRE(table == std::vector<std::vector<Cell>>{
         {         {},          {},          {},          {},          {},          {},          {},          {}},

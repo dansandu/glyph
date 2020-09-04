@@ -29,7 +29,7 @@ public:
     void parse(const std::vector<dansandu::glyph::token::Token>& tokens,
                const std::function<void(const dansandu::glyph::node::Node&)>& visitor) const;
 
-    std::string dump() const;
+    void dump(std::ostream& stream) const;
 
 private:
     std::unique_ptr<ParserImplementation> implementation_;

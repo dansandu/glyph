@@ -36,10 +36,19 @@ private:
     int end_;
 };
 
-PRALINE_EXPORT bool operator==(const Token& left, const Token& right);
+inline bool operator==(const Token& left, const Token& right)
+{
+    return (left.getSymbol() == right.getSymbol()) & (left.begin() == right.begin()) & (left.end() == right.end());
+}
 
-PRALINE_EXPORT bool operator!=(const Token& left, const Token& right);
+inline bool operator!=(const Token& left, const Token& right)
+{
+    return !(left == right);
+}
 
-PRALINE_EXPORT std::ostream& operator<<(std::ostream& stream, const Token& token);
+inline std::ostream& operator<<(std::ostream& stream, const Token& token)
+{
+    return stream << "Token(" << token.getSymbol() << ", " << token.begin() << ", " << token.end() << ")";
+}
 
 }

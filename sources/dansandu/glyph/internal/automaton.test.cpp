@@ -89,7 +89,7 @@ TEST_CASE("Automaton")
     {
         REQUIRE(getStateTransitions({}, grammar).empty());
 
-        REQUIRE(getStateTransitions({Item{0, 1, end}}, grammar) == Transitions{});
+        REQUIRE(getStateTransitions({Item{0, 1, end}}, grammar).empty());
 
         const auto state = Items{
             Item{0, 0, end},
@@ -98,13 +98,13 @@ TEST_CASE("Automaton")
             Item{3, 0, add}
         };
 
-        const auto transitions = Transitions{
+        const auto expectedTransitions = Transitions{
             {add,      {Item{1, 2, multiply}}},
             {Products, {Item{2, 1, add}, Item{3, 1, add}}},
             {Sums,     {Item{0, 1, end}}}
         };
 
-        REQUIRE(getStateTransitions(state, grammar) == transitions);
+        REQUIRE(getStateTransitions(state, grammar) == expectedTransitions);
     }
 
     SECTION("final state")

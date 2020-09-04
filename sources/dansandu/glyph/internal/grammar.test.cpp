@@ -85,7 +85,7 @@ TEST_CASE("Grammar")
 
         SECTION("rules")
         {
-            const auto rules = std::vector<Rule>{
+            const auto expectedRules = std::vector<Rule>{
                 Rule{Start,           {S}},
                 Rule{S,               {Sum}},
                 Rule{S,               {}},
@@ -99,7 +99,7 @@ TEST_CASE("Grammar")
                 Rule{Parameters,      {Sum}},
             };
 
-            REQUIRE(grammar.getRules() == rules);
+            REQUIRE(grammar.getRules() == expectedRules);
         }
 
         SECTION("special symbols")
@@ -239,7 +239,7 @@ TEST_CASE("Grammar")
 
         SECTION("rules")
         {
-            const auto rules = std::vector<Rule>{
+            const auto expectedRules = std::vector<Rule>{
                 Rule{Start, {A, B, C, D}},
                 Rule{A,     {a}},
                 Rule{A,     {}},
@@ -252,7 +252,7 @@ TEST_CASE("Grammar")
                 Rule{D,     {}}
             };
 
-            REQUIRE(grammar.getRules() == rules);
+            REQUIRE(grammar.getRules() == expectedRules);
         }
 
         SECTION("special symbols")
@@ -378,7 +378,7 @@ TEST_CASE("Grammar")
 
         SECTION("rules")
         {
-            const auto rules = std::vector<Rule>{
+            const auto expectedRules = std::vector<Rule>{
                 Rule{Start, {A}},
                 Rule{A,     {B, a}},
                 Rule{B,     {A, b}},
@@ -386,7 +386,7 @@ TEST_CASE("Grammar")
                 Rule{B,     {}}
             };
 
-            REQUIRE(grammar.getRules() == rules);
+            REQUIRE(grammar.getRules() == expectedRules);
         }
 
         SECTION("non-terminals")

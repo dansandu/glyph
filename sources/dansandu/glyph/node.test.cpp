@@ -27,6 +27,7 @@ TEST_CASE("Node")
     SECTION("with production rule")
     {
         const auto ruleIndex = 23;
+
         const auto node = Node{ruleIndex};
 
         REQUIRE(node.isRule());

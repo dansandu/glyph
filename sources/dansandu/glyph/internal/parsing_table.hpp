@@ -18,7 +18,7 @@ enum class Action
     accept
 };
 
-std::ostream& operator<<(std::ostream& stream, Action action);
+std::ostream& operator<<(std::ostream& stream, const Action action);
 
 struct Cell
 {
@@ -26,7 +26,7 @@ struct Cell
     {
     }
 
-    Cell(Action action, int parameter) : action{action}, parameter{parameter}
+    Cell(const Action action, const int parameter) : action{action}, parameter{parameter}
     {
     }
 
@@ -34,11 +34,17 @@ struct Cell
     int parameter;
 };
 
-bool operator==(Cell left, Cell right);
+inline bool operator==(const Cell left, const Cell right)
+{
+    return (left.action == right.action) & (left.parameter == right.parameter);
+}
 
-bool operator!=(Cell left, Cell right);
+inline bool operator!=(const Cell left, const Cell right)
+{
+    return !(left == right);
+}
 
-std::ostream& operator<<(std::ostream& stream, Cell cell);
+std::ostream& operator<<(std::ostream& stream, const Cell cell);
 
 std::vector<std::vector<Cell>> getClr1ParsingTable(const dansandu::glyph::internal::grammar::Grammar& grammar,
                                                    const dansandu::glyph::internal::automaton::Automaton& automaton);

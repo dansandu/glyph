@@ -27,11 +27,14 @@ private:
     int identifierIndex_;
 };
 
-inline bool operator<(const Symbol a, const Symbol b)
+inline bool operator<(const Symbol left, const Symbol right)
 {
-    return a.getIdentifierIndex() < b.getIdentifierIndex();
+    return left.getIdentifierIndex() < right.getIdentifierIndex();
 }
 
-PRALINE_EXPORT std::ostream& operator<<(std::ostream& stream, const Symbol symbol);
+inline std::ostream& operator<<(std::ostream& stream, const Symbol symbol)
+{
+    return stream << "Symbol(" << symbol.getIdentifierIndex() << ")";
+}
 
 }

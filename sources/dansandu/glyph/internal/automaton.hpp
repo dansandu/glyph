@@ -19,9 +19,15 @@ struct Transition
     int to;
 };
 
-bool operator==(const Transition& left, const Transition& right);
+inline bool operator==(const Transition& left, const Transition& right)
+{
+    return (left.symbol == right.symbol) & (left.from == right.from) & (left.to == right.to);
+}
 
-bool operator!=(const Transition& left, const Transition& right);
+inline bool operator!=(const Transition& left, const Transition& right)
+{
+    return !(left == right);
+}
 
 std::ostream& operator<<(std::ostream& stream, const Transition& transition);
 
