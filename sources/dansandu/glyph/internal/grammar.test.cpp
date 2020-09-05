@@ -1,7 +1,7 @@
 #include "catchorg/catch/catch.hpp"
 #include "dansandu/ballotin/container.hpp"
 #include "dansandu/glyph/error.hpp"
-#include "dansandu/glyph/implementation/grammar.hpp"
+#include "dansandu/glyph/internal/grammar.hpp"
 #include "dansandu/glyph/symbol.hpp"
 
 #include <map>
@@ -10,8 +10,8 @@
 #include <vector>
 
 using dansandu::glyph::error::GrammarError;
-using dansandu::glyph::implementation::grammar::Grammar;
-using dansandu::glyph::implementation::rule::Rule;
+using dansandu::glyph::internal::grammar::Grammar;
+using dansandu::glyph::internal::rule::Rule;
 using dansandu::glyph::symbol::Symbol;
 
 static std::set<Symbol> set(const std::vector<Symbol>& l)
@@ -50,7 +50,7 @@ TEST_CASE("Grammar")
 
     SECTION("grammar #1")
     {
-        auto text = R"(
+        const auto text = R"(
             Start -> S
             S     -> Sum
             S     ->
@@ -64,28 +64,28 @@ TEST_CASE("Grammar")
             Parameters -> Sum
         )";
         
-        auto grammar = Grammar{text};
+        const auto grammar = Grammar{text};
 
-        auto Start            = grammar.getSymbol("Start");
-        auto S                = grammar.getSymbol("S");
-        auto Sum              = grammar.getSymbol("Sum");
-        auto Value            = grammar.getSymbol("Value");
-        auto ParametersBegin  = grammar.getSymbol("ParametersBegin");
-        auto Parameters       = grammar.getSymbol("Parameters");
-        auto end              = grammar.getSymbol("$");
-        auto empty            = grammar.getSymbol("");
-        auto add              = grammar.getSymbol("add");
-        auto number           = grammar.getSymbol("number");
-        auto id               = grammar.getSymbol("id");
-        auto parenthesesStart = grammar.getSymbol("parenthesesStart");
-        auto parenthesesEnd   = grammar.getSymbol("parenthesesEnd");
-        auto comma            = grammar.getSymbol("comma");
+        const auto Start            = grammar.getSymbol("Start");
+        const auto S                = grammar.getSymbol("S");
+        const auto Sum              = grammar.getSymbol("Sum");
+        const auto Value            = grammar.getSymbol("Value");
+        const auto ParametersBegin  = grammar.getSymbol("ParametersBegin");
+        const auto Parameters       = grammar.getSymbol("Parameters");
+        const auto end              = grammar.getSymbol("$");
+        const auto empty            = grammar.getSymbol("");
+        const auto add              = grammar.getSymbol("add");
+        const auto number           = grammar.getSymbol("number");
+        const auto id               = grammar.getSymbol("id");
+        const auto parenthesesStart = grammar.getSymbol("parenthesesStart");
+        const auto parenthesesEnd   = grammar.getSymbol("parenthesesEnd");
+        const auto comma            = grammar.getSymbol("comma");
 
         REQUIRE(grammar.toString() == text);
 
         SECTION("rules")
         {
-            auto rules = std::vector<Rule>{
+            const auto expectedRules = std::vector<Rule>{
                 Rule{Start,           {S}},
                 Rule{S,               {Sum}},
                 Rule{S,               {}},
@@ -99,7 +99,7 @@ TEST_CASE("Grammar")
                 Rule{Parameters,      {Sum}},
             };
 
-            REQUIRE(grammar.getRules() == rules);
+            REQUIRE(grammar.getRules() == expectedRules);
         }
 
         SECTION("special symbols")
@@ -208,7 +208,7 @@ TEST_CASE("Grammar")
 
     SECTION("grammar #2")
     {
-        auto text = R"(
+        const auto text = R"(
             Start -> A B C D
             A -> a
             A ->
@@ -221,25 +221,25 @@ TEST_CASE("Grammar")
             D ->
         )";
 
-        auto grammar = Grammar{text};
+        const auto grammar = Grammar{text};
 
-        auto Start   = grammar.getSymbol("Start");
-        auto A       = grammar.getSymbol("A");
-        auto B       = grammar.getSymbol("B");
-        auto C       = grammar.getSymbol("C");
-        auto D       = grammar.getSymbol("D");
-        auto end     = grammar.getSymbol("$");
-        auto empty   = grammar.getSymbol("");
-        auto a       = grammar.getSymbol("a");
-        auto b       = grammar.getSymbol("b");
-        auto c       = grammar.getSymbol("c");
-        auto d       = grammar.getSymbol("d");
+        const auto Start   = grammar.getSymbol("Start");
+        const auto A       = grammar.getSymbol("A");
+        const auto B       = grammar.getSymbol("B");
+        const auto C       = grammar.getSymbol("C");
+        const auto D       = grammar.getSymbol("D");
+        const auto end     = grammar.getSymbol("$");
+        const auto empty   = grammar.getSymbol("");
+        const auto a       = grammar.getSymbol("a");
+        const auto b       = grammar.getSymbol("b");
+        const auto c       = grammar.getSymbol("c");
+        const auto d       = grammar.getSymbol("d");
 
         REQUIRE(grammar.toString() == text);
 
         SECTION("rules")
         {
-            auto rules = std::vector<Rule>{
+            const auto expectedRules = std::vector<Rule>{
                 Rule{Start, {A, B, C, D}},
                 Rule{A,     {a}},
                 Rule{A,     {}},
@@ -252,7 +252,7 @@ TEST_CASE("Grammar")
                 Rule{D,     {}}
             };
 
-            REQUIRE(grammar.getRules() == rules);
+            REQUIRE(grammar.getRules() == expectedRules);
         }
 
         SECTION("special symbols")
@@ -358,7 +358,7 @@ TEST_CASE("Grammar")
 
     SECTION("grammar #3")
     {
-        auto text = R"(
+        const auto text = R"(
             Start -> A
             A -> B a
             B -> A b
@@ -366,19 +366,19 @@ TEST_CASE("Grammar")
             B ->
         )";
 
-        auto grammar = Grammar{text};
+        const auto grammar = Grammar{text};
 
-        auto Start = grammar.getSymbol("Start");
-        auto A     = grammar.getSymbol("A");
-        auto B     = grammar.getSymbol("B");
-        auto end   = grammar.getSymbol("$");
-        auto empty = grammar.getSymbol("");
-        auto a     = grammar.getSymbol("a");
-        auto b     = grammar.getSymbol("b");
+        const auto Start = grammar.getSymbol("Start");
+        const auto A     = grammar.getSymbol("A");
+        const auto B     = grammar.getSymbol("B");
+        const auto end   = grammar.getSymbol("$");
+        const auto empty = grammar.getSymbol("");
+        const auto a     = grammar.getSymbol("a");
+        const auto b     = grammar.getSymbol("b");
 
         SECTION("rules")
         {
-            auto rules = std::vector<Rule>{
+            const auto expectedRules = std::vector<Rule>{
                 Rule{Start, {A}},
                 Rule{A,     {B, a}},
                 Rule{B,     {A, b}},
@@ -386,7 +386,7 @@ TEST_CASE("Grammar")
                 Rule{B,     {}}
             };
 
-            REQUIRE(grammar.getRules() == rules);
+            REQUIRE(grammar.getRules() == expectedRules);
         }
 
         SECTION("non-terminals")
@@ -444,7 +444,7 @@ TEST_CASE("Grammar")
 
     SECTION("grammar #4")
     {
-        auto text = R"(
+        const auto text = R"(
             Start -> X
             X -> A1
             X -> C1
@@ -481,33 +481,33 @@ TEST_CASE("Grammar")
             G -> g
         )";
 
-        auto grammar = Grammar{text};
+        const auto grammar = Grammar{text};
 
-        auto Start = grammar.getSymbol("Start");
-        auto X = grammar.getSymbol("X");
-        auto A1 = grammar.getSymbol("A1");
-        auto A2 = grammar.getSymbol("A2");
-        auto A3 = grammar.getSymbol("A3");
-        auto B1 = grammar.getSymbol("B1");
-        auto B2 = grammar.getSymbol("B2");
-        auto B3 = grammar.getSymbol("B3");
-        auto B4 = grammar.getSymbol("B4");
-        auto C1 = grammar.getSymbol("C1");
-        auto C2 = grammar.getSymbol("C2");
-        auto D1 = grammar.getSymbol("D1");
-        auto D2 = grammar.getSymbol("D2");
-        auto D3 = grammar.getSymbol("D3");
-        auto E = grammar.getSymbol("E");
-        auto F = grammar.getSymbol("F");
-        auto G = grammar.getSymbol("G");
-        auto empty = grammar.getSymbol("");
-        auto a = grammar.getSymbol("a");
-        auto b = grammar.getSymbol("b");
-        auto c = grammar.getSymbol("c");
-        auto d = grammar.getSymbol("d");
-        auto e = grammar.getSymbol("e");
-        auto f = grammar.getSymbol("f");
-        auto g = grammar.getSymbol("g");
+        const auto Start = grammar.getSymbol("Start");
+        const auto X = grammar.getSymbol("X");
+        const auto A1 = grammar.getSymbol("A1");
+        const auto A2 = grammar.getSymbol("A2");
+        const auto A3 = grammar.getSymbol("A3");
+        const auto B1 = grammar.getSymbol("B1");
+        const auto B2 = grammar.getSymbol("B2");
+        const auto B3 = grammar.getSymbol("B3");
+        const auto B4 = grammar.getSymbol("B4");
+        const auto C1 = grammar.getSymbol("C1");
+        const auto C2 = grammar.getSymbol("C2");
+        const auto D1 = grammar.getSymbol("D1");
+        const auto D2 = grammar.getSymbol("D2");
+        const auto D3 = grammar.getSymbol("D3");
+        const auto E = grammar.getSymbol("E");
+        const auto F = grammar.getSymbol("F");
+        const auto G = grammar.getSymbol("G");
+        const auto empty = grammar.getSymbol("");
+        const auto a = grammar.getSymbol("a");
+        const auto b = grammar.getSymbol("b");
+        const auto c = grammar.getSymbol("c");
+        const auto d = grammar.getSymbol("d");
+        const auto e = grammar.getSymbol("e");
+        const auto f = grammar.getSymbol("f");
+        const auto g = grammar.getSymbol("g");
 
         REQUIRE(set(grammar.getFirstSet(Start)) == set({b, f, g, c, a, e, d, empty}));
 

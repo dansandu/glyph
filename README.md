@@ -91,7 +91,7 @@ int main(int argumentsCount, char** arguments)
     // Because terminals are alphanumeric we need to map symbols to their actual
     // representation in the input string. We use the regex tokenizer to map
     // terminals to patterns. The order of the patterns matters because only
-    // first matching pattern is used to generate the token.
+    // the first matching pattern is used to generate the token.
     const auto tokenizer =
         RegexTokenizer{{{add, "\\+"},
                         {multiply, "\\*"},

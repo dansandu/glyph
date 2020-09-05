@@ -1,9 +1,9 @@
 #include "catchorg/catch/catch.hpp"
-#include "dansandu/glyph/implementation/multimap.hpp"
+#include "dansandu/glyph/internal/multimap.hpp"
 
 #include <set>
 
-using dansandu::glyph::implementation::multimap::Multimap;
+using dansandu::glyph::internal::multimap::Multimap;
 using dansandu::glyph::symbol::Symbol;
 
 TEST_CASE("Multimap")
@@ -56,22 +56,22 @@ TEST_CASE("Multimap")
 
         SECTION("iteration")
         {
-            auto partitions = std::vector<std::vector<Symbol>>{};
-            auto values = std::vector<std::vector<Symbol>>{};
+            auto actualPartitions = std::vector<std::vector<Symbol>>{};
+            auto actualValues = std::vector<std::vector<Symbol>>{};
 
-            table.forEach([&partitions, &values](const auto& p, const auto& v) {
-                partitions.push_back(p);
-                values.push_back(v);
+            table.forEach([&](const auto& p, const auto& v) {
+                actualPartitions.push_back(p);
+                actualValues.push_back(v);
             });
 
-            auto expectedPartitions = std::vector<std::vector<Symbol>>{{Symbol{0}}, {Symbol{10}}, {Symbol{20}}};
+            const auto expectedPartitions = std::vector<std::vector<Symbol>>{{Symbol{0}}, {Symbol{10}}, {Symbol{20}}};
 
-            auto expectedValues = std::vector<std::vector<Symbol>>{
+            const auto expectedValues = std::vector<std::vector<Symbol>>{
                 {Symbol{1}, Symbol{2}}, {Symbol{13}, Symbol{15}}, {Symbol{26}, Symbol{29}, Symbol{21}}};
 
-            REQUIRE(partitions == expectedPartitions);
+            REQUIRE(actualPartitions == expectedPartitions);
 
-            REQUIRE(values == expectedValues);
+            REQUIRE(actualValues == expectedValues);
         }
     }
 }

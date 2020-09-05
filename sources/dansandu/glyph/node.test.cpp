@@ -11,9 +11,9 @@ TEST_CASE("Node")
 {
     SECTION("with token")
     {
-        auto token = Token{Symbol{1}, 0, 1};
+        const auto token = Token{Symbol{1}, 0, 1};
 
-        auto node = Node{token};
+        const auto node = Node{token};
 
         REQUIRE(node.isToken());
 
@@ -26,8 +26,9 @@ TEST_CASE("Node")
 
     SECTION("with production rule")
     {
-        constexpr auto ruleIndex = 23;
-        auto node = Node{ruleIndex};
+        const auto ruleIndex = 23;
+
+        const auto node = Node{ruleIndex};
 
         REQUIRE(node.isRule());
 

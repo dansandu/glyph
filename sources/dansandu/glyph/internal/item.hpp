@@ -3,12 +3,12 @@
 #include "dansandu/ballotin/relation.hpp"
 #include "dansandu/glyph/symbol.hpp"
 
-namespace dansandu::glyph::implementation::item
+namespace dansandu::glyph::internal::item
 {
 
 struct Item : dansandu::ballotin::relation::TotalOrder<Item>
 {
-    Item(int ruleIndex, int position, dansandu::glyph::symbol::Symbol lookahead)
+    Item(const int ruleIndex, const int position, const dansandu::glyph::symbol::Symbol lookahead)
         : ruleIndex{ruleIndex}, position{position}, lookahead{lookahead}
     {
     }

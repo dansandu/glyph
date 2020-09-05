@@ -61,7 +61,7 @@ public:
 
     double evaluate(const std::map<std::string, double (*)(double)>& functions,
                     const std::map<std::string, double>& variables,
-                    std::string_view formula) const
+                    const std::string_view formula) const
     {
         const auto identifier = parser_.getTerminalSymbol("identifier");
         const auto number = parser_.getTerminalSymbol("number");
@@ -73,7 +73,7 @@ public:
         {
             if (node.isToken())
             {
-                auto token = node.getToken();
+                const auto token = node.getToken();
                 if (token.getSymbol() == identifier || token.getSymbol() == number)
                 {
                     tokensStack.push_back(token);
@@ -93,64 +93,64 @@ public:
                     break;
                 case 1:
                 {
-                    auto rhs = pop(valuesStack);
-                    auto lhs = pop(valuesStack);
+                    const auto rhs = pop(valuesStack);
+                    const auto lhs = pop(valuesStack);
                     valuesStack.push_back(lhs + rhs);
                     break;
                 }
                 case 2:
                 {
-                    auto rhs = pop(valuesStack);
-                    auto lhs = pop(valuesStack);
+                    const auto rhs = pop(valuesStack);
+                    const auto lhs = pop(valuesStack);
                     valuesStack.push_back(lhs - rhs);
                     break;
                 }
                 case 4:
                 {
-                    auto rhs = pop(valuesStack);
-                    auto lhs = pop(valuesStack);
+                    const auto rhs = pop(valuesStack);
+                    const auto lhs = pop(valuesStack);
                     valuesStack.push_back(lhs * rhs);
                     break;
                 }
                 case 5:
                 {
-                    auto rhs = pop(valuesStack);
-                    auto lhs = pop(valuesStack);
+                    const auto rhs = pop(valuesStack);
+                    const auto lhs = pop(valuesStack);
                     valuesStack.push_back(lhs / rhs);
                     break;
                 }
                 case 7:
                 {
-                    auto rhs = pop(valuesStack);
-                    auto lhs = pop(valuesStack);
+                    const auto rhs = pop(valuesStack);
+                    const auto lhs = pop(valuesStack);
                     valuesStack.push_back(std::pow(lhs, rhs));
                     break;
                 }
                 case 11:
                 {
-                    auto value = pop(valuesStack);
+                    const auto value = pop(valuesStack);
                     valuesStack.push_back(-value);
                     break;
                 }
                 case 12:
                 {
-                    auto token = pop(tokensStack);
-                    auto id = std::string{formula.begin() + token.begin(), formula.begin() + token.end()};
+                    const auto token = pop(tokensStack);
+                    const auto id = std::string{formula.begin() + token.begin(), formula.begin() + token.end()};
                     valuesStack.push_back(variables.at(id));
                     break;
                 }
                 case 13:
                 {
-                    auto token = pop(tokensStack);
-                    auto nr = std::string{formula.begin() + token.begin(), formula.begin() + token.end()};
+                    const auto token = pop(tokensStack);
+                    const auto nr = std::string{formula.begin() + token.begin(), formula.begin() + token.end()};
                     valuesStack.push_back(std::stod(nr));
                     break;
                 }
                 case 14:
                 {
-                    auto token = pop(tokensStack);
-                    auto argument = pop(valuesStack);
-                    auto function = std::string{formula.begin() + token.begin(), formula.begin() + token.end()};
+                    const auto token = pop(tokensStack);
+                    const auto argument = pop(valuesStack);
+                    const auto function = std::string{formula.begin() + token.begin(), formula.begin() + token.end()};
                     valuesStack.push_back(functions.at(function)(argument));
                     break;
                 }

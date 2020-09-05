@@ -10,7 +10,8 @@ namespace dansandu::glyph::token
 class PRALINE_EXPORT Token
 {
 public:
-    Token(dansandu::glyph::symbol::Symbol symbol, int begin, int end) : symbol_{symbol}, begin_{begin}, end_{end}
+    Token(const dansandu::glyph::symbol::Symbol symbol, const int begin, const int end)
+        : symbol_{symbol}, begin_{begin}, end_{end}
     {
     }
 
@@ -35,10 +36,19 @@ private:
     int end_;
 };
 
-PRALINE_EXPORT bool operator==(const Token& left, const Token& right);
+inline bool operator==(const Token& left, const Token& right)
+{
+    return (left.getSymbol() == right.getSymbol()) & (left.begin() == right.begin()) & (left.end() == right.end());
+}
 
-PRALINE_EXPORT bool operator!=(const Token& left, const Token& right);
+inline bool operator!=(const Token& left, const Token& right)
+{
+    return !(left == right);
+}
 
-PRALINE_EXPORT std::ostream& operator<<(std::ostream& stream, const Token& token);
+inline std::ostream& operator<<(std::ostream& stream, const Token& token)
+{
+    return stream << "Token(" << token.getSymbol() << ", " << token.begin() << ", " << token.end() << ")";
+}
 
 }

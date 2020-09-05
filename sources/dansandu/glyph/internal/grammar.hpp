@@ -1,28 +1,28 @@
 #pragma once
 
-#include "dansandu/glyph/implementation/rule.hpp"
+#include "dansandu/glyph/internal/rule.hpp"
 #include "dansandu/glyph/symbol.hpp"
 
 #include <ostream>
 #include <string_view>
 #include <vector>
 
-namespace dansandu::glyph::implementation::grammar
+namespace dansandu::glyph::internal::grammar
 {
 
 class Grammar
 {
 public:
-    explicit Grammar(std::string_view grammar);
+    explicit Grammar(const std::string_view grammar);
 
     int getStartRuleIndex() const
     {
         return 0;
     }
 
-    dansandu::glyph::symbol::Symbol getSymbol(std::string_view identifier) const;
+    dansandu::glyph::symbol::Symbol getSymbol(const std::string_view identifier) const;
 
-    dansandu::glyph::symbol::Symbol getTerminalSymbol(std::string_view identifier) const;
+    dansandu::glyph::symbol::Symbol getTerminalSymbol(const std::string_view identifier) const;
 
     dansandu::glyph::symbol::Symbol getDiscardedSymbolPlaceholder() const
     {
@@ -44,12 +44,12 @@ public:
         return dansandu::glyph::symbol::Symbol{terminalBeginIndex_ + 1};
     }
 
-    const std::vector<dansandu::glyph::symbol::Symbol>& getFirstSet(dansandu::glyph::symbol::Symbol symbol) const
+    const std::vector<dansandu::glyph::symbol::Symbol>& getFirstSet(const dansandu::glyph::symbol::Symbol symbol) const
     {
         return firstTable_[symbol.getIdentifierIndex()];
     }
 
-    const std::string& getIdentifier(dansandu::glyph::symbol::Symbol symbol) const
+    const std::string& getIdentifier(const dansandu::glyph::symbol::Symbol symbol) const
     {
         return identifiers_[symbol.getIdentifierIndex()];
     }
@@ -59,17 +59,17 @@ public:
         return static_cast<int>(identifiers_.size());
     }
 
-    bool isTerminal(dansandu::glyph::symbol::Symbol symbol) const
+    bool isTerminal(const dansandu::glyph::symbol::Symbol symbol) const
     {
         return symbol.getIdentifierIndex() >= terminalBeginIndex_;
     }
 
-    bool isNonTerminal(dansandu::glyph::symbol::Symbol symbol) const
+    bool isNonTerminal(const dansandu::glyph::symbol::Symbol symbol) const
     {
         return symbol.getIdentifierIndex() < terminalBeginIndex_;
     }
 
-    const std::vector<dansandu::glyph::implementation::rule::Rule>& getRules() const
+    const std::vector<dansandu::glyph::internal::rule::Rule>& getRules() const
     {
         return rules_;
     }
@@ -83,7 +83,7 @@ private:
     void generateFirstTable();
 
     std::vector<std::string> identifiers_;
-    std::vector<dansandu::glyph::implementation::rule::Rule> rules_;
+    std::vector<dansandu::glyph::internal::rule::Rule> rules_;
     std::vector<std::vector<dansandu::glyph::symbol::Symbol>> firstTable_;
     std::string grammar_;
     int terminalBeginIndex_;

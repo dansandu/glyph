@@ -5,13 +5,13 @@
 #include <ostream>
 #include <vector>
 
-namespace dansandu::glyph::implementation::multimap
+namespace dansandu::glyph::internal::multimap
 {
 
 class Multimap
 {
 public:
-    std::vector<dansandu::glyph::symbol::Symbol>& operator[](dansandu::glyph::symbol::Symbol key);
+    std::vector<dansandu::glyph::symbol::Symbol>& operator[](const dansandu::glyph::symbol::Symbol key);
 
     void merge(std::vector<dansandu::glyph::symbol::Symbol> partition);
 

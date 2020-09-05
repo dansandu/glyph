@@ -9,17 +9,12 @@ namespace dansandu::glyph::symbol
 
 class PRALINE_EXPORT Symbol : dansandu::ballotin::relation::TotalOrder<Symbol>
 {
-    friend bool operator<(Symbol a, Symbol b)
-    {
-        return a.getIdentifierIndex() < b.getIdentifierIndex();
-    }
-
 public:
     Symbol() : identifierIndex_{-1}
     {
     }
 
-    explicit Symbol(int identifierIndex) : identifierIndex_{identifierIndex}
+    explicit Symbol(const int identifierIndex) : identifierIndex_{identifierIndex}
     {
     }
 
@@ -32,6 +27,14 @@ private:
     int identifierIndex_;
 };
 
-PRALINE_EXPORT std::ostream& operator<<(std::ostream& stream, Symbol symbol);
+inline bool operator<(const Symbol left, const Symbol right)
+{
+    return left.getIdentifierIndex() < right.getIdentifierIndex();
+}
+
+inline std::ostream& operator<<(std::ostream& stream, const Symbol symbol)
+{
+    return stream << "Symbol(" << symbol.getIdentifierIndex() << ")";
+}
 
 }

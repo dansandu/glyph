@@ -1,21 +1,21 @@
 #include "catchorg/catch/catch.hpp"
 #include "dansandu/glyph/error.hpp"
-#include "dansandu/glyph/implementation/automaton.hpp"
-#include "dansandu/glyph/implementation/grammar.hpp"
+#include "dansandu/glyph/internal/automaton.hpp"
+#include "dansandu/glyph/internal/grammar.hpp"
 
 #include <set>
 #include <vector>
 
 using dansandu::glyph::error::GrammarError;
-using dansandu::glyph::implementation::automaton::getAutomaton;
-using dansandu::glyph::implementation::automaton::getFollowSet;
-using dansandu::glyph::implementation::automaton::getStateClosure;
-using dansandu::glyph::implementation::automaton::getStateTransitions;
-using dansandu::glyph::implementation::automaton::isFinalState;
-using dansandu::glyph::implementation::automaton::Transition;
-using dansandu::glyph::implementation::grammar::Grammar;
-using dansandu::glyph::implementation::item::Item;
-using dansandu::glyph::implementation::rule::Rule;
+using dansandu::glyph::internal::automaton::getAutomaton;
+using dansandu::glyph::internal::automaton::getFollowSet;
+using dansandu::glyph::internal::automaton::getStateClosure;
+using dansandu::glyph::internal::automaton::getStateTransitions;
+using dansandu::glyph::internal::automaton::isFinalState;
+using dansandu::glyph::internal::automaton::Transition;
+using dansandu::glyph::internal::grammar::Grammar;
+using dansandu::glyph::internal::item::Item;
+using dansandu::glyph::internal::rule::Rule;
 using dansandu::glyph::symbol::Symbol;
 
 using Items = std::vector<Item>;
@@ -34,7 +34,7 @@ static std::set<Symbol> set(std::initializer_list<Symbol> l)
 // clang-format off
 TEST_CASE("Automaton")
 {
-    auto grammar = Grammar{R"(
+    const auto grammar = Grammar{R"(
         Start    -> Sums
         Sums     -> Sums add Products
         Sums     -> Products
@@ -42,12 +42,12 @@ TEST_CASE("Automaton")
         Products -> number
     )"};
 
-    auto Sums     = grammar.getSymbol("Sums");
-    auto Products = grammar.getSymbol("Products");
-    auto end      = grammar.getSymbol("$");
-    auto add      = grammar.getSymbol("add");
-    auto multiply = grammar.getSymbol("multiply");
-    auto number   = grammar.getSymbol("number");
+    const auto Sums     = grammar.getSymbol("Sums");
+    const auto Products = grammar.getSymbol("Products");
+    const auto end      = grammar.getSymbol("$");
+    const auto add      = grammar.getSymbol("add");
+    const auto multiply = grammar.getSymbol("multiply");
+    const auto number   = grammar.getSymbol("number");
 
     SECTION("follow set")
     {
@@ -89,22 +89,22 @@ TEST_CASE("Automaton")
     {
         REQUIRE(getStateTransitions({}, grammar).empty());
 
-        REQUIRE(getStateTransitions({Item{0, 1, end}}, grammar) == Transitions{});
+        REQUIRE(getStateTransitions({Item{0, 1, end}}, grammar).empty());
 
-        auto state = Items{
+        const auto state = Items{
             Item{0, 0, end},
             Item{1, 1, multiply},
             Item{2, 0, add},
             Item{3, 0, add}
         };
 
-        auto transitions = Transitions{
+        const auto expectedTransitions = Transitions{
             {add,      {Item{1, 2, multiply}}},
             {Products, {Item{2, 1, add}, Item{3, 1, add}}},
             {Sums,     {Item{0, 1, end}}}
         };
 
-        REQUIRE(getStateTransitions(state, grammar) == transitions);
+        REQUIRE(getStateTransitions(state, grammar) == expectedTransitions);
     }
 
     SECTION("final state")
@@ -115,7 +115,7 @@ TEST_CASE("Automaton")
     }
 
     SECTION("automaton") {
-        auto automaton = getAutomaton(grammar);
+        const auto automaton = getAutomaton(grammar);
 
         REQUIRE(automaton.states == std::vector<Items>{
             Items{Item{0, 0, end},
@@ -169,14 +169,14 @@ TEST_CASE("Automaton")
         });
 
         REQUIRE(automaton.transitions == std::vector<Transition>{
-            Transition{Sums, 0, 1},
+            Transition{Sums,     0, 1},
             Transition{Products, 0, 2},
-            Transition{number, 0, 3},
-            Transition{add, 1, 4},
+            Transition{number,   0, 3},
+            Transition{add,      1, 4},
             Transition{multiply, 2, 5},
             Transition{Products, 4, 6},
-            Transition{number, 4, 3},
-            Transition{number, 5, 7},
+            Transition{number,   4, 3},
+            Transition{number,   5, 7},
             Transition{multiply, 6, 5}
         });
     }
