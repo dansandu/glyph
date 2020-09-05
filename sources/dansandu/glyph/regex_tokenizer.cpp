@@ -2,8 +2,9 @@
 #include "dansandu/ballotin/exception.hpp"
 #include "dansandu/glyph/error.hpp"
 
-#include <string>
+#include <regex>
 #include <string_view>
+#include <vector>
 
 using dansandu::glyph::error::TokenizationError;
 using dansandu::glyph::symbol::Symbol;
@@ -12,12 +13,12 @@ using dansandu::glyph::token::Token;
 namespace dansandu::glyph::regex_tokenizer
 {
 
-RegexTokenizer::RegexTokenizer(const std::vector<std::pair<Symbol, std::string>>& descriptors)
+RegexTokenizer::RegexTokenizer(const std::vector<std::pair<Symbol, std::string_view>>& descriptors)
 {
     descriptors_.reserve(descriptors.size());
     for (const auto& descriptor : descriptors)
     {
-        descriptors_.push_back({descriptor.first, std::regex{descriptor.second}});
+        descriptors_.push_back({descriptor.first, std::regex{descriptor.second.cbegin(), descriptor.second.cend()}});
     }
 }
 

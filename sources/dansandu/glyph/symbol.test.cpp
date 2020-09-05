@@ -6,6 +6,7 @@ using dansandu::glyph::symbol::Symbol;
 TEST_CASE("Symbol")
 {
     const auto identifierIndex = 7;
+
     const auto symbol = Symbol{identifierIndex};
 
     REQUIRE(symbol.getIdentifierIndex() == identifierIndex);
