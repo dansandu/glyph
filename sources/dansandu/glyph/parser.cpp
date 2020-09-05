@@ -9,8 +9,8 @@
 
 #include <functional>
 #include <map>
+#include <ostream>
 #include <set>
-#include <sstream>
 #include <string_view>
 #include <vector>
 
