@@ -42,7 +42,7 @@ struct ParserImplementation
 
 void ParserImplementation::dump(std::ostream& stream) const
 {
-    stream << std::endl << "Rules:" << std::endl;
+    stream << "\nRules:\n";
     for (const auto& rule : grammar.getRules())
     {
         stream << '\t' << grammar.getIdentifier(rule.leftSide) << " ->";
@@ -50,10 +50,10 @@ void ParserImplementation::dump(std::ostream& stream) const
         {
             stream << " " << grammar.getIdentifier(symbol);
         }
-        stream << std::endl;
+        stream << '\n';
     }
 
-    stream << std::endl << "First table:" << std::endl;
+    stream << "\nFirst table:\n";
     for (auto i = 0; i < grammar.getIdentifiersCount(); ++i)
     {
         const auto symbol = Symbol{i};
@@ -64,11 +64,11 @@ void ParserImplementation::dump(std::ostream& stream) const
             stream << (firstPrint ? "'" : ", '") << grammar.getIdentifier(firstSymbol) << "'";
             firstPrint = false;
         }
-        stream << ']' << std::endl;
+        stream << "]\n";
     }
 
-    stream << std::endl << "Automaton:" << std::endl;
-    stream << "\tStates:" << std::endl;
+    stream << "\nAutomaton:\n";
+    stream << "\tStates:\n";
     const auto automaton = getAutomaton(grammar);
     for (auto i = 0; i < static_cast<int>(automaton.states.size()); ++i)
     {
@@ -97,38 +97,57 @@ void ParserImplementation::dump(std::ostream& stream) const
             {
                 stream << " " << grammar.getIdentifier(lookahead);
             }
-            stream << std::endl;
+            stream << '\n';
         }
-        stream << std::endl;
+        stream << '\n';
     }
 }
 
-Parser::Parser(const std::string_view grammar) : implementation_{std::make_unique<ParserImplementation>(grammar)}
+static const ParserImplementation* casted(const void* implementation)
+{
+    return static_cast<const ParserImplementation*>(implementation);
+}
+
+Parser::Parser(const std::string_view grammar) : implementation_{new ParserImplementation{grammar}}
 {
 }
 
-Parser::~Parser()
+Parser::Parser(Parser&& other) noexcept : implementation_{other.implementation_}
 {
+    other.implementation_ = nullptr;
+}
+
+Parser& Parser::operator=(Parser&& other) noexcept
+{
+    delete casted(implementation_);
+    implementation_ = other.implementation_;
+    other.implementation_ = nullptr;
+    return *this;
+}
+
+Parser::~Parser() noexcept
+{
+    delete casted(implementation_);
 }
 
 Symbol Parser::getTerminalSymbol(const std::string_view identifier) const
 {
-    return implementation_->grammar.getTerminalSymbol(identifier);
+    return casted(implementation_)->grammar.getTerminalSymbol(identifier);
 }
 
 Symbol Parser::getDiscardedSymbolPlaceholder() const
 {
-    return implementation_->grammar.getDiscardedSymbolPlaceholder();
+    return casted(implementation_)->grammar.getDiscardedSymbolPlaceholder();
 }
 
 void Parser::parse(const std::vector<Token>& tokens, const std::function<void(const Node&)>& visitor) const
 {
-    ::parse(tokens, implementation_->parsingTable, implementation_->grammar, visitor);
+    ::parse(tokens, casted(implementation_)->parsingTable, casted(implementation_)->grammar, visitor);
 }
 
 void Parser::dump(std::ostream& stream) const
 {
-    implementation_->dump(stream);
+    casted(implementation_)->dump(stream);
 }
 
 }
