@@ -180,8 +180,7 @@ int main(int argumentsCount, char** arguments)
                 break;
             default:
                 // All production rule indices must be handled by the switch.
-                throw std::runtime_error{
-                    "production rule indices were not exhausted"};
+                throw std::logic_error{"production rules were not exhausted"};
             }
         }
     };
