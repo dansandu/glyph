@@ -62,7 +62,7 @@ std::vector<Item> getStateClosure(std::vector<Item> state, const Grammar& gramma
             {
                 if (symbol == rules[ruleIndex].leftSide)
                 {
-                    for (const auto followSymbol : parentItemFollowSet)
+                    for (const auto& followSymbol : parentItemFollowSet)
                     {
                         const auto newItem = Item{ruleIndex, 0, followSymbol};
                         if (!contains(state, newItem))

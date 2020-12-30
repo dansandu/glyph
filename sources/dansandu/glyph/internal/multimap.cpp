@@ -38,14 +38,14 @@ void Multimap::merge(std::vector<Symbol> partition)
         if (std::any_of(partitions_[index].cbegin(), partitions_[index].cend(),
                         [&partition](auto symbol) { return find(partition, symbol) != partition.cend(); }))
         {
-            for (const auto symbol : partitions_[index])
+            for (const auto& symbol : partitions_[index])
             {
                 if (find(partition, symbol) == partition.cend())
                 {
                     partition.push_back(symbol);
                 }
             }
-            for (const auto symbol : values_[index])
+            for (const auto& symbol : values_[index])
             {
                 if (find(value, symbol) == value.cend())
                 {

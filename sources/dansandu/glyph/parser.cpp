@@ -46,7 +46,7 @@ void ParserImplementation::dump(std::ostream& stream) const
     for (const auto& rule : grammar.getRules())
     {
         stream << '\t' << grammar.getIdentifier(rule.leftSide) << " ->";
-        for (const auto symbol : rule.rightSide)
+        for (const auto& symbol : rule.rightSide)
         {
             stream << " " << grammar.getIdentifier(symbol);
         }
@@ -59,7 +59,7 @@ void ParserImplementation::dump(std::ostream& stream) const
         const auto symbol = Symbol{i};
         auto firstPrint = true;
         stream << "\t'" << grammar.getIdentifier(symbol) << "': [";
-        for (const auto firstSymbol : grammar.getFirstSet(symbol))
+        for (const auto& firstSymbol : grammar.getFirstSet(symbol))
         {
             stream << (firstPrint ? "'" : ", '") << grammar.getIdentifier(firstSymbol) << "'";
             firstPrint = false;
@@ -93,7 +93,7 @@ void ParserImplementation::dump(std::ostream& stream) const
                 stream << " .";
             }
             stream << " ,";
-            for (const auto lookahead : entry.second)
+            for (const auto& lookahead : entry.second)
             {
                 stream << " " << grammar.getIdentifier(lookahead);
             }
