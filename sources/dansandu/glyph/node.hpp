@@ -40,7 +40,7 @@ public:
         {
             return token_;
         }
-        THROW(std::runtime_error, "node doesn't hold a token");
+        THROW(std::logic_error, "node doesn't hold a token");
     }
 
     int getRuleIndex() const
@@ -49,7 +49,7 @@ public:
         {
             return ruleIndex_;
         }
-        THROW(std::runtime_error, "node doesn't hold a rule");
+        THROW(std::logic_error, "node doesn't hold a rule");
     }
 
 private:

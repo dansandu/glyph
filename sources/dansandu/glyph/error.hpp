@@ -1,28 +1,56 @@
 #pragma once
 
-#include <stdexcept>
+#include <exception>
 
 namespace dansandu::glyph::error
 {
 
-class GrammarError : public std::runtime_error
+class GrammarError : public std::exception
 {
-    using runtime_error::runtime_error;
+public:
+    explicit GrammarError(std::string message) : message_{std::move(message)}
+    {
+    }
+
+    const char* what() const noexcept override
+    {
+        return message_.c_str();
+    }
+
+private:
+    std::string message_;
 };
 
-class ParsingError : public std::runtime_error
+class TokenizationError : public std::exception
 {
-    using runtime_error::runtime_error;
+public:
+    explicit TokenizationError(std::string message) : message_{std::move(message)}
+    {
+    }
+
+    const char* what() const noexcept override
+    {
+        return message_.c_str();
+    }
+
+private:
+    std::string message_;
 };
 
-class SyntaxError : public std::runtime_error
+class SyntaxError : public std::exception
 {
-    using runtime_error::runtime_error;
-};
+public:
+    explicit SyntaxError(std::string message) : message_{std::move(message)}
+    {
+    }
 
-class TokenizationError : public std::runtime_error
-{
-    using runtime_error::runtime_error;
+    const char* what() const noexcept override
+    {
+        return message_.c_str();
+    }
+
+private:
+    std::string message_;
 };
 
 }

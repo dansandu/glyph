@@ -5,9 +5,9 @@
 #include "dansandu/glyph/internal/grammar.hpp"
 
 #include <ostream>
+#include <stdexcept>
 #include <vector>
 
-using dansandu::glyph::error::ParsingError;
 using dansandu::glyph::internal::automaton::Automaton;
 using dansandu::glyph::internal::grammar::Grammar;
 
@@ -29,7 +29,7 @@ std::ostream& operator<<(std::ostream& stream, const Action action)
     case Action::error:
         return stream << "error";
     default:
-        THROW(ParsingError, "unrecognized cell action");
+        THROW(std::logic_error, "unrecognized cell action");
     }
 }
 
@@ -60,7 +60,7 @@ std::vector<std::vector<Cell>> getClr1ParsingTable(const Grammar& grammar, const
                 auto& cell = table[item.lookahead.getIdentifierIndex()][stateIndex];
                 if (cell.action != Action::error)
                 {
-                    THROW(ParsingError, "grammar cannot be parsed using a CLR(1) parser due to ", cell.action,
+                    THROW(std::logic_error, "grammar cannot be parsed using a CLR(1) parser due to ", cell.action,
                           "/reduce conflict");
                 }
                 cell = Cell{Action::reduce, item.ruleIndex};

@@ -8,7 +8,7 @@ praline.py deploy
 This will build and deploy the glyph artifact to your repository. You can now use this artifact in any praline project.
 ## Simple symbolic calculator
 Create a new directory `calculator` in your favorite workspace directory and create a `Pralinefile` inside it with the following contents:
-```
+```yaml
 organization: foobar
 artifact: calculator
 version: 1.0.0
@@ -18,11 +18,11 @@ dependencies:
   version: 1.+0.+0
 ```
 Run the following command inside a terminal to quickly create the project skeleton:
-```
+```bash
 praline.py --skip-unit-tests --executable main
 ```
 The command will create a "Hello, world!" executable. We'll change this project to evaluate formulae from the command line. We'll take it step by step. In the project directory open the main source file `sources/foobar/calculator/executable.cpp` and change it to:
-```
+```cpp
 #include "dansandu/glyph/node.hpp"
 #include "dansandu/glyph/parser.hpp"
 #include "dansandu/glyph/regex_tokenizer.hpp"
@@ -180,8 +180,7 @@ int main(int argumentsCount, char** arguments)
                 break;
             default:
                 // All production rule indices must be handled by the switch.
-                throw std::runtime_error{
-                    "production rule indices were not exhausted"};
+                throw std::logic_error{"production rules were not exhausted"};
             }
         }
     };
@@ -196,7 +195,7 @@ int main(int argumentsCount, char** arguments)
 }
 ```
 That's the code! Now let's run it:
-```
+```bash
 praline.py --skip-unit-tests main --arguments "3 + 5 * 10 + 40"
 ```
 This should print something like this:

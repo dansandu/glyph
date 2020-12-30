@@ -51,15 +51,14 @@ void parse(const std::vector<Token>& tokens, const std::vector<std::vector<Cell>
             const auto reductionSize = reductionRule.rightSide.size();
             if (stateStack.size() < reductionSize)
             {
-                THROW(std::runtime_error,
-                      "invalid state reached -- couldn't perform reduce action because the stack has missing elements");
+                THROW(std::logic_error, "invalid state reached -- insufficient stack size for reduction");
             }
             stateStack.erase(stateStack.end() - reductionSize, stateStack.end());
             if (cell.action == Action::reduce)
             {
                 if (stateStack.empty())
                 {
-                    THROW(std::runtime_error, "invalid state reached -- insufficient stack size for reduction");
+                    THROW(std::logic_error, "invalid state reached -- insufficient stack size for reduction");
                 }
                 const auto newState =
                     parsingTable[reductionRule.leftSide.getIdentifierIndex()][stateStack.back()].parameter;
@@ -83,8 +82,8 @@ void parse(const std::vector<Token>& tokens, const std::vector<std::vector<Cell>
                 }
             }
             THROW(SyntaxError, "invalid syntax at column ", token.begin() + 1, " with symbol '",
-                  grammar.getIdentifier(token.getSymbol()), "' -- the following symbols were expected [",
-                  join(expectedSymbols, ", "), "] for state ", state);
+                  grammar.getIdentifier(token.getSymbol()),
+                  "' -- the following symbols were expected: ", join(expectedSymbols, ", "));
         }
     }
 }

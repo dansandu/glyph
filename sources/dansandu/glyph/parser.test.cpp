@@ -155,7 +155,7 @@ public:
                     break;
                 }
                 default:
-                    THROW(std::runtime_error, "unrecognized rule index: ", node.getRuleIndex());
+                    THROW(std::logic_error, "unrecognized rule index: ", node.getRuleIndex());
                 }
             }
         };
@@ -164,12 +164,12 @@ public:
 
         if (!tokensStack.empty())
         {
-            THROW(std::runtime_error, "tokens stack was not exhausted");
+            THROW(std::logic_error, "tokens stack was not exhausted");
         }
 
         if (valuesStack.size() != 1)
         {
-            THROW(std::runtime_error, "values stack must only contain the result");
+            THROW(std::logic_error, "values stack must only contain the result");
         }
 
         return valuesStack.front();
