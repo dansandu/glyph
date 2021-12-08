@@ -1,5 +1,5 @@
-#include "catchorg/catch/catch.hpp"
 #include "dansandu/glyph/node.hpp"
+#include "catchorg/catch/catch.hpp"
 #include "dansandu/glyph/symbol.hpp"
 #include "dansandu/glyph/token.hpp"
 

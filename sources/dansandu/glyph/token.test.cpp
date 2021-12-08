@@ -1,6 +1,6 @@
+#include "dansandu/glyph/token.hpp"
 #include "catchorg/catch/catch.hpp"
 #include "dansandu/glyph/symbol.hpp"
-#include "dansandu/glyph/token.hpp"
 
 using dansandu::glyph::symbol::Symbol;
 using dansandu::glyph::token::Token;

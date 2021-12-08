@@ -246,12 +246,14 @@ void Grammar::generateFirstTable()
     }
 
     firstTable_ = std::vector<std::vector<Symbol>>{identifiers_.size()};
-    partitions.forEach([this](const auto& partition, const auto& firstSet) {
-        for (const auto& symbol : partition)
+    partitions.forEach(
+        [this](const auto& partition, const auto& firstSet)
         {
-            firstTable_[symbol.getIdentifierIndex()] = std::vector<Symbol>{firstSet.cbegin(), firstSet.cend()};
-        }
-    });
+            for (const auto& symbol : partition)
+            {
+                firstTable_[symbol.getIdentifierIndex()] = std::vector<Symbol>{firstSet.cbegin(), firstSet.cend()};
+            }
+        });
     for (const auto& symbol : blanks)
     {
         firstTable_[symbol.getIdentifierIndex()].push_back(getEmptySymbol());

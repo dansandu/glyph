@@ -67,9 +67,8 @@ void Multimap::merge(std::vector<Symbol> partition)
 std::ostream& operator<<(std::ostream& stream, const Multimap& multimap)
 {
     auto parts = std::vector<std::string>{};
-    multimap.forEach([&parts](const auto& partition, const auto& values) {
-        parts.push_back("{" + join(partition, ", ") + "}: {" + join(values, ", ") + "}");
-    });
+    multimap.forEach([&parts](const auto& partition, const auto& values)
+                     { parts.push_back("{" + join(partition, ", ") + "}: {" + join(values, ", ") + "}"); });
     return stream << "{" << join(parts, ", ") << "}";
 }
 

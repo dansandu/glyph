@@ -1,5 +1,5 @@
-#include "catchorg/catch/catch.hpp"
 #include "dansandu/glyph/internal/multimap.hpp"
+#include "catchorg/catch/catch.hpp"
 
 #include <set>
 
@@ -59,10 +59,12 @@ TEST_CASE("Multimap")
             auto actualPartitions = std::vector<std::vector<Symbol>>{};
             auto actualValues = std::vector<std::vector<Symbol>>{};
 
-            table.forEach([&](const auto& p, const auto& v) {
-                actualPartitions.push_back(p);
-                actualValues.push_back(v);
-            });
+            table.forEach(
+                [&](const auto& p, const auto& v)
+                {
+                    actualPartitions.push_back(p);
+                    actualValues.push_back(v);
+                });
 
             const auto expectedPartitions = std::vector<std::vector<Symbol>>{{Symbol{0}}, {Symbol{10}}, {Symbol{20}}};
 

@@ -1,7 +1,7 @@
+#include "dansandu/glyph/internal/parsing_table.hpp"
 #include "catchorg/catch/catch.hpp"
 #include "dansandu/glyph/internal/automaton.hpp"
 #include "dansandu/glyph/internal/grammar.hpp"
-#include "dansandu/glyph/internal/parsing_table.hpp"
 
 #include <vector>
 

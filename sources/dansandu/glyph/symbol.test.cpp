@@ -1,5 +1,5 @@
-#include "catchorg/catch/catch.hpp"
 #include "dansandu/glyph/symbol.hpp"
+#include "catchorg/catch/catch.hpp"
 
 using dansandu::glyph::symbol::Symbol;
 
