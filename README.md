@@ -1,13 +1,13 @@
 # Glyph
 A simple C++ implementation of a CLR(1) parser (canonical left to right parser with one lookahead terminal).
 ## Building and deploying the project
-We'll use praline to build and deploy the project. You can get it from [here](https://github.com/dansandu/praline). Next, clone the repository to a desired directory and run the following command inside the terminal:
+The project uses praline to build and deploy the project. Praline can be downloaded from [here](https://github.com/dansandu/praline). Once cloned, the project can be built and deployed using the following console command:
 ```
 praline.py deploy
 ```
-This will build and deploy the glyph artifact to your repository. You can now use this artifact in any praline project.
+This will build and deploy the glyph artifact to the repository making it available to other projects.
 ## Simple symbolic calculator
-Create a new directory `calculator` in your favorite workspace directory and create a `Pralinefile` inside it with the following contents:
+The following is a simple symbolic calculator application. The project is a directory named `calculator` with a file inside it named `Pralinefile` that has the following contents:
 ```yaml
 organization: foobar
 artifact: calculator
@@ -17,11 +17,11 @@ dependencies:
   artifact: glyph
   version: 1.+0.+0
 ```
-Run the following command inside a terminal to quickly create the project skeleton:
+Running the following command inside the project directory console will quickly create the project skeleton:
 ```bash
-praline.py --skip-unit-tests --executable main
+praline.py --executable main
 ```
-The command will create a "Hello, world!" executable. We'll change this project to evaluate formulae from the command line. We'll take it step by step. In the project directory open the main source file `sources/foobar/calculator/executable.cpp` and change it to:
+The command will create a "Hello, world!" executable. Moving forward, the code will be changed to evaluate formulae from the command line. In the project directory open the main source file `sources/foobar/calculator/executable.cpp` and change it to:
 ```cpp
 #include "dansandu/glyph/node.hpp"
 #include "dansandu/glyph/parser.hpp"
@@ -36,7 +36,7 @@ using dansandu::glyph::node::Node;
 using dansandu::glyph::parser::Parser;
 using dansandu::glyph::regex_tokenizer::RegexTokenizer;
 
-// We use this function to perform stack pop on a vector.
+// Function to perform stack pop on a vector.
 template<typename T>
 auto pop(std::vector<T>& stack)
 {
@@ -45,7 +45,6 @@ auto pop(std::vector<T>& stack)
     return value;
 }
 
-// Entry point of the executable.
 int main(int argumentsCount, char** arguments)
 {
     if (argumentsCount <= 1)
@@ -57,13 +56,12 @@ int main(int argumentsCount, char** arguments)
     }
 
     // This is the grammar used to parse arithmetic formulae. Non-terminals
-    // start with capital letters while terminals start with lower case letters.
-    // Both non-terminals and terminals are alphanumeric. Notice the indexing of
-    // each production rule with comments. We'll use these indices to evaluate
-    // the abstract syntax tree yielded by the parser. Another thing to be aware
-    // of is why we chose this particular grammar. There are many grammars which
-    // recognize arithmetic formulae but this one is special because operator
-    // precedence is a side effect of its structure.
+    // start with capital letters while terminals start with lower case
+    // letters. Both non-terminals and terminals are alphanumeric. The indexing
+    // of each production rule, marked with comments, is used to evaluate the
+    // abstract syntax tree yielded by the parser. There are many grammars
+    // which recognize arithmetic formulae. This one has operator precedence
+    // as a side effect of its structure.
     // clang-format off
     const auto grammar = /*0*/ "Start    -> Sums                    \n"
                          /*1*/ "Sums     -> Sums add Products       \n"
@@ -73,24 +71,24 @@ int main(int argumentsCount, char** arguments)
                          /*5*/ "Value    -> number";
     // clang-format on
 
-    // Create the parser from the grammar.
+    // Creating the parser from the grammar.
     const auto parser = Parser{grammar};
 
-    // Each symbol in the grammar is mapped to an integer by the parser to speed
-    // up parsing.
+    // Each symbol in the grammar is mapped to an integer by the parser to
+    // speed up parsing.
     const auto add = parser.getTerminalSymbol("add");
     const auto multiply = parser.getTerminalSymbol("multiply");
     const auto number = parser.getTerminalSymbol("number");
 
-    // Whitespace doesn't influence the parsing so we can discard it from the
+    // Whitespace doesn't influence the parsing so it can be discarded from the
     // original string. This will simplify the grammar. Here the whitespace
     // symbol is mapped to a special symbol which is skipped by the parser when
     // encountered.
     const auto whitespace = parser.getDiscardedSymbolPlaceholder();
 
-    // Because terminals are alphanumeric we need to map symbols to their actual
-    // representation in the input string. We use the regex tokenizer to map
-    // terminals to patterns. The order of the patterns matters because only
+    // Because terminals are alphanumeric the symbols need to be mapped to
+    // their actual representation in the input string. The regex tokenizer
+    // maps terminals to patterns. The order of the patterns matters because
     // the first matching pattern is used to generate the token.
     const auto tokenizer =
         RegexTokenizer{{{add, "\\+"},
@@ -102,36 +100,33 @@ int main(int argumentsCount, char** arguments)
     // argument.
     const auto formula = std::string_view{arguments[1]};
 
-    // Before we can parse the formula we first need to define a special
-    // function which is used to evaluate the abstract syntax tree generated by
-    // the parser. Abstract syntax trees can be processed with a stack. This way
-    // we avoid recursive functions. In our case a stack of doubles is
-    // sufficient to store all values needed by our parser.
+    // As the abstract syntax tree is generated by the parser, the parsed
+    // nodes are composed using a user supplied function. The abstract syntax
+    // tree can be processed with a stack to avoid recursive functions.
     auto stack = std::vector<double>{};
 
-    // This function visits each node in the abstract syntax tree as it is
-    // generated by the parser. The node parameter can be either a token from
-    // the input string or a production rule index. The left hand side
-    // non-terminal of the production rule (before ->) is the result of
-    // composing non-terminals and terminals from the right hand side of the
-    // rule (after ->).
+    // The parser calls this function each time it generates a new node in the
+    // abstract syntax tree. The node parameter can be either a token from the
+    // input string or a production rule index. The left hand side non-terminal
+    // of the production rule (before ->) is the result of composing
+    // non-terminals and terminals from the right hand side of the rule
+    // (after ->).
     const auto visitor = [&](const Node& node) {
         if (node.isToken())
         {
             // The parser has encountered a terminal in the formula. Terminals
             // are mapped to tokens.
             const auto token = node.getToken();
-            
-            // The only tokens we are interested in are numbers. These are the
-            // only symbols which hold values. The add and multiply terminals
-            // are used in conjunction with their production rule so we can
-            // omit their tokens.
+
+            // For this application only number tokens are considered. These
+            // are the only symbols which hold values. The add and multiply
+            // terminals are used in conjunction with their production rule and
+            // therefore can be omitted.
             if (token.getSymbol() == number)
             {
-                // Here we extract from the formula the substring which
-                // represents the number. We convert it to double and push it to
-                // the stack. Later on, production rules will tell us how to
-                // compose these values to yield the final result.
+                // The number is extracted from the string, converted to double
+                // and pushed to the stack. Later on these values are composed
+                // using production rules.
                 const auto string =
                     std::string{formula.cbegin() + token.begin(),
                                 formula.cbegin() + token.end()};
@@ -140,22 +135,20 @@ int main(int argumentsCount, char** arguments)
         }
         else
         {
-            // Now the parser has applied a production rule. The
-            // node.getRuleIndex() method yields the index of the used
-            // production rule. We marked with comments the index of each rule
-            // for convenience. We use these indices to compose values from the
-            // stack.
+            // The parser has applied a production rule. The
+            // node.getRuleIndex() invocation yields the index of the applied
+            // production rule. These indices are used to compose values from
+            // the stack.
             switch (node.getRuleIndex())
             {
             case 1:
             {
                 // The parser has applied the second production rule from the
-                // grammar. This is the sum. We pop the last two values from the
-                // stack and push their sum back into the stack. Notice that the
-                // order we extract the values from the stack are in the reverse
-                // order of operation. This is because the parser pushes values
-                // to the stack the right order but values from the stack are
-                // removed in reverse.
+                // grammar. The last two values are poped from the stack and
+                // summed togheter. The sum is commutative and the order the
+                // values are poped from the stack doesn't matter. For an
+                // uncommutative operation like subtraction the values should
+                // be popped in reverse.
                 const auto rhs = pop(stack);
                 const auto lhs = pop(stack);
                 stack.push_back(lhs + rhs);
@@ -163,9 +156,8 @@ int main(int argumentsCount, char** arguments)
             }
             case 3:
             {
-                // This time the parser has applied the 4th rule. This is the
-                // multiplication. We do just as before but this time the
-                // operation is multiplication.
+                // The parser has applied the 4th rule. The last two values are
+                // poped from the stack and multiplied togheter.
                 const auto rhs = pop(stack);
                 const auto lhs = pop(stack);
                 stack.push_back(lhs * rhs);
@@ -185,7 +177,7 @@ int main(int argumentsCount, char** arguments)
         }
     };
 
-    // Tokenize the formula and the pass the tokens to the parser.
+    // The formula is tokenized and passed to the parser.
     const auto tokens = tokenizer(formula);
     parser.parse(tokens, visitor);
 
@@ -194,12 +186,12 @@ int main(int argumentsCount, char** arguments)
     return 0;
 }
 ```
-That's the code! Now let's run it:
+The following command runs the application given some program arguments:
 ```bash
-praline.py --skip-unit-tests main --arguments "3 + 5 * 10 + 40"
+praline.py main --arguments "3 + 5 * 10 + 40"
 ```
-This should print something like this:
+The command should print something like this:
 ```
 2019-06-11 20:26:55,749 INFO praline.common.file_system 3 + 5 * 10 + 40 = 93
 ```
-And there you have it, a simple symbolic calculator. You can add more features like subtraction, division, powers, parentheses, signed values, variables, functions or even make your own programming language. Click [here](https://github.com/dansandu/glyph/blob/develop/sources/dansandu/glyph/parser.test.cpp) to see a more sophisticated example.
+This was the simple symbolic calculator. More features can be added such as subtraction, division, powers, parentheses, signed values, variables, functions or even a fully-fledged programming language. Click [here](https://github.com/dansandu/glyph/blob/develop/sources/dansandu/glyph/parser.test.cpp) to see a more sophisticated example.
