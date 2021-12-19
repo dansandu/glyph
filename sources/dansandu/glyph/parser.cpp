@@ -9,6 +9,7 @@
 
 #include <functional>
 #include <map>
+#include <memory>
 #include <ostream>
 #include <set>
 #include <string_view>
@@ -108,46 +109,33 @@ static const ParserImplementation* casted(const void* implementation)
     return static_cast<const ParserImplementation*>(implementation);
 }
 
-Parser::Parser(const std::string_view grammar) : implementation_{new ParserImplementation{grammar}}
+static void deleter(const void* implementation)
 {
+    delete static_cast<const ParserImplementation*>(implementation);
 }
 
-Parser::Parser(Parser&& other) noexcept : implementation_{other.implementation_}
+Parser::Parser(const std::string_view grammar) : implementation_{new ParserImplementation{grammar}, &deleter}
 {
-    other.implementation_ = nullptr;
-}
-
-Parser& Parser::operator=(Parser&& other) noexcept
-{
-    delete casted(implementation_);
-    implementation_ = other.implementation_;
-    other.implementation_ = nullptr;
-    return *this;
-}
-
-Parser::~Parser() noexcept
-{
-    delete casted(implementation_);
 }
 
 Symbol Parser::getTerminalSymbol(const std::string_view identifier) const
 {
-    return casted(implementation_)->grammar.getTerminalSymbol(identifier);
+    return casted(implementation_.get())->grammar.getTerminalSymbol(identifier);
 }
 
 Symbol Parser::getDiscardedSymbolPlaceholder() const
 {
-    return casted(implementation_)->grammar.getDiscardedSymbolPlaceholder();
+    return casted(implementation_.get())->grammar.getDiscardedSymbolPlaceholder();
 }
 
 void Parser::parse(const std::vector<Token>& tokens, const std::function<void(const Node&)>& visitor) const
 {
-    ::parse(tokens, casted(implementation_)->parsingTable, casted(implementation_)->grammar, visitor);
+    ::parse(tokens, casted(implementation_.get())->parsingTable, casted(implementation_.get())->grammar, visitor);
 }
 
 void Parser::dump(std::ostream& stream) const
 {
-    casted(implementation_)->dump(stream);
+    casted(implementation_.get())->dump(stream);
 }
 
 }
