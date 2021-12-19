@@ -5,9 +5,7 @@
 #include "dansandu/glyph/internal/grammar.hpp"
 #include "dansandu/glyph/symbol.hpp"
 
-#include <map>
 #include <set>
-#include <string>
 #include <vector>
 
 using dansandu::glyph::error::GrammarError;
@@ -16,13 +14,22 @@ using dansandu::glyph::internal::grammar::Grammar;
 using dansandu::glyph::internal::rule::Rule;
 using dansandu::glyph::symbol::Symbol;
 
-static std::set<Symbol> set(std::initializer_list<Symbol> l)
+static std::set<Symbol> set(std::initializer_list<Symbol> list)
 {
-    return std::set<Symbol>{l.begin(), l.end()};
+    return std::set<Symbol>{list.begin(), list.end()};
 }
 
+// clang-format off
 TEST_CASE("first_table")
 {
+    auto firstTable = std::vector<std::vector<Symbol>>{};
+
+    const auto getFirstSet = [&firstTable](const auto symbol)
+    {
+        const auto& row = firstTable[symbol.getIdentifierIndex()];
+        return std::set<Symbol>{row.cbegin(), row.cend()};
+    };
+
     SECTION("grammar #1")
     {
         const auto text = R"(
@@ -41,28 +48,22 @@ TEST_CASE("first_table")
 
         const auto grammar = Grammar{text};
 
-        const auto Start = grammar.getSymbol("Start");
-        const auto S = grammar.getSymbol("S");
-        const auto Sum = grammar.getSymbol("Sum");
-        const auto Value = grammar.getSymbol("Value");
-        const auto ParametersBegin = grammar.getSymbol("ParametersBegin");
-        const auto Parameters = grammar.getSymbol("Parameters");
-        const auto end = grammar.getSymbol("$");
-        const auto empty = grammar.getSymbol("");
-        const auto add = grammar.getSymbol("add");
-        const auto number = grammar.getSymbol("number");
-        const auto id = grammar.getSymbol("id");
+        const auto Start            = grammar.getSymbol("Start");
+        const auto S                = grammar.getSymbol("S");
+        const auto Sum              = grammar.getSymbol("Sum");
+        const auto Value            = grammar.getSymbol("Value");
+        const auto ParametersBegin  = grammar.getSymbol("ParametersBegin");
+        const auto Parameters       = grammar.getSymbol("Parameters");
+        const auto end              = grammar.getSymbol("$");
+        const auto empty            = grammar.getSymbol("");
+        const auto add              = grammar.getSymbol("add");
+        const auto number           = grammar.getSymbol("number");
+        const auto id               = grammar.getSymbol("id");
         const auto parenthesesStart = grammar.getSymbol("parenthesesStart");
-        const auto parenthesesEnd = grammar.getSymbol("parenthesesEnd");
-        const auto comma = grammar.getSymbol("comma");
+        const auto parenthesesEnd   = grammar.getSymbol("parenthesesEnd");
+        const auto comma            = grammar.getSymbol("comma");
 
-        const auto firstTable = getFirstTable(grammar);
-
-        const auto getFirstSet = [&firstTable](const auto symbol)
-        {
-            const auto& row = firstTable[symbol.getIdentifierIndex()];
-            return std::set<Symbol>{row.cbegin(), row.cend()};
-        };
+        firstTable = getFirstTable(grammar);
 
         REQUIRE(getFirstSet(Start) == set({id, number, empty}));
 
@@ -111,24 +112,18 @@ TEST_CASE("first_table")
         const auto grammar = Grammar{text};
 
         const auto Start = grammar.getSymbol("Start");
-        const auto A = grammar.getSymbol("A");
-        const auto B = grammar.getSymbol("B");
-        const auto C = grammar.getSymbol("C");
-        const auto D = grammar.getSymbol("D");
-        const auto end = grammar.getSymbol("$");
+        const auto A     = grammar.getSymbol("A");
+        const auto B     = grammar.getSymbol("B");
+        const auto C     = grammar.getSymbol("C");
+        const auto D     = grammar.getSymbol("D");
+        const auto end   = grammar.getSymbol("$");
         const auto empty = grammar.getSymbol("");
-        const auto a = grammar.getSymbol("a");
-        const auto b = grammar.getSymbol("b");
-        const auto c = grammar.getSymbol("c");
-        const auto d = grammar.getSymbol("d");
+        const auto a     = grammar.getSymbol("a");
+        const auto b     = grammar.getSymbol("b");
+        const auto c     = grammar.getSymbol("c");
+        const auto d     = grammar.getSymbol("d");
 
-        const auto firstTable = getFirstTable(grammar);
-
-        const auto getFirstSet = [&firstTable](const auto symbol)
-        {
-            const auto& row = firstTable[symbol.getIdentifierIndex()];
-            return std::set<Symbol>{row.cbegin(), row.cend()};
-        };
+        firstTable = getFirstTable(grammar);
 
         REQUIRE(getFirstSet(Start) == set({a, b, c, d, empty}));
 
@@ -166,20 +161,14 @@ TEST_CASE("first_table")
         const auto grammar = Grammar{text};
 
         const auto Start = grammar.getSymbol("Start");
-        const auto A = grammar.getSymbol("A");
-        const auto B = grammar.getSymbol("B");
-        const auto end = grammar.getSymbol("$");
+        const auto A     = grammar.getSymbol("A");
+        const auto B     = grammar.getSymbol("B");
+        const auto end   = grammar.getSymbol("$");
         const auto empty = grammar.getSymbol("");
-        const auto a = grammar.getSymbol("a");
-        const auto b = grammar.getSymbol("b");
+        const auto a     = grammar.getSymbol("a");
+        const auto b     = grammar.getSymbol("b");
 
-        const auto firstTable = getFirstTable(grammar);
-
-        const auto getFirstSet = [&firstTable](const auto symbol)
-        {
-            const auto& row = firstTable[symbol.getIdentifierIndex()];
-            return std::set<Symbol>{row.cbegin(), row.cend()};
-        };
+        firstTable = getFirstTable(grammar);
 
         REQUIRE(getFirstSet(Start) == set({b, a}));
 
@@ -238,39 +227,33 @@ TEST_CASE("first_table")
         const auto grammar = Grammar{text};
 
         const auto Start = grammar.getSymbol("Start");
-        const auto X = grammar.getSymbol("X");
-        const auto A1 = grammar.getSymbol("A1");
-        const auto A2 = grammar.getSymbol("A2");
-        const auto A3 = grammar.getSymbol("A3");
-        const auto B1 = grammar.getSymbol("B1");
-        const auto B2 = grammar.getSymbol("B2");
-        const auto B3 = grammar.getSymbol("B3");
-        const auto B4 = grammar.getSymbol("B4");
-        const auto C1 = grammar.getSymbol("C1");
-        const auto C2 = grammar.getSymbol("C2");
-        const auto D1 = grammar.getSymbol("D1");
-        const auto D2 = grammar.getSymbol("D2");
-        const auto D3 = grammar.getSymbol("D3");
-        const auto E = grammar.getSymbol("E");
-        const auto F = grammar.getSymbol("F");
-        const auto G = grammar.getSymbol("G");
+        const auto X     = grammar.getSymbol("X");
+        const auto A1    = grammar.getSymbol("A1");
+        const auto A2    = grammar.getSymbol("A2");
+        const auto A3    = grammar.getSymbol("A3");
+        const auto B1    = grammar.getSymbol("B1");
+        const auto B2    = grammar.getSymbol("B2");
+        const auto B3    = grammar.getSymbol("B3");
+        const auto B4    = grammar.getSymbol("B4");
+        const auto C1    = grammar.getSymbol("C1");
+        const auto C2    = grammar.getSymbol("C2");
+        const auto D1    = grammar.getSymbol("D1");
+        const auto D2    = grammar.getSymbol("D2");
+        const auto D3    = grammar.getSymbol("D3");
+        const auto E     = grammar.getSymbol("E");
+        const auto F     = grammar.getSymbol("F");
+        const auto G     = grammar.getSymbol("G");
         const auto empty = grammar.getSymbol("");
-        const auto end = grammar.getSymbol("$");
-        const auto a = grammar.getSymbol("a");
-        const auto b = grammar.getSymbol("b");
-        const auto c = grammar.getSymbol("c");
-        const auto d = grammar.getSymbol("d");
-        const auto e = grammar.getSymbol("e");
-        const auto f = grammar.getSymbol("f");
-        const auto g = grammar.getSymbol("g");
+        const auto end   = grammar.getSymbol("$");
+        const auto a     = grammar.getSymbol("a");
+        const auto b     = grammar.getSymbol("b");
+        const auto c     = grammar.getSymbol("c");
+        const auto d     = grammar.getSymbol("d");
+        const auto e     = grammar.getSymbol("e");
+        const auto f     = grammar.getSymbol("f");
+        const auto g     = grammar.getSymbol("g");
 
-        const auto firstTable = getFirstTable(grammar);
-
-        const auto getFirstSet = [&firstTable](const auto symbol)
-        {
-            const auto& row = firstTable[symbol.getIdentifierIndex()];
-            return std::set<Symbol>{row.cbegin(), row.cend()};
-        };
+        firstTable = getFirstTable(grammar);
 
         REQUIRE(getFirstSet(Start) == set({b, f, g, c, a, e, d, empty}));
 
@@ -325,3 +308,4 @@ TEST_CASE("first_table")
         REQUIRE(getFirstSet(end) == set({end}));
     }
 }
+// clang-format on

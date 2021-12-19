@@ -4,7 +4,7 @@
 #include "dansandu/glyph/internal/first_table.hpp"
 #include "dansandu/glyph/internal/grammar.hpp"
 
-#include <set>
+#include <map>
 #include <vector>
 
 using dansandu::glyph::error::GrammarError;
@@ -22,16 +22,6 @@ using dansandu::glyph::symbol::Symbol;
 
 using Items = std::vector<Item>;
 using Transitions = std::map<Symbol, std::vector<Item>>;
-
-static std::set<Symbol> set(const std::vector<Symbol>& l)
-{
-    return std::set<Symbol>{l.cbegin(), l.cend()};
-}
-
-static std::set<Symbol> set(std::initializer_list<Symbol> l)
-{
-    return std::set<Symbol>{l.begin(), l.end()};
-}
 
 // clang-format off
 TEST_CASE("Automaton")
@@ -52,19 +42,6 @@ TEST_CASE("Automaton")
     const auto number   = grammar.getSymbol("number");
 
     const auto firstTable = getFirstTable(grammar);
-
-    SECTION("follow set")
-    {
-        REQUIRE(set(getFollowSet(Item{0, 0, end}, grammar, firstTable)) == set({end}));
-
-        REQUIRE(set(getFollowSet(Item{1, 0, end}, grammar, firstTable)) == set({add}));
-
-        REQUIRE(set(getFollowSet(Item{2, 0, end}, grammar, firstTable)) == set({end}));
-
-        REQUIRE(set(getFollowSet(Item{3, 0, end}, grammar, firstTable)) == set({multiply}));
-
-        REQUIRE(set(getFollowSet(Item{4, 1, multiply}, grammar, firstTable)) == set({multiply}));
-    }
 
     SECTION("closure")
     {
