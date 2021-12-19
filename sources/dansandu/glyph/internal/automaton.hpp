@@ -31,12 +31,15 @@ inline bool operator!=(const Transition& left, const Transition& right)
 
 std::ostream& operator<<(std::ostream& stream, const Transition& transition);
 
-std::vector<dansandu::glyph::symbol::Symbol> getFollowSet(const dansandu::glyph::internal::item::Item& item,
-                                                          const dansandu::glyph::internal::grammar::Grammar& grammar);
+std::vector<dansandu::glyph::symbol::Symbol>
+getFollowSet(const dansandu::glyph::internal::item::Item& item,
+             const dansandu::glyph::internal::grammar::Grammar& grammar,
+             const std::vector<std::vector<dansandu::glyph::symbol::Symbol>>& firstTable);
 
 std::vector<dansandu::glyph::internal::item::Item>
 getStateClosure(std::vector<dansandu::glyph::internal::item::Item> state,
-                const dansandu::glyph::internal::grammar::Grammar& grammar);
+                const dansandu::glyph::internal::grammar::Grammar& grammar,
+                const std::vector<std::vector<dansandu::glyph::symbol::Symbol>>& firstTable);
 
 std::map<dansandu::glyph::symbol::Symbol, std::vector<dansandu::glyph::internal::item::Item>>
 getStateTransitions(const std::vector<dansandu::glyph::internal::item::Item>& state,

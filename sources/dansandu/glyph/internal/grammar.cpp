@@ -12,15 +12,12 @@
 #include <tuple>
 #include <vector>
 
-using dansandu::ballotin::container::contains;
 using dansandu::ballotin::container::uniquePushBack;
-using dansandu::ballotin::relation::TotalOrder;
 using dansandu::ballotin::string::format;
 using dansandu::ballotin::string::join;
 using dansandu::ballotin::string::split;
 using dansandu::ballotin::string::trim;
 using dansandu::glyph::error::GrammarError;
-using dansandu::glyph::internal::multimap::Multimap;
 using dansandu::glyph::internal::rule::Rule;
 using dansandu::glyph::symbol::Symbol;
 
@@ -33,7 +30,7 @@ auto find(const std::vector<T>& container, const U& value)
     return std::find(container.cbegin(), container.cend(), value);
 }
 
-Grammar::Grammar(const std::string_view grammar) : grammar_{grammar}
+Grammar::Grammar(const std::string_view grammar)
 {
     static const auto productionRulePattern =
         std::regex{R"( *[a-zA-Z0-9]+ *-> *(?:(?:[a-zA-Z0-9]+ +)*[a-zA-Z0-9]+ *)?)"};
@@ -41,7 +38,7 @@ Grammar::Grammar(const std::string_view grammar) : grammar_{grammar}
     auto leftSideColumn = std::vector<std::string>{};
     auto rightSideColumn = std::vector<std::vector<std::string>>{};
 
-    for (const auto& line : split(grammar_, "\n"))
+    for (const auto& line : split(grammar, "\n"))
     {
         const auto trimmedLine = trim(line);
         if (trimmedLine.empty())
@@ -131,132 +128,6 @@ Grammar::Grammar(const std::string_view grammar) : grammar_{grammar}
             rightSideSymbols.push_back(Symbol{identifierIndex});
         }
         rules_.push_back({leftSideSymbol, std::move(rightSideSymbols)});
-    }
-
-    generateFirstTable();
-}
-
-struct PartialItem : TotalOrder<PartialItem>
-{
-    PartialItem(const int ruleIndex, const int position) : ruleIndex{ruleIndex}, position{position}
-    {
-    }
-
-    int ruleIndex;
-    int position;
-};
-
-inline bool operator<(const PartialItem a, const PartialItem b)
-{
-    return std::tie(a.ruleIndex, a.position) < std::tie(b.ruleIndex, b.position);
-}
-
-void Grammar::generateFirstTable()
-{
-    auto partitions = Multimap{};
-
-    for (auto terminalIndex = terminalBeginIndex_; terminalIndex < static_cast<int>(identifiers_.size());
-         ++terminalIndex)
-    {
-        partitions[Symbol{terminalIndex}] = {Symbol{terminalIndex}};
-    }
-
-    auto blanks = std::vector<Symbol>{};
-    auto visitedRulesIndices = std::vector<int>{};
-
-    for (auto rootRuleIndex = 0; rootRuleIndex < static_cast<int>(rules_.size()); ++rootRuleIndex)
-    {
-        if (contains(visitedRulesIndices, rootRuleIndex))
-        {
-            continue;
-        }
-
-        visitedRulesIndices.push_back(rootRuleIndex);
-
-        auto rulesIndicesPath = std::vector<int>{};
-        auto stack = std::vector<std::pair<PartialItem, int>>{{PartialItem{rootRuleIndex, 0}, -1}};
-
-        while (!stack.empty())
-        {
-            const auto currentItem = stack.back().first;
-            if (currentItem.position == static_cast<int>(rules_[currentItem.ruleIndex].rightSide.size()))
-            {
-                uniquePushBack(blanks, rules_[currentItem.ruleIndex].leftSide);
-                stack.pop_back();
-                continue;
-            }
-
-            const auto currentSymbol = rules_[currentItem.ruleIndex].rightSide[currentItem.position];
-            if (isTerminal(currentSymbol))
-            {
-                uniquePushBack(partitions[rules_[currentItem.ruleIndex].leftSide], currentSymbol);
-                stack.pop_back();
-                continue;
-            }
-
-            const auto parentRuleIndex = stack.back().second;
-            while (!rulesIndicesPath.empty() && rulesIndicesPath.back() != parentRuleIndex)
-            {
-                rulesIndicesPath.pop_back();
-            }
-            rulesIndicesPath.push_back(currentItem.ruleIndex);
-            for (auto i = 0U; i < rulesIndicesPath.size(); ++i)
-            {
-                if (rules_[rulesIndicesPath[i]].leftSide == currentSymbol)
-                {
-                    auto cycle = std::vector<Symbol>{};
-                    for (auto j = i; j < rulesIndicesPath.size(); ++j)
-                    {
-                        uniquePushBack(cycle, rules_[rulesIndicesPath[j]].leftSide);
-                    }
-                    partitions.merge(cycle);
-                }
-            }
-
-            auto hasUnvisitedChildren = false;
-            for (auto ruleIndex = 0U; ruleIndex < rules_.size(); ++ruleIndex)
-            {
-                if (rules_[ruleIndex].leftSide == currentSymbol && !contains(visitedRulesIndices, ruleIndex))
-                {
-                    hasUnvisitedChildren = true;
-                    stack.push_back({PartialItem{static_cast<int>(ruleIndex), 0}, currentItem.ruleIndex});
-                    visitedRulesIndices.push_back(ruleIndex);
-                }
-            }
-            if (!hasUnvisitedChildren)
-            {
-                partitions[currentSymbol];
-                partitions[rules_[currentItem.ruleIndex].leftSide];
-                const auto& firstSet = partitions[currentSymbol];
-                auto& target = partitions[rules_[currentItem.ruleIndex].leftSide];
-                for (const auto& symbol : firstSet)
-                {
-                    uniquePushBack(target, symbol);
-                }
-                if (contains(blanks, currentSymbol))
-                {
-                    ++stack.back().first.position;
-                }
-                else
-                {
-                    stack.pop_back();
-                }
-            }
-        }
-    }
-
-    firstTable_ = std::vector<std::vector<Symbol>>{identifiers_.size()};
-    partitions.forEach(
-        [this](const auto& partition, const auto& firstSet)
-        {
-            for (const auto& symbol : partition)
-            {
-                firstTable_[symbol.getIdentifierIndex()] = std::vector<Symbol>{firstSet.cbegin(), firstSet.cend()};
-            }
-        });
-    for (const auto& symbol : blanks)
-    {
-        firstTable_[symbol.getIdentifierIndex()].push_back(getEmptySymbol());
     }
 }
 

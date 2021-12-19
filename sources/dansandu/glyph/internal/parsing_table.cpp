@@ -40,7 +40,7 @@ std::ostream& operator<<(std::ostream& stream, const Cell cell)
 
 std::vector<std::vector<Cell>> getClr1ParsingTable(const Grammar& grammar, const Automaton& automaton)
 {
-    auto table = std::vector<std::vector<Cell>>(grammar.getIdentifiersCount());
+    auto table = std::vector<std::vector<Cell>>(grammar.getIdentifiers().size());
     for (auto& row : table)
     {
         row = std::vector<Cell>{automaton.states.size()};

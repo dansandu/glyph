@@ -1,6 +1,7 @@
 #include "dansandu/glyph/internal/automaton.hpp"
 #include "catchorg/catch/catch.hpp"
 #include "dansandu/glyph/error.hpp"
+#include "dansandu/glyph/internal/first_table.hpp"
 #include "dansandu/glyph/internal/grammar.hpp"
 
 #include <set>
@@ -13,6 +14,7 @@ using dansandu::glyph::internal::automaton::getStateClosure;
 using dansandu::glyph::internal::automaton::getStateTransitions;
 using dansandu::glyph::internal::automaton::isFinalState;
 using dansandu::glyph::internal::automaton::Transition;
+using dansandu::glyph::internal::first_table::getFirstTable;
 using dansandu::glyph::internal::grammar::Grammar;
 using dansandu::glyph::internal::item::Item;
 using dansandu::glyph::internal::rule::Rule;
@@ -49,24 +51,26 @@ TEST_CASE("Automaton")
     const auto multiply = grammar.getSymbol("multiply");
     const auto number   = grammar.getSymbol("number");
 
+    const auto firstTable = getFirstTable(grammar);
+
     SECTION("follow set")
     {
-        REQUIRE(set(getFollowSet(Item{0, 0, end}, grammar)) == set({end}));
+        REQUIRE(set(getFollowSet(Item{0, 0, end}, grammar, firstTable)) == set({end}));
 
-        REQUIRE(set(getFollowSet(Item{1, 0, end}, grammar)) == set({add}));
+        REQUIRE(set(getFollowSet(Item{1, 0, end}, grammar, firstTable)) == set({add}));
 
-        REQUIRE(set(getFollowSet(Item{2, 0, end}, grammar)) == set({end}));
+        REQUIRE(set(getFollowSet(Item{2, 0, end}, grammar, firstTable)) == set({end}));
 
-        REQUIRE(set(getFollowSet(Item{3, 0, end}, grammar)) == set({multiply}));
+        REQUIRE(set(getFollowSet(Item{3, 0, end}, grammar, firstTable)) == set({multiply}));
 
-        REQUIRE(set(getFollowSet(Item{4, 1, multiply}, grammar)) == set({multiply}));
+        REQUIRE(set(getFollowSet(Item{4, 1, multiply}, grammar, firstTable)) == set({multiply}));
     }
 
     SECTION("closure")
     {
-        REQUIRE(getStateClosure({}, grammar).empty());
+        REQUIRE(getStateClosure({}, grammar, firstTable).empty());
 
-        REQUIRE(getStateClosure({Item{0, 0, end}}, grammar) == Items{{
+        REQUIRE(getStateClosure({Item{0, 0, end}}, grammar, firstTable) == Items{{
             Item{0, 0, end},
             Item{1, 0, end},
             Item{1, 0, add},
@@ -80,9 +84,9 @@ TEST_CASE("Automaton")
             Item{4, 0, multiply}}
         });
 
-        REQUIRE(getStateClosure({Item{0, 1, end}}, grammar) == Items{Item{0, 1, end}});
+        REQUIRE(getStateClosure({Item{0, 1, end}}, grammar, firstTable) == Items{Item{0, 1, end}});
 
-        REQUIRE(getStateClosure({Item{1, 1, end}}, grammar) == Items{Item{1, 1, end}});
+        REQUIRE(getStateClosure({Item{1, 1, end}}, grammar, firstTable) == Items{Item{1, 1, end}});
     }
 
     SECTION("transitions")

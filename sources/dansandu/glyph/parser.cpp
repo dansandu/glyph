@@ -1,5 +1,6 @@
 #include "dansandu/glyph/parser.hpp"
 #include "dansandu/glyph/internal/automaton.hpp"
+#include "dansandu/glyph/internal/first_table.hpp"
 #include "dansandu/glyph/internal/grammar.hpp"
 #include "dansandu/glyph/internal/parsing.hpp"
 #include "dansandu/glyph/internal/parsing_table.hpp"
@@ -17,6 +18,7 @@
 
 using dansandu::glyph::internal::automaton::Automaton;
 using dansandu::glyph::internal::automaton::getAutomaton;
+using dansandu::glyph::internal::first_table::getFirstTable;
 using dansandu::glyph::internal::grammar::Grammar;
 using dansandu::glyph::internal::parsing::parse;
 using dansandu::glyph::internal::parsing_table::Cell;
@@ -55,12 +57,13 @@ void ParserImplementation::dump(std::ostream& stream) const
     }
 
     stream << "\nFirst table:\n";
-    for (auto i = 0; i < grammar.getIdentifiersCount(); ++i)
+    const auto firstTable = getFirstTable(grammar);
+    for (auto i = 0; i < static_cast<int>(grammar.getIdentifiers().size()); ++i)
     {
         const auto symbol = Symbol{i};
         auto firstPrint = true;
         stream << "\t'" << grammar.getIdentifier(symbol) << "': [";
-        for (const auto& firstSymbol : grammar.getFirstSet(symbol))
+        for (const auto& firstSymbol : firstTable[symbol.getIdentifierIndex()])
         {
             stream << (firstPrint ? "'" : ", '") << grammar.getIdentifier(firstSymbol) << "'";
             firstPrint = false;

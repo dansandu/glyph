@@ -2,9 +2,11 @@
 #include "dansandu/ballotin/container.hpp"
 #include "dansandu/ballotin/exception.hpp"
 #include "dansandu/glyph/error.hpp"
+#include "dansandu/glyph/internal/first_table.hpp"
 
 using dansandu::ballotin::container::contains;
 using dansandu::glyph::error::GrammarError;
+using dansandu::glyph::internal::first_table::getFirstTable;
 using dansandu::glyph::internal::grammar::Grammar;
 using dansandu::glyph::internal::item::Item;
 using dansandu::glyph::internal::rule::Rule;
@@ -18,14 +20,15 @@ std::ostream& operator<<(std::ostream& stream, const Transition& transition)
     return stream << "Transition(" << transition.symbol << ", " << transition.from << ", " << transition.to << ")";
 }
 
-std::vector<Symbol> getFollowSet(const Item& item, const Grammar& grammar)
+std::vector<Symbol> getFollowSet(const Item& item, const Grammar& grammar,
+                                 const std::vector<std::vector<Symbol>>& firstTable)
 {
     auto followSet = std::vector<Symbol>{};
     auto followIndex = item.position + 1;
     const auto& rule = grammar.getRules()[item.ruleIndex];
     while (followIndex < static_cast<int>(rule.rightSide.size()))
     {
-        const auto& firstSet = grammar.getFirstSet(rule.rightSide[followIndex]);
+        const auto& firstSet = firstTable[rule.rightSide[followIndex].getIdentifierIndex()];
         const auto emptyPosition = std::find(firstSet.cbegin(), firstSet.cend(), grammar.getEmptySymbol());
         for (auto symbolPosition = firstSet.cbegin(); symbolPosition != firstSet.cend(); ++symbolPosition)
         {
@@ -47,14 +50,15 @@ std::vector<Symbol> getFollowSet(const Item& item, const Grammar& grammar)
     return followSet;
 }
 
-std::vector<Item> getStateClosure(std::vector<Item> state, const Grammar& grammar)
+std::vector<Item> getStateClosure(std::vector<Item> state, const Grammar& grammar,
+                                  const std::vector<std::vector<Symbol>>& firstTable)
 {
     const auto& rules = grammar.getRules();
     for (auto parentItemIndex = 0; parentItemIndex < static_cast<int>(state.size()); ++parentItemIndex)
     {
         const auto parentItem = state[parentItemIndex];
         const auto parentRule = rules[parentItem.ruleIndex];
-        const auto parentItemFollowSet = getFollowSet(parentItem, grammar);
+        const auto parentItemFollowSet = getFollowSet(parentItem, grammar, firstTable);
         if (parentItem.position < static_cast<int>(parentRule.rightSide.size()))
         {
             const auto symbol = parentRule.rightSide[parentItem.position];
@@ -115,15 +119,17 @@ bool isFinalState(const std::vector<Item>& state, const Grammar& grammar)
 Automaton getAutomaton(const Grammar& grammar)
 {
     const auto startRuleIndex = grammar.getStartRuleIndex();
+    const auto firstTable = getFirstTable(grammar);
+
     auto finalStateIndex = -1;
     auto states = std::vector<std::vector<Item>>{
-        getStateClosure({Item{startRuleIndex, 0, grammar.getEndOfStringSymbol()}}, grammar)};
+        getStateClosure({Item{startRuleIndex, 0, grammar.getEndOfStringSymbol()}}, grammar, firstTable)};
     auto transitions = std::vector<Transition>{};
     for (auto stateIndex = 0; stateIndex < static_cast<int>(states.size()); ++stateIndex)
     {
         for (auto& transition : getStateTransitions(states[stateIndex], grammar))
         {
-            auto newState = getStateClosure(std::move(transition.second), grammar);
+            auto newState = getStateClosure(std::move(transition.second), grammar, firstTable);
             const auto newStatePosition = std::find(states.cbegin(), states.cend(), newState);
             const auto newStateIndex = static_cast<int>(newStatePosition - states.cbegin());
             if (newStatePosition == states.cend())

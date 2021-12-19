@@ -44,19 +44,14 @@ public:
         return dansandu::glyph::symbol::Symbol{terminalBeginIndex_ + 1};
     }
 
-    const std::vector<dansandu::glyph::symbol::Symbol>& getFirstSet(const dansandu::glyph::symbol::Symbol symbol) const
-    {
-        return firstTable_[symbol.getIdentifierIndex()];
-    }
-
     const std::string& getIdentifier(const dansandu::glyph::symbol::Symbol symbol) const
     {
         return identifiers_[symbol.getIdentifierIndex()];
     }
 
-    int getIdentifiersCount() const
+    const std::vector<std::string>& getIdentifiers() const
     {
-        return static_cast<int>(identifiers_.size());
+        return identifiers_;
     }
 
     bool isTerminal(const dansandu::glyph::symbol::Symbol symbol) const
@@ -74,19 +69,10 @@ public:
         return rules_;
     }
 
-    const std::string& toString() const
-    {
-        return grammar_;
-    }
-
 private:
-    void generateFirstTable();
-
+    int terminalBeginIndex_;
     std::vector<std::string> identifiers_;
     std::vector<dansandu::glyph::internal::rule::Rule> rules_;
-    std::vector<std::vector<dansandu::glyph::symbol::Symbol>> firstTable_;
-    std::string grammar_;
-    int terminalBeginIndex_;
 };
 
 }
