@@ -14,9 +14,10 @@ using dansandu::glyph::internal::grammar::Grammar;
 using dansandu::glyph::internal::rule::Rule;
 using dansandu::glyph::symbol::Symbol;
 
-static std::set<Symbol> set(std::initializer_list<Symbol> list)
+template<typename... Elements>
+static std::set<Symbol> set(Elements&&... elements)
 {
-    return std::set<Symbol>{list.begin(), list.end()};
+    return std::set<Symbol>{std::forward<Elements>(elements)...};
 }
 
 // clang-format off
@@ -26,7 +27,7 @@ TEST_CASE("first_table")
 
     const auto getFirstSet = [&firstTable](const auto symbol)
     {
-        const auto& row = firstTable[symbol.getIdentifierIndex()];
+        const auto& row = firstTable.at(symbol.getIdentifierIndex());
         return std::set<Symbol>{row.cbegin(), row.cend()};
     };
 
@@ -65,33 +66,33 @@ TEST_CASE("first_table")
 
         firstTable = getFirstTable(grammar);
 
-        REQUIRE(getFirstSet(Start) == set({id, number, empty}));
+        REQUIRE(getFirstSet(Start) == set(id, number, empty));
 
-        REQUIRE(getFirstSet(S) == set({id, number, empty}));
+        REQUIRE(getFirstSet(S) == set(id, number, empty));
 
-        REQUIRE(getFirstSet(Sum) == set({id, number}));
+        REQUIRE(getFirstSet(Sum) == set(id, number));
 
-        REQUIRE(getFirstSet(Value) == set({id, number}));
+        REQUIRE(getFirstSet(Value) == set(id, number));
 
-        REQUIRE(getFirstSet(ParametersBegin) == set({empty}));
+        REQUIRE(getFirstSet(ParametersBegin) == set(empty));
 
-        REQUIRE(getFirstSet(Parameters) == set({id, number}));
+        REQUIRE(getFirstSet(Parameters) == set(id, number));
 
-        REQUIRE(getFirstSet(number) == set({number}));
+        REQUIRE(getFirstSet(number) == set(number));
 
-        REQUIRE(getFirstSet(add) == set({add}));
+        REQUIRE(getFirstSet(add) == set(add));
 
-        REQUIRE(getFirstSet(empty) == set({empty}));
+        REQUIRE(getFirstSet(empty) == set(empty));
 
-        REQUIRE(getFirstSet(id) == set({id}));
+        REQUIRE(getFirstSet(id) == set(id));
 
-        REQUIRE(getFirstSet(end) == set({end}));
+        REQUIRE(getFirstSet(end) == set(end));
 
-        REQUIRE(getFirstSet(parenthesesStart) == set({parenthesesStart}));
+        REQUIRE(getFirstSet(parenthesesStart) == set(parenthesesStart));
 
-        REQUIRE(getFirstSet(parenthesesEnd) == set({parenthesesEnd}));
+        REQUIRE(getFirstSet(parenthesesEnd) == set(parenthesesEnd));
 
-        REQUIRE(getFirstSet(comma) == set({comma}));
+        REQUIRE(getFirstSet(comma) == set(comma));
     }
 
     SECTION("grammar #2")
@@ -125,27 +126,27 @@ TEST_CASE("first_table")
 
         firstTable = getFirstTable(grammar);
 
-        REQUIRE(getFirstSet(Start) == set({a, b, c, d, empty}));
+        REQUIRE(getFirstSet(Start) == set(a, b, c, d, empty));
 
-        REQUIRE(getFirstSet(A) == set({a, empty}));
+        REQUIRE(getFirstSet(A) == set(a, empty));
 
-        REQUIRE(getFirstSet(B) == set({b, c, d, a, empty}));
+        REQUIRE(getFirstSet(B) == set(b, c, d, a, empty));
 
-        REQUIRE(getFirstSet(C) == set({c, empty}));
+        REQUIRE(getFirstSet(C) == set(c, empty));
 
-        REQUIRE(getFirstSet(D) == set({d, a, empty}));
+        REQUIRE(getFirstSet(D) == set(d, a, empty));
 
-        REQUIRE(getFirstSet(a) == set({a}));
+        REQUIRE(getFirstSet(a) == set(a));
 
-        REQUIRE(getFirstSet(b) == set({b}));
+        REQUIRE(getFirstSet(b) == set(b));
 
-        REQUIRE(getFirstSet(c) == set({c}));
+        REQUIRE(getFirstSet(c) == set(c));
 
-        REQUIRE(getFirstSet(d) == set({d}));
+        REQUIRE(getFirstSet(d) == set(d));
 
-        REQUIRE(getFirstSet(empty) == set({empty}));
+        REQUIRE(getFirstSet(empty) == set(empty));
 
-        REQUIRE(getFirstSet(end) == set({end}));
+        REQUIRE(getFirstSet(end) == set(end));
     }
 
     SECTION("grammar #3")
@@ -170,19 +171,19 @@ TEST_CASE("first_table")
 
         firstTable = getFirstTable(grammar);
 
-        REQUIRE(getFirstSet(Start) == set({b, a}));
+        REQUIRE(getFirstSet(Start) == set(b, a));
 
-        REQUIRE(getFirstSet(A) == set({b, a}));
+        REQUIRE(getFirstSet(A) == set(b, a));
 
-        REQUIRE(getFirstSet(B) == set({b, a, empty}));
+        REQUIRE(getFirstSet(B) == set(b, a, empty));
 
-        REQUIRE(getFirstSet(a) == set({a}));
+        REQUIRE(getFirstSet(a) == set(a));
 
-        REQUIRE(getFirstSet(b) == set({b}));
+        REQUIRE(getFirstSet(b) == set(b));
 
-        REQUIRE(getFirstSet(empty) == set({empty}));
+        REQUIRE(getFirstSet(empty) == set(empty));
 
-        REQUIRE(getFirstSet(end) == set({end}));
+        REQUIRE(getFirstSet(end) == set(end));
     }
 
     SECTION("grammar #4")
@@ -255,57 +256,57 @@ TEST_CASE("first_table")
 
         firstTable = getFirstTable(grammar);
 
-        REQUIRE(getFirstSet(Start) == set({b, f, g, c, a, e, d, empty}));
+        REQUIRE(getFirstSet(Start) == set(b, f, g, c, a, e, d, empty));
 
-        REQUIRE(getFirstSet(G) == set({g}));
+        REQUIRE(getFirstSet(G) == set(g));
 
-        REQUIRE(getFirstSet(D2) == set({g, d}));
+        REQUIRE(getFirstSet(D2) == set(g, d));
 
-        REQUIRE(getFirstSet(D3) == set({g, d}));
+        REQUIRE(getFirstSet(D3) == set(g, d));
 
-        REQUIRE(getFirstSet(D1) == set({g, d}));
+        REQUIRE(getFirstSet(D1) == set(g, d));
 
-        REQUIRE(getFirstSet(C2) == set({c, empty, d, g}));
+        REQUIRE(getFirstSet(C2) == set(c, empty, d, g));
 
-        REQUIRE(getFirstSet(C1) == set({c, empty, d, g}));
+        REQUIRE(getFirstSet(C1) == set(c, empty, d, g));
 
-        REQUIRE(getFirstSet(X) == set({b, empty, f, g, c, a, e, d}));
+        REQUIRE(getFirstSet(X) == set(b, empty, f, g, c, a, e, d));
 
-        REQUIRE(getFirstSet(F) == set({f}));
+        REQUIRE(getFirstSet(F) == set(f));
 
-        REQUIRE(getFirstSet(B3) == set({f, g, d, b}));
+        REQUIRE(getFirstSet(B3) == set(f, g, d, b));
 
-        REQUIRE(getFirstSet(B1) == set({f, g, d, b}));
+        REQUIRE(getFirstSet(B1) == set(f, g, d, b));
 
-        REQUIRE(getFirstSet(B2) == set({empty, f, d, b, g}));
+        REQUIRE(getFirstSet(B2) == set(empty, f, d, b, g));
 
-        REQUIRE(getFirstSet(B4) == set({f, g, d, b}));
+        REQUIRE(getFirstSet(B4) == set(f, g, d, b));
 
-        REQUIRE(getFirstSet(E) == set({e}));
+        REQUIRE(getFirstSet(E) == set(e));
 
-        REQUIRE(getFirstSet(A3) == set({b, d, f, a, e, g}));
+        REQUIRE(getFirstSet(A3) == set(b, d, f, a, e, g));
 
-        REQUIRE(getFirstSet(A1) == set({b, d, f, a, e, g}));
+        REQUIRE(getFirstSet(A1) == set(b, d, f, a, e, g));
 
-        REQUIRE(getFirstSet(A2) == set({b, d, f, a, e, g}));
+        REQUIRE(getFirstSet(A2) == set(b, d, f, a, e, g));
 
-        REQUIRE(getFirstSet(a) == set({a}));
+        REQUIRE(getFirstSet(a) == set(a));
 
-        REQUIRE(getFirstSet(b) == set({b}));
+        REQUIRE(getFirstSet(b) == set(b));
 
-        REQUIRE(getFirstSet(c) == set({c}));
+        REQUIRE(getFirstSet(c) == set(c));
 
-        REQUIRE(getFirstSet(d) == set({d}));
+        REQUIRE(getFirstSet(d) == set(d));
 
-        REQUIRE(getFirstSet(e) == set({e}));
+        REQUIRE(getFirstSet(e) == set(e));
 
-        REQUIRE(getFirstSet(f) == set({f}));
+        REQUIRE(getFirstSet(f) == set(f));
 
-        REQUIRE(getFirstSet(g) == set({g}));
+        REQUIRE(getFirstSet(g) == set(g));
 
-        REQUIRE(getFirstSet(empty) == set({empty}));
+        REQUIRE(getFirstSet(empty) == set(empty));
 
-        REQUIRE(getFirstSet(end) == set({end}));
+        REQUIRE(getFirstSet(end) == set(end));
     }
 }
 // clang-format on
