@@ -34,18 +34,18 @@ public:
                   /* 1*/ "Sums  -> Sums plus Products                              \n"
                   /* 2*/ "Sums  -> Sums minus Products                             \n"
                   /* 3*/ "Sums  -> Products                                        \n"
-                  /* 4*/ "Products -> Products multiply Exponentials               \n"
-                  /* 5*/ "Products -> Products divide Exponentials                 \n"
-                  /* 6*/ "Products -> Exponentials                                 \n"
-                  /* 7*/ "Exponentials -> Exponentials power SignedValue           \n"
-                  /* 8*/ "Exponentials -> SignedValue                              \n"
-                  /* 9*/ "SignedValue  -> Value                                    \n"
-                  /*10*/ "SignedValue  -> plus Value                               \n"
-                  /*11*/ "SignedValue  -> minus Value                              \n"
+                  /* 4*/ "Products -> Products multiply Signed                     \n"
+                  /* 5*/ "Products -> Products divide Signed                       \n"
+                  /* 6*/ "Products -> Signed                                       \n"
+                  /* 7*/ "Signed -> plus Exponentials                              \n"
+                  /* 8*/ "Signed -> minus Exponentials                             \n"
+                  /* 9*/ "Signed -> Exponentials                                   \n"
+                  /*10*/ "Exponentials -> Value power Signed                       \n"
+                  /*11*/ "Exponentials -> Value                                    \n"
                   /*12*/ "Value -> identifier                                      \n"
                   /*13*/ "Value -> number                                          \n"
                   /*14*/ "Value -> identifier parenthesesStart Sums parenthesesEnd \n"
-                  /*15*/ "Value -> parenthesesStart Sums parenthesesEnd"},
+                  /*15*/ "Value -> parenthesesStart Sums parenthesesEnd              "},
           tokenizer_{{{parser_.getTerminalSymbol("plus"),             "\\+"},
                       {parser_.getTerminalSymbol("minus"),            "\\-"},
                       {parser_.getTerminalSymbol("multiply"),         "\\*"},
@@ -84,12 +84,6 @@ public:
                 switch (node.getRuleIndex())
                 {
                 case 0:
-                case 3:
-                case 6:
-                case 8:
-                case 9:
-                case 10:
-                case 15:
                     break;
                 case 1:
                 {
@@ -105,6 +99,8 @@ public:
                     valuesStack.push_back(lhs - rhs);
                     break;
                 }
+                case 3:
+                    break;
                 case 4:
                 {
                     const auto rhs = pop(valuesStack);
@@ -119,7 +115,19 @@ public:
                     valuesStack.push_back(lhs / rhs);
                     break;
                 }
+                case 6:
+                    break;
                 case 7:
+                    break;
+                case 8:
+                {
+                    const auto value = pop(valuesStack);
+                    valuesStack.push_back(-value);
+                    break;
+                }
+                case 9:
+                    break;
+                case 10:
                 {
                     const auto rhs = pop(valuesStack);
                     const auto lhs = pop(valuesStack);
@@ -127,11 +135,7 @@ public:
                     break;
                 }
                 case 11:
-                {
-                    const auto value = pop(valuesStack);
-                    valuesStack.push_back(-value);
                     break;
-                }
                 case 12:
                 {
                     const auto token = pop(tokensStack);
@@ -154,6 +158,8 @@ public:
                     valuesStack.push_back(functions.at(function)(argument));
                     break;
                 }
+                case 15:
+                    break;
                 default:
                     THROW(std::logic_error, "unrecognized rule index: ", node.getRuleIndex());
                 }
@@ -200,6 +206,16 @@ TEST_CASE("Parser")
     REQUIRE(parser.evaluate(functions, variables, "z + 20 * y ^ sin(x * pi) * ln(1024) + -100") == Approx(6931.46320796));
 
     REQUIRE(parser.evaluate(functions, variables, "(20 * -z - -y) / (+300.0 + x)") == Approx(-6.48918469));
+
+    REQUIRE(parser.evaluate(functions, variables, "-3^2") == Approx(-9.0));
+
+    REQUIRE(parser.evaluate(functions, variables, "2^3^2") == Approx(512.0));
+
+    REQUIRE(parser.evaluate(functions, variables, "2^-3^2") == Approx(0.001953125));
+
+    REQUIRE(parser.evaluate(functions, variables, "-2 + 5") == Approx(3.0));
+
+    REQUIRE(parser.evaluate(functions, variables, "-2 * 5") == Approx(-10.0));
 
     REQUIRE_THROWS_AS(parser.evaluate({}, {}, "(50 + 30"), SyntaxError);
 
