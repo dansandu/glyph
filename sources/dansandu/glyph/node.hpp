@@ -12,7 +12,7 @@ class PRALINE_EXPORT Node
 {
     friend bool operator==(const Node& left, const Node& right)
     {
-        return (left.ruleIndex_ == right.ruleIndex_) & (left.token_ == right.token_);
+        return left.ruleIndex_ == right.ruleIndex_ && left.token_ == right.token_;
     }
 
 public:

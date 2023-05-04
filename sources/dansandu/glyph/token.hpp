@@ -38,7 +38,7 @@ private:
 
 inline bool operator==(const Token& left, const Token& right)
 {
-    return (left.getSymbol() == right.getSymbol()) & (left.begin() == right.begin()) & (left.end() == right.end());
+    return left.getSymbol() == right.getSymbol() && left.begin() == right.begin() && left.end() == right.end();
 }
 
 inline bool operator!=(const Token& left, const Token& right)
