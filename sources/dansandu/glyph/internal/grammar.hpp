@@ -10,6 +10,8 @@
 namespace dansandu::glyph::internal::grammar
 {
 
+std::string removeComments(const std::string_view grammar);
+
 class Grammar
 {
 public:
