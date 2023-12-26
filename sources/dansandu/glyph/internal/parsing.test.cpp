@@ -25,15 +25,17 @@ TEST_CASE("Parsing")
 
     SECTION("grammar #1")
     {
-        const auto grammar = Grammar{/*0*/ "Start       -> Sums                          \n"
-                                     /*1*/ "Sums        -> Sums plus Products            \n"
-                                     /*2*/ "Sums        -> Products                      \n"
-                                     /*3*/ "Products    -> Products multiply SignedValue \n"
-                                     /*4*/ "Products    -> SignedValue                   \n"
-                                     /*5*/ "SignedValue -> Value                         \n"
-                                     /*6*/ "SignedValue -> plus Value                    \n"
-                                     /*7*/ "Value       -> number                        \n"
-                                     /*8*/ "Value       -> identifier"};
+        const auto grammar = Grammar{R"(
+            /*0*/ Start       -> Sums
+            /*1*/ Sums        -> Sums plus Products
+            /*2*/ Sums        -> Products
+            /*3*/ Products    -> Products multiply SignedValue
+            /*4*/ Products    -> SignedValue
+            /*5*/ SignedValue -> Value
+            /*6*/ SignedValue -> plus Value
+            /*7*/ Value       -> number
+            /*8*/ Value       -> identifier
+        )"};
 
         const auto identifier = grammar.getSymbol("identifier");
         const auto plus       = grammar.getSymbol("plus");
@@ -94,11 +96,13 @@ TEST_CASE("Parsing")
 
     SECTION("grammar #2")
     {
-        const auto grammar = Grammar{/*0*/ "Start -> A \n"
-                                     /*1*/ "A -> B a   \n"
-                                     /*2*/ "B -> A b   \n"
-                                     /*3*/ "B -> b     \n"
-                                     /*4*/ "B ->"};
+        const auto grammar = Grammar{R"(
+            /*0*/ Start -> A
+            /*1*/ A -> B a
+            /*2*/ B -> A b
+            /*3*/ B -> b
+            /*4*/ B ->
+        )"};
 
         const auto a = grammar.getSymbol("a");
         const auto b = grammar.getSymbol("b");

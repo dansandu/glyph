@@ -30,22 +30,24 @@ class ArithmeticParser
 {
 public:
     ArithmeticParser()
-        : parser_{/* 0*/ "Start -> Sums                                            \n"
-                  /* 1*/ "Sums  -> Sums plus Products                              \n"
-                  /* 2*/ "Sums  -> Sums minus Products                             \n"
-                  /* 3*/ "Sums  -> Products                                        \n"
-                  /* 4*/ "Products -> Products multiply Signed                     \n"
-                  /* 5*/ "Products -> Products divide Signed                       \n"
-                  /* 6*/ "Products -> Signed                                       \n"
-                  /* 7*/ "Signed -> plus Exponentials                              \n"
-                  /* 8*/ "Signed -> minus Exponentials                             \n"
-                  /* 9*/ "Signed -> Exponentials                                   \n"
-                  /*10*/ "Exponentials -> Value power Signed                       \n"
-                  /*11*/ "Exponentials -> Value                                    \n"
-                  /*12*/ "Value -> identifier                                      \n"
-                  /*13*/ "Value -> number                                          \n"
-                  /*14*/ "Value -> identifier parenthesesStart Sums parenthesesEnd \n"
-                  /*15*/ "Value -> parenthesesStart Sums parenthesesEnd              "},
+        : parser_{R"(
+            /* 0*/ Start -> Sums
+            /* 1*/ Sums  -> Sums plus Products
+            /* 2*/ Sums  -> Sums minus Products
+            /* 3*/ Sums  -> Products
+            /* 4*/ Products -> Products multiply Signed
+            /* 5*/ Products -> Products divide Signed
+            /* 6*/ Products -> Signed
+            /* 7*/ Signed -> plus Exponentials
+            /* 8*/ Signed -> minus Exponentials
+            /* 9*/ Signed -> Exponentials
+            /*10*/ Exponentials -> Value power Signed
+            /*11*/ Exponentials -> Value
+            /*12*/ Value -> identifier
+            /*13*/ Value -> number
+            /*14*/ Value -> identifier parenthesesStart Sums parenthesesEnd
+            /*15*/ Value -> parenthesesStart Sums parenthesesEnd
+          )"},
           tokenizer_{{{parser_.getTerminalSymbol("plus"),             "\\+"},
                       {parser_.getTerminalSymbol("minus"),            "\\-"},
                       {parser_.getTerminalSymbol("multiply"),         "\\*"},
