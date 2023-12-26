@@ -10,11 +10,41 @@
 
 using dansandu::glyph::error::GrammarError;
 using dansandu::glyph::internal::grammar::Grammar;
+using dansandu::glyph::internal::grammar::removeComments;
 using dansandu::glyph::internal::rule::Rule;
 using dansandu::glyph::symbol::Symbol;
 
 TEST_CASE("Grammar")
 {
+    SECTION("comment removal")
+    {
+        REQUIRE(removeComments("") == "");
+
+        REQUIRE(removeComments("Not a comment") == "Not a comment");
+
+        REQUIRE(removeComments("/* comment */Not a comment") == "Not a comment");
+
+        REQUIRE(removeComments("Not a comment/* comment */") == "Not a comment");
+
+        REQUIRE(removeComments("Prefix/* comment */ */") == "Prefix */");
+
+        REQUIRE(removeComments("/* /* comment */Suffix") == "Suffix");
+
+        const auto text = R"(
+            /*0*/ Start -> S      /* first production rule */
+            /*1*/ S     -> SS     /* some explanation */
+            /*2*/ SS    -> value  /* more details */
+        )";
+
+        const auto expected = R"(
+             Start -> S      
+             S     -> SS     
+             SS    -> value  
+        )";
+
+        REQUIRE(removeComments(text) == expected);
+    }
+
     SECTION("invalid grammars")
     {
         REQUIRE_THROWS_AS(Grammar{"Start Sums -> Sums"}, GrammarError);

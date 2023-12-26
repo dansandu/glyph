@@ -30,15 +30,41 @@ auto find(const std::vector<T>& container, const U& value)
     return std::find(container.cbegin(), container.cend(), value);
 }
 
+std::string removeComments(const std::string_view grammar)
+{
+    auto grammarWithoutComments = std::string{};
+
+    size_t offset = 0;
+
+    do
+    {
+        auto commentStart = grammar.find("/*", offset);
+        if (commentStart != std::string::npos)
+        {
+            grammarWithoutComments += grammar.substr(offset, commentStart - offset);
+            offset = grammar.find("*/", commentStart) + 2;
+        }
+        else
+        {
+            grammarWithoutComments += grammar.substr(offset);
+            offset = std::string::npos;
+        }
+    } while (offset != std::string::npos);
+
+    return grammarWithoutComments;
+}
+
 Grammar::Grammar(const std::string_view grammar)
 {
     static const auto productionRulePattern =
         std::regex{R"( *[a-zA-Z0-9]+ *-> *(?:(?:[a-zA-Z0-9]+ +)*[a-zA-Z0-9]+ *)?)"};
 
+    const auto grammarWithoutComments = removeComments(grammar);
+
     auto leftSideColumn = std::vector<std::string>{};
     auto rightSideColumn = std::vector<std::vector<std::string>>{};
 
-    for (const auto& line : split(grammar, "\n"))
+    for (const auto& line : split(grammarWithoutComments, "\n"))
     {
         const auto trimmedLine = trim(line);
         if (trimmedLine.empty())
