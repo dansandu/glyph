@@ -26,6 +26,7 @@ using dansandu::glyph::internal::parsing_table::getClr1ParsingTable;
 using dansandu::glyph::node::Node;
 using dansandu::glyph::symbol::Symbol;
 using dansandu::glyph::token::Token;
+using dansandu::glyph::tokenizer::ITokenizer;
 
 namespace dansandu::glyph::parser
 {
@@ -131,9 +132,10 @@ Symbol Parser::getDiscardedSymbolPlaceholder() const
     return casted(implementation_.get())->grammar.getDiscardedSymbolPlaceholder();
 }
 
-void Parser::parse(const std::vector<Token>& tokens, const std::function<void(const Node&)>& visitor) const
+std::vector<Node> Parser::parse(const std::string_view text, const ITokenizer& tokenizer) const
 {
-    ::parse(tokens, casted(implementation_.get())->parsingTable, casted(implementation_.get())->grammar, visitor);
+    const auto tokens = tokenizer.tokenize(text);
+    return ::parse(text, tokens, casted(implementation_.get())->parsingTable, casted(implementation_.get())->grammar);
 }
 
 void Parser::dump(std::ostream& stream) const

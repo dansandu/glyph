@@ -68,10 +68,12 @@ public:
         const auto identifier = parser_.getTerminalSymbol("identifier");
         const auto number = parser_.getTerminalSymbol("number");
 
+        const auto nodes = parser_.parse(formula, tokenizer_);
+
         auto tokensStack = std::vector<Token>{};
         auto valuesStack = std::vector<double>{};
 
-        const auto visitor = [&](const Node& node)
+        for (const auto& node : nodes)
         {
             if (node.isToken())
             {
@@ -166,9 +168,7 @@ public:
                     THROW(std::logic_error, "unrecognized rule index: ", node.getRuleIndex());
                 }
             }
-        };
-
-        parser_.parse(tokenizer_(formula), visitor);
+        }
 
         if (!tokensStack.empty())
         {
