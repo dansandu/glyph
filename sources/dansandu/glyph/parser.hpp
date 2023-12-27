@@ -2,9 +2,8 @@
 
 #include "dansandu/glyph/node.hpp"
 #include "dansandu/glyph/symbol.hpp"
-#include "dansandu/glyph/token.hpp"
+#include "dansandu/glyph/tokenizer.hpp"
 
-#include <functional>
 #include <memory>
 #include <ostream>
 #include <string_view>
@@ -22,8 +21,8 @@ public:
 
     dansandu::glyph::symbol::Symbol getDiscardedSymbolPlaceholder() const;
 
-    void parse(const std::vector<dansandu::glyph::token::Token>& tokens,
-               const std::function<void(const dansandu::glyph::node::Node&)>& visitor) const;
+    std::vector<dansandu::glyph::node::Node> parse(const std::string_view text,
+                                                   const dansandu::glyph::tokenizer::ITokenizer& tokenizer) const;
 
     void dump(std::ostream& stream) const;
 

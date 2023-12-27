@@ -1,6 +1,6 @@
 organization: dansandu
 artifact: glyph
-version: 1.0.0
+version: 1.0.0.SNAPSHOT
 dependencies:
 - organization: dansandu
   artifact: ballotin
