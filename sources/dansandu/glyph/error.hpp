@@ -1,6 +1,10 @@
 #pragma once
 
+#include "dansandu/glyph/symbol.hpp"
+
 #include <exception>
+#include <string>
+#include <vector>
 
 namespace dansandu::glyph::error
 {
@@ -40,7 +44,14 @@ private:
 class SyntaxError : public std::exception
 {
 public:
-    explicit SyntaxError(std::string message) : message_{std::move(message)}
+    SyntaxError(std::string message, const int lineNumber, const int columnNumber,
+                const dansandu::glyph::symbol::Symbol encounteredSymbol,
+                std::vector<dansandu::glyph::symbol::Symbol> expectedSymbols)
+        : message_{std::move(message)},
+          lineNumber_{lineNumber},
+          columnNumber_{columnNumber},
+          encounteredSymbol_{encounteredSymbol},
+          expectedSymbols_{std::move(expectedSymbols)}
     {
     }
 
@@ -49,8 +60,32 @@ public:
         return message_.c_str();
     }
 
+    int getLineNumber() const noexcept
+    {
+        return lineNumber_;
+    }
+
+    int getColumnNumber() const noexcept
+    {
+        return columnNumber_;
+    }
+
+    dansandu::glyph::symbol::Symbol getEncounteredSymbol() const noexcept
+    {
+        return encounteredSymbol_;
+    }
+
+    const std::vector<dansandu::glyph::symbol::Symbol>& getExpectedSymbols() const noexcept
+    {
+        return expectedSymbols_;
+    }
+
 private:
     std::string message_;
+    int lineNumber_;
+    int columnNumber_;
+    dansandu::glyph::symbol::Symbol encounteredSymbol_;
+    std::vector<dansandu::glyph::symbol::Symbol> expectedSymbols_;
 };
 
 }
