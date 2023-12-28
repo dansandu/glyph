@@ -12,6 +12,7 @@
 #include <stdexcept>
 #include <vector>
 
+using dansandu::ballotin::string::format;
 using dansandu::ballotin::string::join;
 using dansandu::glyph::error::SyntaxError;
 using dansandu::glyph::internal::grammar::Grammar;
@@ -79,21 +80,26 @@ std::vector<Node> parse(const std::string_view text, const std::vector<Token>& t
         }
         else
         {
-            auto expectedSymbols = std::vector<std::string>{};
+            auto expectedSymbols = std::vector<Symbol>{};
+            auto expectedSymbolsString = std::vector<std::string>{};
             for (auto symbolIndex = 0; symbolIndex < static_cast<int>(parsingTable.size()); ++symbolIndex)
             {
                 if (parsingTable[symbolIndex][state].action != Action::error)
                 {
-                    expectedSymbols.push_back(grammar.getIdentifier(Symbol{symbolIndex}));
+                    const auto symbol = Symbol{symbolIndex};
+                    expectedSymbols.push_back(symbol);
+                    expectedSymbolsString.push_back(grammar.getIdentifier(symbol));
                 }
             }
 
             const auto textLocation = getTextLocation(text, token.begin(), token.end());
 
-            THROW(SyntaxError, "invalid syntax at line ", textLocation.lineNumber, " and column ",
-                  textLocation.columnNumber, " with symbol '", grammar.getIdentifier(token.getSymbol()),
-                  "' -- the following symbols were expected: ", join(expectedSymbols, ", "), "\n",
-                  textLocation.highlight);
+            throw SyntaxError{format("invalid syntax at line ", textLocation.lineNumber, " and column ",
+                                     textLocation.columnNumber, " with symbol '",
+                                     grammar.getIdentifier(token.getSymbol()),
+                                     "' -- the following symbols were expected: ", join(expectedSymbolsString, ", "),
+                                     "\n", textLocation.highlight),
+                              textLocation.lineNumber, textLocation.columnNumber, token.getSymbol(), expectedSymbols};
         }
     }
 
