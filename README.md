@@ -1,25 +1,21 @@
 # Glyph
 A simple C++ implementation of a CLR(1) parser (canonical left to right parser with one lookahead terminal).
-## Building and deploying the project
-The project uses praline to build and deploy the project. Praline can be downloaded from [here](https://github.com/dansandu/praline). Once cloned, the project can be built and deployed using the following console command:
-```
-praline.py deploy
-```
-This will build and deploy the glyph artifact to the repository making it available to other projects.
+The project uses praline to build the project. Praline can be cloned from [here](https://github.com/dansandu/praline).
 ## Simple symbolic calculator
 The following is a simple symbolic calculator application. The project is a directory named `calculator` with a file inside it named `Pralinefile` that has the following contents:
 ```yaml
 organization: foobar
 artifact: calculator
 version: 1.0.0
+artifact_type: executable
 dependencies:
 - organization: dansandu
   artifact: glyph
-  version: 1.+0.+0
+  version: 1.0.0.SNAPSHOT
 ```
 Running the following command inside the project directory console will quickly create the project skeleton:
 ```bash
-praline.py --executable main
+praline.py main
 ```
 The command will create a "Hello, world!" executable. Moving forward, the code will be changed to evaluate formulae from the command line. In the project directory open the main source file `sources/foobar/calculator/executable.cpp` and change it to:
 ```cpp
