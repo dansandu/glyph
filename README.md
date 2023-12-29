@@ -1,6 +1,11 @@
 # Glyph
 A simple C++ implementation of a CLR(1) parser (canonical left to right parser with one lookahead terminal).
-The project uses praline to build the project. Praline can be cloned from [here](https://github.com/dansandu/praline).
+## Building and deploying the project
+The project uses praline to build and deploy the project. Praline can be cloned from [here](https://github.com/dansandu/praline). Once cloned, the project can be built and deployed using the following console command:
+```
+praline.py deploy
+```
+This will build and deploy the glyph artifact to the repository making it available to other projects.
 ## Simple symbolic calculator
 The following is a simple symbolic calculator application. The project is a directory named `calculator` with a file inside it named `Pralinefile` that has the following contents:
 ```yaml
