@@ -61,7 +61,7 @@ std::vector<std::vector<Cell>> getClr1ParsingTable(const Grammar& grammar, const
                 if (cell.action != Action::error)
                 {
                     THROW(std::logic_error, "grammar cannot be parsed using a CLR(1) parser due to ", cell.action,
-                          "/reduce conflict");
+                          "/reduce conflict on symbol '", grammar.getIdentifier(item.lookahead), "'");
                 }
                 cell = Cell{Action::reduce, item.ruleIndex};
             }
