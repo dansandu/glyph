@@ -38,18 +38,18 @@ struct ParserImplementation
     {
     }
 
-    void dump(std::ostream& stream) const;
+    void print(std::ostream& stream) const;
 
     Grammar grammar;
     std::vector<std::vector<Cell>> parsingTable;
 };
 
-void ParserImplementation::dump(std::ostream& stream) const
+void ParserImplementation::print(std::ostream& stream) const
 {
-    stream << "\nRules:\n";
+    stream << "Rules:\n";
     for (const auto& rule : grammar.getRules())
     {
-        stream << '\t' << grammar.getIdentifier(rule.leftSide) << " ->";
+        stream << "  " << grammar.getIdentifier(rule.leftSide) << " ->";
         for (const auto& symbol : rule.rightSide)
         {
             stream << " " << grammar.getIdentifier(symbol);
@@ -63,7 +63,7 @@ void ParserImplementation::dump(std::ostream& stream) const
     {
         const auto symbol = Symbol{i};
         auto firstPrint = true;
-        stream << "\t'" << grammar.getIdentifier(symbol) << "': [";
+        stream << "  '" << grammar.getIdentifier(symbol) << "': [";
         for (const auto& firstSymbol : firstTable[symbol.getIdentifierIndex()])
         {
             stream << (firstPrint ? "'" : ", '") << grammar.getIdentifier(firstSymbol) << "'";
@@ -73,12 +73,12 @@ void ParserImplementation::dump(std::ostream& stream) const
     }
 
     stream << "\nAutomaton:\n";
-    stream << "\tStates:\n";
+    stream << "  States:\n";
     const auto automaton = getAutomaton(grammar);
     for (auto i = 0; i < static_cast<int>(automaton.states.size()); ++i)
     {
         const auto& state = automaton.states[i];
-        stream << "\t\tState #" << i << ":\n";
+        stream << "    State #" << i << ":\n";
         auto collapsedItems = std::map<std::pair<int, int>, std::set<Symbol>>{};
         for (const auto& item : state)
         {
@@ -87,7 +87,7 @@ void ParserImplementation::dump(std::ostream& stream) const
         for (const auto& entry : collapsedItems)
         {
             const auto& rule = grammar.getRules()[entry.first.first];
-            stream << "\t\t\t" << grammar.getIdentifier(rule.leftSide) << " ->";
+            stream << "      " << grammar.getIdentifier(rule.leftSide) << " ->";
             for (auto j = 0; j < static_cast<int>(rule.rightSide.size()); ++j)
             {
                 const auto symbol = rule.rightSide[j];
@@ -138,9 +138,9 @@ std::vector<Node> Parser::parse(const std::string_view text, const ITokenizer& t
     return ::parse(text, tokens, casted(implementation_.get())->parsingTable, casted(implementation_.get())->grammar);
 }
 
-void Parser::dump(std::ostream& stream) const
+void Parser::print(std::ostream& stream) const
 {
-    casted(implementation_.get())->dump(stream);
+    casted(implementation_.get())->print(stream);
 }
 
 }

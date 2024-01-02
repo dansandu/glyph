@@ -24,7 +24,7 @@ public:
     std::vector<dansandu::glyph::node::Node> parse(const std::string_view text,
                                                    const dansandu::glyph::tokenizer::ITokenizer& tokenizer) const;
 
-    void dump(std::ostream& stream) const;
+    void print(std::ostream& stream) const;
 
 private:
     std::shared_ptr<const void> implementation_;
