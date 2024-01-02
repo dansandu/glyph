@@ -8,6 +8,7 @@
 
 #include <cmath>
 #include <map>
+#include <sstream>
 #include <string>
 
 using Catch::Detail::Approx;
@@ -183,6 +184,11 @@ public:
         return valuesStack.front();
     }
 
+    void print(std::ostream& stream) const
+    {
+        parser_.print(stream);
+    }
+
 private:
     Parser parser_;
     RegexTokenizer tokenizer_;
@@ -190,41 +196,106 @@ private:
 
 TEST_CASE("Parser")
 {
-    const auto parser = ArithmeticParser{};
+    SECTION("ArithmeticParser")
+    {
+        const auto parser = ArithmeticParser{};
 
-    const auto functions = std::map<std::string, double (*)(double)>{
-        {"sin", std::sin},
-        {"cos", std::cos},
-        {"ln", std::log}
-    };
+        const auto functions = std::map<std::string, double (*)(double)>{
+            {"sin", std::sin},
+            {"cos", std::cos},
+            {"ln", std::log}
+        };
 
-    const auto variables = std::map<std::string, double>{
-        {"x", 0.5},
-        {"y", 50.0},
-        {"z", 100.0},
-        {"pi", 3.14}
-    };
+        const auto variables = std::map<std::string, double>{
+            {"x", 0.5},
+            {"y", 50.0},
+            {"z", 100.0},
+            {"pi", 3.14}
+        };
 
-    REQUIRE(parser.evaluate(functions, variables, "z + 20 * y ^ sin(x * pi) * ln(1024) + -100") == Approx(6931.46320796));
+        REQUIRE(parser.evaluate(functions, variables, "z + 20 * y ^ sin(x * pi) * ln(1024) + -100") == Approx(6931.46320796));
 
-    REQUIRE(parser.evaluate(functions, variables, "(20 * -z - -y) / (+300.0 + x)") == Approx(-6.48918469));
+        REQUIRE(parser.evaluate(functions, variables, "(20 * -z - -y) / (+300.0 + x)") == Approx(-6.48918469));
 
-    REQUIRE(parser.evaluate(functions, variables, "-3^2") == Approx(-9.0));
+        REQUIRE(parser.evaluate(functions, variables, "-3^2") == Approx(-9.0));
 
-    REQUIRE(parser.evaluate(functions, variables, "2^3^2") == Approx(512.0));
+        REQUIRE(parser.evaluate(functions, variables, "2^3^2") == Approx(512.0));
 
-    REQUIRE(parser.evaluate(functions, variables, "2^-3^2") == Approx(0.001953125));
+        REQUIRE(parser.evaluate(functions, variables, "2^-3^2") == Approx(0.001953125));
 
-    REQUIRE(parser.evaluate(functions, variables, "-2 + 5") == Approx(3.0));
+        REQUIRE(parser.evaluate(functions, variables, "-2 + 5") == Approx(3.0));
 
-    REQUIRE(parser.evaluate(functions, variables, "-2 * 5") == Approx(-10.0));
+        REQUIRE(parser.evaluate(functions, variables, "-2 * 5") == Approx(-10.0));
 
-    REQUIRE_THROWS_AS(parser.evaluate({}, {}, "(50 + 30"), SyntaxError);
+        REQUIRE_THROWS_AS(parser.evaluate({}, {}, "(50 + 30"), SyntaxError);
 
-    REQUIRE_THROWS_AS(parser.evaluate({}, {}, ""), SyntaxError);
+        REQUIRE_THROWS_AS(parser.evaluate({}, {}, ""), SyntaxError);
 
-    REQUIRE_THROWS_AS(parser.evaluate({}, {}, "(50 + 30"), SyntaxError);
+        REQUIRE_THROWS_AS(parser.evaluate({}, {}, "(50 + 30"), SyntaxError);
 
-    REQUIRE_THROWS_AS(parser.evaluate({}, {}, "50+"), SyntaxError);
+        REQUIRE_THROWS_AS(parser.evaluate({}, {}, "50+"), SyntaxError);
+    }
+
+    SECTION("parser print")
+    {
+        const auto parser = Parser{R"(
+            Start -> Sums
+            Sums  -> Sums plus  identifier
+            Sums  -> Sums minus identifier
+            Sums  -> identifier
+        )"};
+
+        const auto expectedPrint =
+R"(Rules:
+  Start -> Sums
+  Sums -> Sums plus identifier
+  Sums -> Sums minus identifier
+  Sums -> identifier
+
+First table:
+  'Start': ['identifier']
+  'Sums': ['identifier']
+  '$': ['$']
+  '': ['']
+  'plus': ['plus']
+  'identifier': ['identifier']
+  'minus': ['minus']
+
+Automaton:
+  States:
+    State #0:
+      Start -> .Sums , $
+      Sums -> .Sums plus identifier , $ plus minus
+      Sums -> .Sums minus identifier , $ plus minus
+      Sums -> .identifier , $ plus minus
+
+    State #1:
+      Start -> Sums . , $
+      Sums -> Sums .plus identifier , $ plus minus
+      Sums -> Sums .minus identifier , $ plus minus
+
+    State #2:
+      Sums -> identifier . , $ plus minus
+
+    State #3:
+      Sums -> Sums plus .identifier , $ plus minus
+
+    State #4:
+      Sums -> Sums minus .identifier , $ plus minus
+
+    State #5:
+      Sums -> Sums plus identifier . , $ plus minus
+
+    State #6:
+      Sums -> Sums minus identifier . , $ plus minus
+
+)";
+
+        auto stream = std::stringstream{};
+
+        parser.print(stream);
+
+        REQUIRE(stream.str() == expectedPrint);
+    }
 }
 // clang-format on
