@@ -30,16 +30,19 @@ TEST_CASE("Grammar")
 
         REQUIRE(removeComments("/* /* comment */Suffix") == "Suffix");
 
+        REQUIRE_THROWS_AS(removeComments("Start /*Sums -> Sums"), GrammarError);
+
         const auto text = R"(
             /*0*/ Start -> S      /* first production rule */
-            /*1*/ S     -> SS     /* some explanation */
-            /*2*/ SS    -> value  /* more details */
+            /*1*/ S     -> SS     /* some 
+            multiline 
+            explanation *//*2*/ SS    -> value  /* more details */
         )";
 
         const auto expected = R"(
              Start -> S      
              S     -> SS     
-             SS    -> value  
+ SS    -> value  
         )";
 
         REQUIRE(removeComments(text) == expected);

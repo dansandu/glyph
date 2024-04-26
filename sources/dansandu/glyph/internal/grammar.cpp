@@ -42,7 +42,17 @@ std::string removeComments(const std::string_view grammar)
         if (commentStart != std::string::npos)
         {
             grammarWithoutComments += grammar.substr(offset, commentStart - offset);
-            offset = grammar.find("*/", commentStart) + 2;
+            offset = grammar.find("*/", commentStart);
+            if (offset == std::string::npos)
+            {
+                THROW(GrammarError, "comment ending not found");
+            }
+            offset += 2;
+            if (std::find(grammar.cbegin() + commentStart, grammar.cbegin() + offset, '\n') !=
+                grammar.cbegin() + offset)
+            {
+                grammarWithoutComments += "\n";
+            }
         }
         else
         {
