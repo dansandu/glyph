@@ -130,6 +130,11 @@ Symbol Parser::getDiscardedSymbolPlaceholder() const
 std::vector<Node> Parser::parse(const std::string_view text, const ITokenizer& tokenizer) const
 {
     const auto tokens = tokenizer.tokenize(text);
+    return parse(text, tokens);
+}
+
+std::vector<Node> Parser::parse(const std::string_view text, const std::vector<Token>& tokens) const
+{
     return ::parse(text, tokens, casted(implementation_.get())->parsingTable, casted(implementation_.get())->grammar);
 }
 

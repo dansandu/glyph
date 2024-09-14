@@ -2,6 +2,7 @@
 
 #include "dansandu/glyph/node.hpp"
 #include "dansandu/glyph/symbol.hpp"
+#include "dansandu/glyph/token.hpp"
 #include "dansandu/glyph/tokenizer.hpp"
 
 #include <memory>
@@ -23,6 +24,9 @@ public:
 
     std::vector<dansandu::glyph::node::Node> parse(const std::string_view text,
                                                    const dansandu::glyph::tokenizer::ITokenizer& tokenizer) const;
+
+    std::vector<dansandu::glyph::node::Node> parse(const std::string_view text,
+                                                   const std::vector<dansandu::glyph::token::Token>& tokens) const;
 
     void print(std::ostream& stream) const;
 
