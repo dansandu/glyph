@@ -94,11 +94,11 @@ std::vector<Node> parse(const std::string_view text, const std::vector<Token>& t
 
             const auto textLocation = getTextLocation(text, token.begin(), token.end());
 
-            throw SyntaxError{format("invalid syntax at line ", textLocation.lineNumber, " and column ",
-                                     textLocation.columnNumber, " with symbol '",
-                                     grammar.getIdentifier(token.getSymbol()),
-                                     "' -- the following symbols were expected: ", join(expectedSymbolsString, ", "),
-                                     "\n", textLocation.highlight),
+            throw SyntaxError{dansandu::ballotin::string::format(
+                                  "invalid syntax at line ", textLocation.lineNumber, " and column ",
+                                  textLocation.columnNumber, " with symbol '", grammar.getIdentifier(token.getSymbol()),
+                                  "' -- the following symbols were expected: ", join(expectedSymbolsString, ", "), "\n",
+                                  textLocation.highlight),
                               textLocation.lineNumber, textLocation.columnNumber, token.getSymbol(), expectedSymbols};
         }
     }

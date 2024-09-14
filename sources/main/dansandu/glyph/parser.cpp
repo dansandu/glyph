@@ -113,12 +113,7 @@ static const ParserImplementation* casted(const void* implementation)
     return static_cast<const ParserImplementation*>(implementation);
 }
 
-static void deleter(const void* implementation)
-{
-    delete static_cast<const ParserImplementation*>(implementation);
-}
-
-Parser::Parser(const std::string_view grammar) : implementation_{new ParserImplementation{grammar}, &deleter}
+Parser::Parser(const std::string_view grammar) : implementation_{std::make_shared<ParserImplementation>(grammar)}
 {
 }
 

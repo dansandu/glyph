@@ -1,13 +1,13 @@
 #include "dansandu/glyph/internal/first_table.hpp"
 #include "dansandu/ballotin/container.hpp"
-#include "dansandu/ballotin/relation.hpp"
 #include "dansandu/glyph/internal/grammar.hpp"
 #include "dansandu/glyph/internal/multimap.hpp"
 #include "dansandu/glyph/symbol.hpp"
 
+#include <compare>
+
 using dansandu::ballotin::container::contains;
 using dansandu::ballotin::container::uniquePushBack;
-using dansandu::ballotin::relation::TotalOrder;
 using dansandu::glyph::internal::grammar::Grammar;
 using dansandu::glyph::internal::multimap::Multimap;
 using dansandu::glyph::symbol::Symbol;
@@ -15,7 +15,7 @@ using dansandu::glyph::symbol::Symbol;
 namespace dansandu::glyph::internal::first_table
 {
 
-struct PartialItem : TotalOrder<PartialItem>
+struct PartialItem
 {
     PartialItem(const int ruleIndex, const int position) : ruleIndex{ruleIndex}, position{position}
     {
@@ -24,11 +24,6 @@ struct PartialItem : TotalOrder<PartialItem>
     int ruleIndex;
     int position;
 };
-
-inline bool operator<(const PartialItem a, const PartialItem b)
-{
-    return std::tie(a.ruleIndex, a.position) < std::tie(b.ruleIndex, b.position);
-}
 
 std::vector<std::vector<Symbol>> getFirstTable(const Grammar& grammar)
 {

@@ -1,7 +1,6 @@
 #include "dansandu/glyph/internal/grammar.hpp"
 #include "dansandu/ballotin/container.hpp"
 #include "dansandu/ballotin/exception.hpp"
-#include "dansandu/ballotin/relation.hpp"
 #include "dansandu/ballotin/string.hpp"
 #include "dansandu/glyph/error.hpp"
 #include "dansandu/glyph/internal/multimap.hpp"
