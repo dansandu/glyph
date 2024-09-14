@@ -1,15 +1,9 @@
 #include "dansandu/glyph/internal/item.hpp"
 
-#include <tuple>
+#include <ostream>
 
 namespace dansandu::glyph::internal::item
 {
-
-bool operator<(const Item& left, const Item& right)
-{
-    return std::tie(left.ruleIndex, left.position, left.lookahead) <
-           std::tie(right.ruleIndex, right.position, right.lookahead);
-}
 
 std::ostream& operator<<(std::ostream& stream, const Item& item)
 {
