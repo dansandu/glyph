@@ -1,5 +1,5 @@
 #include "dansandu/glyph/internal/text_location.hpp"
-#include "catchorg/catch/catch.hpp"
+#include "dansandu/radiance/radiance.hpp"
 
 using dansandu::glyph::internal::text_location::getTextLocation;
 

@@ -1,8 +1,8 @@
 #include "dansandu/glyph/internal/automaton.hpp"
-#include "catchorg/catch/catch.hpp"
 #include "dansandu/glyph/error.hpp"
 #include "dansandu/glyph/internal/first_table.hpp"
 #include "dansandu/glyph/internal/grammar.hpp"
+#include "dansandu/radiance/radiance.hpp"
 
 #include <map>
 #include <vector>
@@ -45,60 +45,112 @@ TEST_CASE("Automaton")
 
     SECTION("closure")
     {
-        REQUIRE(getStateClosure({}, grammar, firstTable).empty());
+        SECTION("closure case #1")
+        {
+            const auto closure = getStateClosure({}, grammar, firstTable);
 
-        REQUIRE(getStateClosure({Item{0, 0, end}}, grammar, firstTable) == Items{{
-            Item{0, 0, end},
-            Item{1, 0, end},
-            Item{1, 0, add},
-            Item{2, 0, end},
-            Item{2, 0, add},
-            Item{3, 0, end},
-            Item{3, 0, add},
-            Item{3, 0, multiply},
-            Item{4, 0, end},
-            Item{4, 0, add},
-            Item{4, 0, multiply}}
-        });
+            REQUIRE(closure.empty());
+        }
 
-        REQUIRE(getStateClosure({Item{0, 1, end}}, grammar, firstTable) == Items{Item{0, 1, end}});
+        SECTION("closure case #2")
+        {
+            const auto closure = getStateClosure({Item{0, 0, end}}, grammar, firstTable);
 
-        REQUIRE(getStateClosure({Item{1, 1, end}}, grammar, firstTable) == Items{Item{1, 1, end}});
+            const auto expectedClosure = Items{{
+                Item{0, 0, end},
+                Item{1, 0, end},
+                Item{1, 0, add},
+                Item{2, 0, end},
+                Item{2, 0, add},
+                Item{3, 0, end},
+                Item{3, 0, add},
+                Item{3, 0, multiply},
+                Item{4, 0, end},
+                Item{4, 0, add},
+                Item{4, 0, multiply}}
+            };
+
+            REQUIRE(closure == expectedClosure);
+        }
+
+        SECTION("closure case #3")
+        {
+            const auto closure = getStateClosure({Item{0, 1, end}}, grammar, firstTable);
+
+            const auto expectedClosure = Items{Item{0, 1, end}};
+
+            REQUIRE(closure == expectedClosure);
+        }
+
+        SECTION("closure case #4")
+        {
+            const auto closure = getStateClosure({Item{1, 1, end}}, grammar, firstTable);
+
+            const auto expectedClosure = Items{Item{1, 1, end}};
+
+            REQUIRE(closure == expectedClosure);
+        }
     }
 
     SECTION("transitions")
     {
-        REQUIRE(getStateTransitions({}, grammar).empty());
+        SECTION("transitions case #1")
+        {
+            const auto transitions = getStateTransitions({}, grammar);
+            
+            REQUIRE(transitions.empty());
+        }
 
-        REQUIRE(getStateTransitions({Item{0, 1, end}}, grammar).empty());
+        SECTION("transitions case #2")
+        {
+            const auto transitions = getStateTransitions({Item{0, 1, end}}, grammar);
 
-        const auto state = Items{
-            Item{0, 0, end},
-            Item{1, 1, multiply},
-            Item{2, 0, add},
-            Item{3, 0, add}
-        };
+            REQUIRE(transitions.empty());
+        }
 
-        const auto expectedTransitions = Transitions{
-            {add,      {Item{1, 2, multiply}}},
-            {Products, {Item{2, 1, add}, Item{3, 1, add}}},
-            {Sums,     {Item{0, 1, end}}}
-        };
+        SECTION("transitions case #3")
+        {
+            const auto state = Items{
+                Item{0, 0, end},
+                Item{1, 1, multiply},
+                Item{2, 0, add},
+                Item{3, 0, add}
+            };
 
-        REQUIRE(getStateTransitions(state, grammar) == expectedTransitions);
+            const auto expectedTransitions = Transitions{
+                {add,      {Item{1, 2, multiply}}},
+                {Products, {Item{2, 1, add}, Item{3, 1, add}}},
+                {Sums,     {Item{0, 1, end}}}
+            };
+
+            const auto transitions = getStateTransitions(state, grammar);
+
+            REQUIRE(transitions == expectedTransitions);
+        }
     }
 
     SECTION("final state")
     {
-        REQUIRE(isFinalState({Item{0, 1, end}, Item{1, 1, end}}, grammar));
+        SECTION("final state case #3")
+        {
+            const auto finalState = isFinalState({Item{0, 1, end}, Item{1, 1, end}}, grammar);
 
-        REQUIRE(!isFinalState({Item{0, 0, end}, Item{1, 1, end}, Item{2, 0, end}}, grammar));
+            REQUIRE(finalState);
+        }
+
+        SECTION("final state case #3")
+        {
+            const auto finalState = !isFinalState({Item{0, 0, end}, Item{1, 1, end}, Item{2, 0, end}}, grammar);
+
+            REQUIRE(finalState);
+        }
     }
 
-    SECTION("automaton") {
+    SECTION("automaton") 
+    {
         const auto automaton = getAutomaton(grammar);
 
-        REQUIRE(automaton.states == std::vector<Items>{
+        const auto expectedStates = std::vector<Items>{
             Items{Item{0, 0, end},
                   Item{1, 0, end},
                   Item{1, 0, add},
@@ -147,9 +199,11 @@ TEST_CASE("Automaton")
             Items{Item{3, 3, end},
                   Item{3, 3, add},
                   Item{3, 3, multiply}}
-        });
+        };
 
-        REQUIRE(automaton.transitions == std::vector<Transition>{
+        REQUIRE(automaton.states == expectedStates);
+
+        const auto expectedTransitions = std::vector<Transition>{
             Transition{Sums,     0, 1},
             Transition{Products, 0, 2},
             Transition{number,   0, 3},
@@ -159,7 +213,9 @@ TEST_CASE("Automaton")
             Transition{number,   4, 3},
             Transition{number,   5, 7},
             Transition{multiply, 6, 5}
-        });
+        };
+
+        REQUIRE(automaton.transitions == expectedTransitions);
     }
 }
 // clang-format on

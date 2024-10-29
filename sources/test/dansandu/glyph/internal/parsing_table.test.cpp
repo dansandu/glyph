@@ -1,7 +1,7 @@
 #include "dansandu/glyph/internal/parsing_table.hpp"
-#include "catchorg/catch/catch.hpp"
 #include "dansandu/glyph/internal/automaton.hpp"
 #include "dansandu/glyph/internal/grammar.hpp"
+#include "dansandu/radiance/radiance.hpp"
 
 #include <vector>
 
@@ -12,7 +12,8 @@ using dansandu::glyph::internal::parsing_table::Cell;
 using dansandu::glyph::internal::parsing_table::getClr1ParsingTable;
 
 // clang-format off
-TEST_CASE("Parsing table") {
+TEST_CASE("Parsing table") 
+{
     const auto grammar = Grammar{R"(
         Start    -> Sums
         Sums     -> Sums add Products
@@ -27,16 +28,18 @@ TEST_CASE("Parsing table") {
                accept = Action::accept,
                shift = Action::shift,
                goTo = Action::goTo;
+
+    const auto expectedTable = std::vector<std::vector<Cell>>{
+        {        {},          {},          {},          {},         {},         {},          {},          {}},
+        {{goTo,  1},          {},          {},          {},         {},         {},          {},          {}},
+        {{goTo,  2},          {},          {},          {}, {goTo,  6},         {},          {},          {}},
+        {        {}, {accept, 0}, {reduce, 2}, {reduce, 4},         {},         {}, {reduce, 1}, {reduce, 3}},
+        {        {},          {},          {},          {},         {},         {},          {},          {}},
+        {        {}, {shift,  4}, {reduce, 2}, {reduce, 4},         {},         {}, {reduce, 1}, {reduce, 3}},
+        {        {},          {}, {shift,  5}, {reduce, 4},         {},         {}, {shift,  5}, {reduce, 3}},
+        {{shift, 3},          {},          {},          {}, {shift, 3}, {shift, 7},          {},          {}}
+    };
     
-    REQUIRE(table == std::vector<std::vector<Cell>>{
-        {         {},          {},          {},          {},          {},          {},          {},          {}},
-        {{goTo,   1},          {},          {},          {},          {},          {},          {},          {}},
-        {{goTo,   2},          {},          {},          {}, {goTo,   6},          {},          {},          {}},
-        {         {}, {accept, 0}, {reduce, 2}, {reduce, 4},          {},          {}, {reduce, 1}, {reduce, 3}},
-        {         {},          {},          {},          {},          {},          {},          {},          {}},
-        {         {}, {shift,  4}, {reduce, 2}, {reduce, 4},          {},          {}, {reduce, 1}, {reduce, 3}},
-        {         {},          {}, {shift,  5}, {reduce, 4},          {},          {}, {shift,  5}, {reduce, 3}},
-        {{shift,  3},          {},          {},          {}, {shift,  3}, {shift,  7},          {},          {}}
-    });
+    REQUIRE(table == expectedTable);
 }
 // clang-format on

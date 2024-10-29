@@ -1,9 +1,9 @@
 #include "dansandu/glyph/internal/first_table.hpp"
-#include "catchorg/catch/catch.hpp"
 #include "dansandu/ballotin/container.hpp"
 #include "dansandu/glyph/error.hpp"
 #include "dansandu/glyph/internal/grammar.hpp"
 #include "dansandu/glyph/symbol.hpp"
+#include "dansandu/radiance/radiance.hpp"
 
 #include <set>
 #include <vector>

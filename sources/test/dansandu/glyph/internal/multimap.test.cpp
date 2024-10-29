@@ -1,79 +1,85 @@
 #include "dansandu/glyph/internal/multimap.hpp"
-#include "catchorg/catch/catch.hpp"
+#include "dansandu/radiance/radiance.hpp"
 
 #include <set>
 
 using dansandu::glyph::internal::multimap::Multimap;
 using dansandu::glyph::symbol::Symbol;
 
+using Symbols = std::vector<Symbol>;
+
+template<typename... T>
+Symbols symbols(T... arguments)
+{
+    return {Symbol{arguments}...};
+}
+
 TEST_CASE("Multimap")
 {
-    SECTION("set values")
+    auto table = Multimap{};
+
+    const auto subscriptAt = [&](const int id) -> auto& { return table[Symbol{id}]; };
+
+    subscriptAt(0) = symbols(1, 2);
+
+    REQUIRE(subscriptAt(0) == symbols(1, 2));
+
+    subscriptAt(10) = symbols(13, 15);
+
+    REQUIRE(subscriptAt(0) == symbols(1, 2));
+
+    REQUIRE(subscriptAt(10) == symbols(13, 15));
+
+    subscriptAt(20) = symbols(26, 29, 21);
+
+    REQUIRE(subscriptAt(0) == symbols(1, 2));
+
+    REQUIRE(subscriptAt(10) == symbols(13, 15));
+
+    REQUIRE(subscriptAt(20) == symbols(26, 29, 21));
+
+    SECTION("merge with new symbol")
     {
-        auto table = Multimap{};
+        table.merge(symbols(0, 40));
 
-        table[Symbol{0}] = {Symbol{1}, Symbol{2}};
+        REQUIRE(subscriptAt(0) == symbols(1, 2));
 
-        REQUIRE(table[Symbol{0}] == std::vector<Symbol>{Symbol{1}, Symbol{2}});
+        REQUIRE(subscriptAt(40) == subscriptAt(0));
 
-        table[Symbol{10}] = {Symbol{13}, Symbol{15}};
+        REQUIRE(subscriptAt(10) == symbols(13, 15));
 
-        REQUIRE(table[Symbol{0}] == std::vector<Symbol>{Symbol{1}, Symbol{2}});
+        REQUIRE(subscriptAt(20) == symbols(26, 29, 21));
+    }
 
-        REQUIRE(table[Symbol{10}] == std::vector<Symbol>{Symbol{13}, Symbol{15}});
+    SECTION("merge with existing symbols")
+    {
+        table.merge(symbols(0, 20));
 
-        table[Symbol{20}] = {Symbol{26}, Symbol{29}, Symbol{21}};
+        REQUIRE(subscriptAt(0) == symbols(1, 2, 26, 29, 21));
 
-        REQUIRE(table[Symbol{0}] == std::vector<Symbol>{Symbol{1}, Symbol{2}});
+        REQUIRE(subscriptAt(0) == subscriptAt(20));
 
-        REQUIRE(table[Symbol{10}] == std::vector<Symbol>{Symbol{13}, Symbol{15}});
+        REQUIRE(subscriptAt(10) == symbols(13, 15));
+    }
 
-        REQUIRE(table[Symbol{20}] == std::vector<Symbol>{Symbol{26}, Symbol{29}, Symbol{21}});
+    SECTION("iteration")
+    {
+        auto actualPartitions = std::vector<Symbols>{};
+        auto actualValues = std::vector<Symbols>{};
 
-        SECTION("merge with new symbol")
-        {
-            table.merge({Symbol{0}, Symbol{40}});
+        table.forEach(
+            [&](const auto& p, const auto& v)
+            {
+                actualPartitions.push_back(p);
+                actualValues.push_back(v);
+            });
 
-            REQUIRE(table[Symbol{0}] == std::vector<Symbol>{Symbol{1}, Symbol{2}});
+        const auto expectedPartitions = std::vector<Symbols>{symbols(0), symbols(10), symbols(20)};
 
-            REQUIRE(table[Symbol{40}] == table[Symbol{0}]);
+        const auto expectedValues = std::vector<Symbols>{symbols(1, 2), symbols(13, 15), symbols(26, 29, 21)};
 
-            REQUIRE(table[Symbol{10}] == std::vector<Symbol>{Symbol{13}, Symbol{15}});
+        REQUIRE(actualPartitions == expectedPartitions);
 
-            REQUIRE(table[Symbol{20}] == std::vector<Symbol>{Symbol{26}, Symbol{29}, Symbol{21}});
-        }
-
-        SECTION("merge with existing symbols")
-        {
-            table.merge({Symbol{0}, Symbol{20}});
-
-            REQUIRE(table[Symbol{0}] == std::vector<Symbol>{Symbol{1}, Symbol{2}, Symbol{26}, Symbol{29}, Symbol{21}});
-
-            REQUIRE(table[Symbol{0}] == table[Symbol{20}]);
-
-            REQUIRE(table[Symbol{10}] == std::vector<Symbol>{Symbol{13}, Symbol{15}});
-        }
-
-        SECTION("iteration")
-        {
-            auto actualPartitions = std::vector<std::vector<Symbol>>{};
-            auto actualValues = std::vector<std::vector<Symbol>>{};
-
-            table.forEach(
-                [&](const auto& p, const auto& v)
-                {
-                    actualPartitions.push_back(p);
-                    actualValues.push_back(v);
-                });
-
-            const auto expectedPartitions = std::vector<std::vector<Symbol>>{{Symbol{0}}, {Symbol{10}}, {Symbol{20}}};
-
-            const auto expectedValues = std::vector<std::vector<Symbol>>{
-                {Symbol{1}, Symbol{2}}, {Symbol{13}, Symbol{15}}, {Symbol{26}, Symbol{29}, Symbol{21}}};
-
-            REQUIRE(actualPartitions == expectedPartitions);
-
-            REQUIRE(actualValues == expectedValues);
-        }
+        REQUIRE(actualValues == expectedValues);
     }
 }

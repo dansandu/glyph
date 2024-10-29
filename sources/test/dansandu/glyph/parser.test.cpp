@@ -1,22 +1,22 @@
 #include "dansandu/glyph/parser.hpp"
-#include "catchorg/catch/catch.hpp"
 #include "dansandu/ballotin/exception.hpp"
 #include "dansandu/glyph/error.hpp"
 #include "dansandu/glyph/node.hpp"
 #include "dansandu/glyph/regex_tokenizer.hpp"
 #include "dansandu/glyph/token.hpp"
+#include "dansandu/radiance/radiance.hpp"
 
 #include <cmath>
 #include <map>
 #include <sstream>
 #include <string>
 
-using Catch::Detail::Approx;
 using dansandu::glyph::error::SyntaxError;
 using dansandu::glyph::node::Node;
 using dansandu::glyph::parser::Parser;
 using dansandu::glyph::regex_tokenizer::RegexTokenizer;
 using dansandu::glyph::token::Token;
+using dansandu::radiance::Tolerance;
 
 template<typename T>
 auto pop(std::vector<T>& stack)
@@ -213,27 +213,27 @@ TEST_CASE("Parser")
             {"pi", 3.14}
         };
 
-        REQUIRE(parser.evaluate(functions, variables, "z + 20 * y ^ sin(x * pi) * ln(1024) + -100") == Approx(6931.46320796));
+        REQUIRE(parser.evaluate(functions, variables, "z + 20 * y ^ sin(x * pi) * ln(1024) + -100") == Tolerance(6931.46320796));
 
-        REQUIRE(parser.evaluate(functions, variables, "(20 * -z - -y) / (+300.0 + x)") == Approx(-6.48918469));
+        REQUIRE(parser.evaluate(functions, variables, "(20 * -z - -y) / (+300.0 + x)") == Tolerance(-6.48918469));
 
-        REQUIRE(parser.evaluate(functions, variables, "-3^2") == Approx(-9.0));
+        REQUIRE(parser.evaluate(functions, variables, "-3^2") == Tolerance(-9.0));
 
-        REQUIRE(parser.evaluate(functions, variables, "2^3^2") == Approx(512.0));
+        REQUIRE(parser.evaluate(functions, variables, "2^3^2") == Tolerance(512.0));
 
-        REQUIRE(parser.evaluate(functions, variables, "2^-3^2") == Approx(0.001953125));
+        REQUIRE(parser.evaluate(functions, variables, "2^-3^2") == Tolerance(0.001953125));
 
-        REQUIRE(parser.evaluate(functions, variables, "-2 + 5") == Approx(3.0));
+        REQUIRE(parser.evaluate(functions, variables, "-2 + 5") == Tolerance(3.0));
 
-        REQUIRE(parser.evaluate(functions, variables, "-2 * 5") == Approx(-10.0));
+        REQUIRE(parser.evaluate(functions, variables, "-2 * 5") == Tolerance(-10.0));
 
-        REQUIRE_THROWS_AS(parser.evaluate({}, {}, "(50 + 30"), SyntaxError);
+        REQUIRE_THROW(parser.evaluate({}, {}, "(50 + 30"), SyntaxError);
 
-        REQUIRE_THROWS_AS(parser.evaluate({}, {}, ""), SyntaxError);
+        REQUIRE_THROW(parser.evaluate({}, {}, ""), SyntaxError);
 
-        REQUIRE_THROWS_AS(parser.evaluate({}, {}, "(50 + 30"), SyntaxError);
+        REQUIRE_THROW(parser.evaluate({}, {}, "(50 + 30"), SyntaxError);
 
-        REQUIRE_THROWS_AS(parser.evaluate({}, {}, "50+"), SyntaxError);
+        REQUIRE_THROW(parser.evaluate({}, {}, "50+"), SyntaxError);
     }
 
     SECTION("parser print")

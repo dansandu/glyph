@@ -3,6 +3,7 @@
 #include "dansandu/glyph/symbol.hpp"
 
 #include <ostream>
+#include <string>
 
 namespace dansandu::glyph::token
 {
@@ -31,6 +32,8 @@ public:
     {
         return end_;
     }
+
+    std::string toString() const;
 
 private:
     dansandu::glyph::symbol::Symbol symbol_;

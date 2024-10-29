@@ -1,7 +1,7 @@
 #include "dansandu/glyph/node.hpp"
-#include "catchorg/catch/catch.hpp"
 #include "dansandu/glyph/symbol.hpp"
 #include "dansandu/glyph/token.hpp"
+#include "dansandu/radiance/radiance.hpp"
 
 using dansandu::glyph::node::Node;
 using dansandu::glyph::symbol::Symbol;
@@ -21,7 +21,7 @@ TEST_CASE("Node")
 
         REQUIRE(node.getToken() == token);
 
-        REQUIRE_THROWS_AS(node.getRuleIndex(), std::logic_error);
+        REQUIRE_THROW(node.getRuleIndex(), std::logic_error);
     }
 
     SECTION("with production rule")
@@ -36,6 +36,6 @@ TEST_CASE("Node")
 
         REQUIRE(node.getRuleIndex() == ruleIndex);
 
-        REQUIRE_THROWS_AS(node.getToken(), std::logic_error);
+        REQUIRE_THROW(node.getToken(), std::logic_error);
     }
 }

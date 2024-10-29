@@ -1,11 +1,11 @@
 #include "dansandu/glyph/internal/parsing.hpp"
-#include "catchorg/catch/catch.hpp"
 #include "dansandu/glyph/error.hpp"
 #include "dansandu/glyph/internal/grammar.hpp"
 #include "dansandu/glyph/internal/parsing_table.hpp"
 #include "dansandu/glyph/node.hpp"
 #include "dansandu/glyph/regex_tokenizer.hpp"
 #include "dansandu/glyph/token.hpp"
+#include "dansandu/radiance/radiance.hpp"
 
 #include <vector>
 
@@ -54,47 +54,51 @@ TEST_CASE("Parsing")
 
             const auto nodes = parse(text, tokenizer.tokenize(text), parsingTable, grammar);
 
-            const auto expected = std::vector<Node>{Node{Token{identifier, 0, 1}},
-                                                    Node{8},
-                                                    Node{5},
-                                                    Node{4},
-                                                    Node{Token{multiply, 2, 3}},
-                                                    Node{Token{identifier, 4, 5}},
-                                                    Node{8},
-                                                    Node{5},
-                                                    Node{3},
-                                                    Node{2},
-                                                    Node{Token{plus, 6, 7}},
-                                                    Node{Token{number, 8, 10}},
-                                                    Node{7},
-                                                    Node{5},
-                                                    Node{4},
-                                                    Node{1},
-                                                    Node{0}};
+            const auto expectedNodes = std::vector<Node>{Node{Token{identifier, 0, 1}},
+                                                         Node{8},
+                                                         Node{5},
+                                                         Node{4},
+                                                         Node{Token{multiply, 2, 3}},
+                                                         Node{Token{identifier, 4, 5}},
+                                                         Node{8},
+                                                         Node{5},
+                                                         Node{3},
+                                                         Node{2},
+                                                         Node{Token{plus, 6, 7}},
+                                                         Node{Token{number, 8, 10}},
+                                                         Node{7},
+                                                         Node{5},
+                                                         Node{4},
+                                                         Node{1},
+                                                         Node{0}};
 
-            REQUIRE(nodes == expected);
+            REQUIRE(nodes == expectedNodes);
         }
 
         SECTION("failed parse")
         {
             {
                 const auto text = "a *";
-                REQUIRE_THROWS_AS(parse(text, tokenizer.tokenize(text), parsingTable, grammar), SyntaxError);
+
+                REQUIRE_THROW(parse(text, tokenizer.tokenize(text), parsingTable, grammar), SyntaxError);
             }
 
             {
                 const auto text = "* 2";
-                REQUIRE_THROWS_AS(parse(text, tokenizer.tokenize(text), parsingTable, grammar), SyntaxError);
+
+                REQUIRE_THROW(parse(text, tokenizer.tokenize(text), parsingTable, grammar), SyntaxError);
             }
 
             {
                 const auto text = "+ * a";
-                REQUIRE_THROWS_AS(parse(text, tokenizer.tokenize(text), parsingTable, grammar), SyntaxError);
+
+                REQUIRE_THROW(parse(text, tokenizer.tokenize(text), parsingTable, grammar), SyntaxError);
             }
 
             {
                 const auto text = "x y";
-                REQUIRE_THROWS_AS(parse(text, tokenizer.tokenize(text), parsingTable, grammar), SyntaxError);
+
+                REQUIRE_THROW(parse(text, tokenizer.tokenize(text), parsingTable, grammar), SyntaxError);
             }
         }
     }
@@ -136,12 +140,14 @@ TEST_CASE("Parsing")
         {
             {
                 const auto text = "aa";
-                REQUIRE_THROWS_AS(parse(text, tokenizer.tokenize(text), parsingTable, grammar), SyntaxError);
+
+                REQUIRE_THROW(parse(text, tokenizer.tokenize(text), parsingTable, grammar), SyntaxError);
             }
 
             {
                 const auto text = "aaba";
-                REQUIRE_THROWS_AS(parse(text, tokenizer.tokenize(text), parsingTable, grammar), SyntaxError);
+
+                REQUIRE_THROW(parse(text, tokenizer.tokenize(text), parsingTable, grammar), SyntaxError);
             }
         }
     }
