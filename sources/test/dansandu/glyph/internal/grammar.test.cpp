@@ -1,8 +1,8 @@
 #include "dansandu/glyph/internal/grammar.hpp"
-#include "catchorg/catch/catch.hpp"
 #include "dansandu/ballotin/container.hpp"
 #include "dansandu/glyph/error.hpp"
 #include "dansandu/glyph/symbol.hpp"
+#include "dansandu/radiance/radiance.hpp"
 
 #include <map>
 #include <string>
@@ -30,7 +30,7 @@ TEST_CASE("Grammar")
 
         REQUIRE(removeComments("/* /* comment */Suffix") == "Suffix");
 
-        REQUIRE_THROWS_AS(removeComments("Start /*Sums -> Sums"), GrammarError);
+        REQUIRE_THROW(removeComments("Start /*Sums -> Sums"), GrammarError);
 
         const auto text = R"(
             /*0*/ Start -> S      /* first production rule */
@@ -50,23 +50,23 @@ TEST_CASE("Grammar")
 
     SECTION("invalid grammars")
     {
-        REQUIRE_THROWS_AS(Grammar{"Start Sums -> Sums"}, GrammarError);
+        REQUIRE_THROW(Grammar{"Start Sums -> Sums"}, GrammarError);
 
-        REQUIRE_THROWS_AS(Grammar{"Sums Sums"}, GrammarError);
+        REQUIRE_THROW(Grammar{"Sums Sums"}, GrammarError);
 
-        REQUIRE_THROWS_AS(Grammar{"Sums -> Products Products -> Value"}, GrammarError);
+        REQUIRE_THROW(Grammar{"Sums -> Products Products -> Value"}, GrammarError);
 
-        REQUIRE_THROWS_AS(Grammar{"Sums0 -> Value"}, GrammarError);
+        REQUIRE_THROW(Grammar{"Sums0 -> Value"}, GrammarError);
 
-        REQUIRE_THROWS_AS(Grammar{"Sums -> Value$"}, GrammarError);
+        REQUIRE_THROW(Grammar{"Sums -> Value$"}, GrammarError);
 
-        REQUIRE_THROWS_AS(Grammar{"Sums -> Value + Value"}, GrammarError);
+        REQUIRE_THROW(Grammar{"Sums -> Value + Value"}, GrammarError);
 
-        REQUIRE_THROWS_AS(Grammar{"Start -> S\nStart -> SS"}, GrammarError);
+        REQUIRE_THROW(Grammar{"Start -> S\nStart -> SS"}, GrammarError);
 
-        REQUIRE_THROWS_AS(Grammar{"S -> SS\nStart -> SS"}, GrammarError);
+        REQUIRE_THROW(Grammar{"S -> SS\nStart -> SS"}, GrammarError);
 
-        REQUIRE_THROWS_AS(Grammar{"Start -> Sums\nSums -> Start"}, GrammarError);
+        REQUIRE_THROW(Grammar{"Start -> Sums\nSums -> Start"}, GrammarError);
     }
 
     SECTION("grammar #1")
@@ -313,9 +313,9 @@ TEST_CASE("Grammar")
 
             REQUIRE(grammar.getTerminalSymbol("d") == d);
 
-            REQUIRE_THROWS_AS(grammar.getTerminalSymbol(""), GrammarError);
+            REQUIRE_THROW(grammar.getTerminalSymbol(""), GrammarError);
 
-            REQUIRE_THROWS_AS(grammar.getTerminalSymbol("$"), GrammarError);
+            REQUIRE_THROW(grammar.getTerminalSymbol("$"), GrammarError);
         }
     }
 

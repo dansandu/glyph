@@ -49,6 +49,8 @@ public:
         THROW(std::logic_error, "node doesn't hold a rule");
     }
 
+    std::string toString() const;
+
 private:
     int ruleIndex_;
     dansandu::glyph::token::Token token_;

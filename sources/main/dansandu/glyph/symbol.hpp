@@ -2,6 +2,7 @@
 
 #include <compare>
 #include <ostream>
+#include <string>
 
 namespace dansandu::glyph::symbol
 {
@@ -23,6 +24,8 @@ public:
     {
         return identifierIndex_;
     }
+
+    std::string toString() const;
 
 private:
     int identifierIndex_;

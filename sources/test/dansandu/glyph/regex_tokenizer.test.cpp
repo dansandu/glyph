@@ -1,7 +1,7 @@
 #include "dansandu/glyph/regex_tokenizer.hpp"
-#include "catchorg/catch/catch.hpp"
 #include "dansandu/glyph/error.hpp"
 #include "dansandu/glyph/token.hpp"
+#include "dansandu/radiance/radiance.hpp"
 
 using dansandu::glyph::error::TokenizationError;
 using dansandu::glyph::regex_tokenizer::RegexTokenizer;
@@ -15,8 +15,14 @@ TEST_CASE("RegexTokenizer")
     const auto add = Symbol{2};
     const auto whitespace = Symbol{3};
 
-    const auto tokenizer = RegexTokenizer{
-        {{identifier, "[a-zA-Z]\\w*"}, {number, "([1-9]\\d*|0)(\\.\\d+)?"}, {add, "\\+"}, {whitespace, "\\s+"}}};
+    // clang-format off
+    const auto tokenizer = RegexTokenizer{{
+        {identifier, "[a-zA-Z]\\w*"}, 
+        {number,     "([1-9]\\d*|0)(\\.\\d+)?"}, 
+        {add,        "\\+"}, 
+        {whitespace, "\\s+"},
+    }};
+    // clang-format on
 
     SECTION("empty text")
     {
@@ -35,10 +41,10 @@ TEST_CASE("RegexTokenizer")
 
     SECTION("bad text")
     {
-        REQUIRE_THROWS_AS(tokenizer.tokenize("a + & + 20"), TokenizationError);
+        REQUIRE_THROW(tokenizer.tokenize("a + & + 20"), TokenizationError);
 
-        REQUIRE_THROWS_AS(tokenizer.tokenize("a + f()"), TokenizationError);
+        REQUIRE_THROW(tokenizer.tokenize("a + f()"), TokenizationError);
 
-        REQUIRE_THROWS_AS(tokenizer.tokenize("@a + 10"), TokenizationError);
+        REQUIRE_THROW(tokenizer.tokenize("@a + 10"), TokenizationError);
     }
 }
