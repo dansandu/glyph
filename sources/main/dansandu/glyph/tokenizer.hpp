@@ -11,12 +11,9 @@ namespace dansandu::glyph::tokenizer
 class PRALINE_EXPORT ITokenizer
 {
 public:
-    ITokenizer();
-
-    virtual std::vector<dansandu::glyph::token::Token> tokenize(const std::string_view text) const = 0;
-
     virtual ~ITokenizer() noexcept;
 
+    virtual std::vector<dansandu::glyph::token::Token> tokenize(const std::string_view text) = 0;
 };
 
 }

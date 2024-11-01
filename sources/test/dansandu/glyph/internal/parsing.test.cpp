@@ -40,11 +40,11 @@ TEST_CASE("Parsing")
         const auto number = grammar.getSymbol("number");
         const auto discarded = grammar.getDiscardedSymbolPlaceholder();
 
-        const auto tokenizer = RegexTokenizer{{{identifier, "[a-z]\\w*"},
-                                               {number, "([1-9]\\d*|0)(\\.\\d+)?"},
-                                               {plus, "\\+"},
-                                               {multiply, "\\*"},
-                                               {discarded, "\\s+"}}};
+        auto tokenizer = RegexTokenizer{{{identifier, "[a-z]\\w*"},
+                                         {number, "([1-9]\\d*|0)(\\.\\d+)?"},
+                                         {plus, "\\+"},
+                                         {multiply, "\\*"},
+                                         {discarded, "\\s+"}}};
 
         const auto parsingTable = getClr1ParsingTable(grammar, getAutomaton(grammar));
 
@@ -116,7 +116,7 @@ TEST_CASE("Parsing")
         const auto a = grammar.getSymbol("a");
         const auto b = grammar.getSymbol("b");
 
-        const auto tokenizer = RegexTokenizer{{{a, "a"}, {b, "b"}}};
+        auto tokenizer = RegexTokenizer{{{a, "a"}, {b, "b"}}};
 
         const auto parsingTable = getClr1ParsingTable(grammar, getAutomaton(grammar));
 

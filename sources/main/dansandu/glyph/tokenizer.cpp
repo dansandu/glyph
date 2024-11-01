@@ -3,10 +3,6 @@
 namespace dansandu::glyph::tokenizer
 {
 
-ITokenizer::ITokenizer()
-{
-}
-
 ITokenizer::~ITokenizer() noexcept
 {
 }

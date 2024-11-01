@@ -64,7 +64,7 @@ public:
 
     double evaluate(const std::map<std::string, double (*)(double)>& functions,
                     const std::map<std::string, double>& variables,
-                    const std::string_view formula) const
+                    const std::string_view formula)
     {
         const auto identifier = parser_.getTerminalSymbol("identifier");
         const auto number = parser_.getTerminalSymbol("number");
@@ -198,7 +198,7 @@ TEST_CASE("Parser")
 {
     SECTION("ArithmeticParser")
     {
-        const auto parser = ArithmeticParser{};
+        auto parser = ArithmeticParser{};
 
         const auto functions = std::map<std::string, double (*)(double)>{
             {"sin", std::sin},

@@ -90,7 +90,7 @@ int main(int argumentsCount, char** arguments)
     // their actual representation in the input string. The regex tokenizer
     // maps terminals to patterns. The order of the patterns matters because
     // the first matching pattern is used to generate the token.
-    const auto tokenizer =
+    auto tokenizer =
         RegexTokenizer{{{add,        "\\+"},
                         {multiply,   "\\*"},
                         {number,     "(?:[1-9]\\d*|0)(?:\\.\\d+)?"},
