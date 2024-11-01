@@ -23,7 +23,7 @@ public:
     dansandu::glyph::symbol::Symbol getDiscardedSymbolPlaceholder() const;
 
     std::vector<dansandu::glyph::node::Node> parse(const std::string_view text,
-                                                   const dansandu::glyph::tokenizer::ITokenizer& tokenizer) const;
+                                                   dansandu::glyph::tokenizer::ITokenizer& tokenizer) const;
 
     std::vector<dansandu::glyph::node::Node> parse(const std::string_view text,
                                                    const std::vector<dansandu::glyph::token::Token>& tokens) const;

@@ -16,7 +16,7 @@ public:
     explicit RegexTokenizer(
         const std::vector<std::pair<dansandu::glyph::symbol::Symbol, std::string_view>>& descriptors);
 
-    std::vector<dansandu::glyph::token::Token> tokenize(const std::string_view text) const override;
+    std::vector<dansandu::glyph::token::Token> tokenize(const std::string_view text) override;
 
 private:
     std::vector<std::pair<dansandu::glyph::symbol::Symbol, std::regex>> descriptors_;

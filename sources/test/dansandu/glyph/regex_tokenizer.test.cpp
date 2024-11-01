@@ -16,7 +16,7 @@ TEST_CASE("RegexTokenizer")
     const auto whitespace = Symbol{3};
 
     // clang-format off
-    const auto tokenizer = RegexTokenizer{{
+    auto tokenizer = RegexTokenizer{{
         {identifier, "[a-zA-Z]\\w*"}, 
         {number,     "([1-9]\\d*|0)(\\.\\d+)?"}, 
         {add,        "\\+"}, 

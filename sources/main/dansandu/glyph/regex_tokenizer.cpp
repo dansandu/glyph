@@ -24,7 +24,7 @@ RegexTokenizer::RegexTokenizer(const std::vector<std::pair<Symbol, std::string_v
     }
 }
 
-std::vector<Token> RegexTokenizer::tokenize(const std::string_view text) const
+std::vector<Token> RegexTokenizer::tokenize(const std::string_view text)
 {
     auto tokens = std::vector<Token>{};
     auto position = text.cbegin();
@@ -46,7 +46,7 @@ std::vector<Token> RegexTokenizer::tokenize(const std::string_view text) const
         }
         if (!matchFound)
         {
-            const auto index = position - text.cbegin();
+            const auto index = static_cast<int>(position - text.cbegin());
             const auto textLocation = getTextLocation(text, index, index);
 
             THROW(TokenizationError, "no pattern matches at line ", textLocation.lineNumber, " and column ",
