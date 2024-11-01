@@ -24,7 +24,7 @@ TextLocation getTextLocation(const std::string_view text, const int tokenBegin, 
 
     auto textLocation = TextLocation{};
 
-    textLocation.lineNumber = 1 + std::count(text.begin(), text.begin() + tokenBegin, '\n');
+    textLocation.lineNumber = 1 + static_cast<int>(std::count(text.begin(), text.begin() + tokenBegin, '\n'));
 
     auto lineBegin = text.rfind('\n', tokenBegin);
     if (lineBegin == std::string_view::npos)
@@ -42,7 +42,7 @@ TextLocation getTextLocation(const std::string_view text, const int tokenBegin, 
         lineEnd = textSize;
     }
 
-    textLocation.columnNumber = tokenBegin - lineBegin + 1;
+    textLocation.columnNumber = static_cast<int>(tokenBegin - lineBegin) + 1;
 
     auto underscore = tokenBegin < tokenEnd ? std::string(tokenEnd - tokenBegin - 1, '~') : std::string();
     if (tokenBegin == textSize)
