@@ -191,4 +191,4 @@ The command should print something like this:
 ```
 3 + 5 * 10 + 40 = 93
 ```
-This was the simple symbolic calculator. More features can be added such as subtraction, division, powers, parentheses, signed values, variables, functions or even a fully-fledged programming language. Click [here](https://github.com/dansandu/glyph/blob/develop/sources/dansandu/glyph/parser.test.cpp) to see a more sophisticated example.
+This was the simple symbolic calculator. More features can be added such as subtraction, division, powers, parentheses, signed values, variables, functions or even a fully-fledged programming language. Click [here](https://github.com/dansandu/glyph/blob/develop/sources/test/dansandu/glyph/parser.test.cpp) to see a more sophisticated example.
