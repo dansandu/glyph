@@ -13,7 +13,7 @@ class PRALINE_EXPORT ITokenizer
 public:
     virtual ~ITokenizer() noexcept;
 
-    virtual std::vector<dansandu::glyph::token::Token> tokenize(const std::string_view text) = 0;
+    virtual std::vector<dansandu::glyph::token::Token> tokenize(const std::string_view text) const = 0;
 };
 
 }

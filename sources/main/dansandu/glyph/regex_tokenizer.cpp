@@ -24,7 +24,7 @@ RegexTokenizer::RegexTokenizer(const std::vector<std::pair<Symbol, std::string_v
     }
 }
 
-std::vector<Token> RegexTokenizer::tokenize(const std::string_view text)
+std::vector<Token> RegexTokenizer::tokenize(const std::string_view text) const
 {
     auto tokens = std::vector<Token>{};
     auto position = text.cbegin();
