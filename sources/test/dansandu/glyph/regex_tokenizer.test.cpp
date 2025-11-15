@@ -41,10 +41,10 @@ TEST_CASE("RegexTokenizer")
 
     SECTION("bad text")
     {
-        REQUIRE_THROW(tokenizer.tokenize("a + & + 20"), TokenizationError);
+        REQUIRE_THROW(TokenizationError, tokenizer.tokenize("a + & + 20"));
 
-        REQUIRE_THROW(tokenizer.tokenize("a + f()"), TokenizationError);
+        REQUIRE_THROW(TokenizationError, tokenizer.tokenize("a + f()"));
 
-        REQUIRE_THROW(tokenizer.tokenize("@a + 10"), TokenizationError);
+        REQUIRE_THROW(TokenizationError, tokenizer.tokenize("@a + 10"));
     }
 }

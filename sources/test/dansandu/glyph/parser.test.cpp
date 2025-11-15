@@ -227,13 +227,13 @@ TEST_CASE("Parser")
 
         REQUIRE(parser.evaluate(functions, variables, "-2 * 5") == Tolerance(-10.0));
 
-        REQUIRE_THROW(parser.evaluate({}, {}, "(50 + 30"), SyntaxError);
+        REQUIRE_THROW(SyntaxError, parser.evaluate({}, {}, "(50 + 30"));
 
-        REQUIRE_THROW(parser.evaluate({}, {}, ""), SyntaxError);
+        REQUIRE_THROW(SyntaxError, parser.evaluate({}, {}, ""));
 
-        REQUIRE_THROW(parser.evaluate({}, {}, "(50 + 30"), SyntaxError);
+        REQUIRE_THROW(SyntaxError, parser.evaluate({}, {}, "(50 + 30"));
 
-        REQUIRE_THROW(parser.evaluate({}, {}, "50+"), SyntaxError);
+        REQUIRE_THROW(SyntaxError, parser.evaluate({}, {}, "50+"));
     }
 
     SECTION("parser print")

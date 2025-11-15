@@ -80,25 +80,25 @@ TEST_CASE("Parsing")
             {
                 const auto text = "a *";
 
-                REQUIRE_THROW(parse(text, tokenizer.tokenize(text), parsingTable, grammar), SyntaxError);
+                REQUIRE_THROW(SyntaxError, parse(text, tokenizer.tokenize(text), parsingTable, grammar));
             }
 
             {
                 const auto text = "* 2";
 
-                REQUIRE_THROW(parse(text, tokenizer.tokenize(text), parsingTable, grammar), SyntaxError);
+                REQUIRE_THROW(SyntaxError, parse(text, tokenizer.tokenize(text), parsingTable, grammar));
             }
 
             {
                 const auto text = "+ * a";
 
-                REQUIRE_THROW(parse(text, tokenizer.tokenize(text), parsingTable, grammar), SyntaxError);
+                REQUIRE_THROW(SyntaxError, parse(text, tokenizer.tokenize(text), parsingTable, grammar));
             }
 
             {
                 const auto text = "x y";
 
-                REQUIRE_THROW(parse(text, tokenizer.tokenize(text), parsingTable, grammar), SyntaxError);
+                REQUIRE_THROW(SyntaxError, parse(text, tokenizer.tokenize(text), parsingTable, grammar));
             }
         }
     }
@@ -141,13 +141,13 @@ TEST_CASE("Parsing")
             {
                 const auto text = "aa";
 
-                REQUIRE_THROW(parse(text, tokenizer.tokenize(text), parsingTable, grammar), SyntaxError);
+                REQUIRE_THROW(SyntaxError, parse(text, tokenizer.tokenize(text), parsingTable, grammar));
             }
 
             {
                 const auto text = "aaba";
 
-                REQUIRE_THROW(parse(text, tokenizer.tokenize(text), parsingTable, grammar), SyntaxError);
+                REQUIRE_THROW(SyntaxError, parse(text, tokenizer.tokenize(text), parsingTable, grammar));
             }
         }
     }
