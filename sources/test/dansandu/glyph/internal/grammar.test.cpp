@@ -30,7 +30,7 @@ TEST_CASE("Grammar")
 
         REQUIRE(removeComments("/* /* comment */Suffix") == "Suffix");
 
-        REQUIRE_THROW(removeComments("Start /*Sums -> Sums"), GrammarError);
+        REQUIRE_THROW(GrammarError, removeComments("Start /*Sums -> Sums"));
 
         const auto text = R"(
             /*0*/ Start -> S      /* first production rule */
@@ -50,23 +50,23 @@ TEST_CASE("Grammar")
 
     SECTION("invalid grammars")
     {
-        REQUIRE_THROW(Grammar{"Start Sums -> Sums"}, GrammarError);
+        REQUIRE_THROW(GrammarError, Grammar{"Start Sums -> Sums"});
 
-        REQUIRE_THROW(Grammar{"Sums Sums"}, GrammarError);
+        REQUIRE_THROW(GrammarError, Grammar{"Sums Sums"});
 
-        REQUIRE_THROW(Grammar{"Sums -> Products Products -> Value"}, GrammarError);
+        REQUIRE_THROW(GrammarError, Grammar{"Sums -> Products Products -> Value"});
 
-        REQUIRE_THROW(Grammar{"Sums0 -> Value"}, GrammarError);
+        REQUIRE_THROW(GrammarError, Grammar{"Sums0 -> Value"});
 
-        REQUIRE_THROW(Grammar{"Sums -> Value$"}, GrammarError);
+        REQUIRE_THROW(GrammarError, Grammar{"Sums -> Value$"});
 
-        REQUIRE_THROW(Grammar{"Sums -> Value + Value"}, GrammarError);
+        REQUIRE_THROW(GrammarError, Grammar{"Sums -> Value + Value"});
 
-        REQUIRE_THROW(Grammar{"Start -> S\nStart -> SS"}, GrammarError);
+        REQUIRE_THROW(GrammarError, Grammar{"Start -> S\nStart -> SS"});
 
-        REQUIRE_THROW(Grammar{"S -> SS\nStart -> SS"}, GrammarError);
+        REQUIRE_THROW(GrammarError, Grammar{"S -> SS\nStart -> SS"});
 
-        REQUIRE_THROW(Grammar{"Start -> Sums\nSums -> Start"}, GrammarError);
+        REQUIRE_THROW(GrammarError, Grammar{"Start -> Sums\nSums -> Start"});
     }
 
     SECTION("grammar #1")
@@ -313,9 +313,9 @@ TEST_CASE("Grammar")
 
             REQUIRE(grammar.getTerminalSymbol("d") == d);
 
-            REQUIRE_THROW(grammar.getTerminalSymbol(""), GrammarError);
+            REQUIRE_THROW(GrammarError, grammar.getTerminalSymbol(""));
 
-            REQUIRE_THROW(grammar.getTerminalSymbol("$"), GrammarError);
+            REQUIRE_THROW(GrammarError, grammar.getTerminalSymbol("$"));
         }
     }
 
