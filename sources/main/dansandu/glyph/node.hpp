@@ -1,7 +1,7 @@
 #pragma once
 
-#include "dansandu/ballotin/exception.hpp"
 #include "dansandu/glyph/token.hpp"
+#include "dansandu/journey/exception.hpp"
 
 #include <ostream>
 

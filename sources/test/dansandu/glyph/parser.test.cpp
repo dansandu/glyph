@@ -1,9 +1,9 @@
 #include "dansandu/glyph/parser.hpp"
-#include "dansandu/ballotin/exception.hpp"
 #include "dansandu/glyph/error.hpp"
 #include "dansandu/glyph/node.hpp"
 #include "dansandu/glyph/regex_tokenizer.hpp"
 #include "dansandu/glyph/token.hpp"
+#include "dansandu/journey/exception.hpp"
 #include "dansandu/radiance/radiance.hpp"
 
 #include <cmath>
