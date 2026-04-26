@@ -1,5 +1,4 @@
 #include "dansandu/glyph/internal/parsing.hpp"
-#include "dansandu/ballotin/exception.hpp"
 #include "dansandu/ballotin/string.hpp"
 #include "dansandu/glyph/error.hpp"
 #include "dansandu/glyph/internal/grammar.hpp"
@@ -7,6 +6,7 @@
 #include "dansandu/glyph/node.hpp"
 #include "dansandu/glyph/symbol.hpp"
 #include "dansandu/glyph/token.hpp"
+#include "dansandu/journey/exception.hpp"
 
 #include <functional>
 #include <stdexcept>

@@ -1,5 +1,5 @@
 #include "dansandu/glyph/internal/text_location.hpp"
-#include "dansandu/ballotin/exception.hpp"
+#include "dansandu/journey/exception.hpp"
 
 #include <algorithm>
 #include <string>

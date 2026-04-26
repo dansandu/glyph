@@ -1,7 +1,7 @@
 #include "dansandu/glyph/regex_tokenizer.hpp"
-#include "dansandu/ballotin/exception.hpp"
 #include "dansandu/glyph/error.hpp"
 #include "dansandu/glyph/internal/text_location.hpp"
+#include "dansandu/journey/exception.hpp"
 
 #include <regex>
 #include <string_view>

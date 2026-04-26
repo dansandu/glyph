@@ -1,8 +1,8 @@
 #include "dansandu/glyph/internal/parsing_table.hpp"
-#include "dansandu/ballotin/exception.hpp"
 #include "dansandu/glyph/error.hpp"
 #include "dansandu/glyph/internal/automaton.hpp"
 #include "dansandu/glyph/internal/grammar.hpp"
+#include "dansandu/journey/exception.hpp"
 
 #include <ostream>
 #include <stdexcept>

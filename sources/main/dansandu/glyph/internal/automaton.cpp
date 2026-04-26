@@ -1,8 +1,8 @@
 #include "dansandu/glyph/internal/automaton.hpp"
 #include "dansandu/ballotin/container.hpp"
-#include "dansandu/ballotin/exception.hpp"
 #include "dansandu/glyph/error.hpp"
 #include "dansandu/glyph/internal/first_table.hpp"
+#include "dansandu/journey/exception.hpp"
 
 using dansandu::ballotin::container::contains;
 using dansandu::glyph::error::GrammarError;
